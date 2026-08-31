@@ -16,6 +16,8 @@ vsl/
 ├── narracao.txt        texto limpo para gravar a locução (ou TTS)
 ├── MIDIA.md            imagem e vídeo de bancos gratuitos, cena a cena
 ├── baixar-midia.py     baixa a mídia do Pexels e preenche o manifest
+├── gravar-video.js     grava a página como arquivo de vídeo
+├── video/              o vídeo renderizado (6:12, 720p, sem áudio)
 └── assets/manifest.json  mapa cena → arquivo de mídia
 ```
 
@@ -51,7 +53,22 @@ Ao usar mídia local, sirva a pasta por HTTP — o navegador bloqueia a leitura 
 cd vsl && python3 -m http.server 8000
 ```
 
-## Gravar como MP4
+## Vídeo pronto
+
+`video/vsl-caixa-rapido-7dias.mp4` — 6:12, 1280×720, sem áudio. É a página gravada quadro a
+quadro, pronta para levar para o editor e receber a locução por cima (a legenda já está
+sincronizada em `legendas.srt`).
+
+Esse arquivo foi gerado sem acesso à internet, então saiu com as fontes substitutas. Para gravar
+de novo com a tipografia certa (Fraunces / Karla / IBM Plex Mono, que vêm do Google Fonts):
+
+```bash
+npm install playwright && npx playwright install chromium
+node vsl/gravar-video.js
+ffmpeg -i vsl/video/*.webm -c:v libx264 -crf 24 -pix_fmt yuv420p vsl/video/vsl.mp4
+```
+
+## Gravar como MP4 (na mão)
 
 A página é o storyboard rodando. Para virar arquivo de vídeo:
 
