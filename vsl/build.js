@@ -28,11 +28,15 @@ const timed = CUES.map(c => {
 const TOTAL = t;
 
 /* ---------- index.html ---------- */
+/* as ilustrações vivem em arte.js e entram inline na página */
+const arte = fs.readFileSync(path.join(dir, 'arte.js'), 'utf8')
+  .replace(/if \(typeof module[\s\S]*$/, '')
+  .trim();
+
 const json = JSON.stringify(CUES.map(c => ({ t: c.t, s: c.s, ...(c.p ? { p: c.p } : {}), ...(c.b ? { b: c.b } : {}) })), null, 0);
-const out = src.replace(
-  /\/\*__CUES__\*\/[\s\S]*?\/\*__END_CUES__\*\//,
-  `/*__CUES__*/${json}/*__END_CUES__*/`
-);
+const out = src
+  .replace(/\/\*__CUES__\*\/[\s\S]*?\/\*__END_CUES__\*\//, `/*__CUES__*/${json}/*__END_CUES__*/`)
+  .replace(/\/\*__ART__\*\/[\s\S]*?\/\*__END_ART__\*\//, `/*__ART__*/\n${arte}\n/*__END_ART__*/`);
 fs.writeFileSync(path.join(dir, 'index.html'), out);
 
 /* ---------- legendas ---------- */
