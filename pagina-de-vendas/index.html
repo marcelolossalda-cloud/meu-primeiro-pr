@@ -1,0 +1,590 @@
+<title>Loiro de Tinta na Prática</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&display=swap">
+
+<style>
+  /* ============================================================
+     Paleta derivada da escala de fundos de clareamento.
+     Ouro = fundo 8/9. Violeta = matizador. Neutros com viés violeta.
+     ============================================================ */
+  :root {
+    --paper:      #F4F1F6;
+    --paper-2:    #EBE5EE;
+    --surface:    #FFFFFF;
+    --ink:        #1C141B;
+    --ink-soft:   #4C404B;
+    --muted:      #7B6E7A;
+    --line:       #DED5E1;
+    --accent:     #C08D2E;
+    --accent-text:#7E5710;
+    --violet:     #6B4E8E;
+    --shadow:     0 1px 2px rgba(28,20,27,.05), 0 12px 32px -18px rgba(28,20,27,.35);
+
+    --f1: #241713; --f2: #3B211A; --f3: #55291B; --f4: #71321F; --f5: #8E4520;
+    --f6: #B05F22; --f7: #D08A2A; --f8: #E4B24A; --f9: #EFD37E; --f10:#F6E9B8;
+
+    --display: "Bodoni Moda", "Didot", "Times New Roman", serif;
+    --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+
+    --wrap: 72rem;
+    --pad: clamp(1.25rem, 5vw, 3rem);
+    --sec: clamp(4rem, 9vw, 7.5rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #151016;
+      --paper-2:    #1E1721;
+      --surface:    #1B1420;
+      --ink:        #F2EBF1;
+      --ink-soft:   #C7BAC5;
+      --muted:      #968A95;
+      --line:       #342839;
+      --accent:     #E4B24A;
+      --accent-text:#EBC369;
+      --violet:     #B292D8;
+      --shadow:     0 1px 2px rgba(0,0,0,.4), 0 16px 40px -20px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #151016;
+    --paper-2:    #1E1721;
+    --surface:    #1B1420;
+    --ink:        #F2EBF1;
+    --ink-soft:   #C7BAC5;
+    --muted:      #968A95;
+    --line:       #342839;
+    --accent:     #E4B24A;
+    --accent-text:#EBC369;
+    --violet:     #B292D8;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 16px 40px -20px rgba(0,0,0,.8);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3 { font-family: var(--display); font-weight: 700; text-wrap: balance; margin: 0; line-height: 1.08; }
+  p { margin: 0; }
+  a { color: inherit; }
+
+  .wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--pad); }
+  .prose { max-width: 36rem; }
+  .section { padding-block: var(--sec); }
+
+  .eyebrow {
+    font-size: .75rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--accent-text); margin: 0;
+  }
+  .eyebrow.is-muted { color: var(--muted); }
+
+  .lead { font-size: clamp(1.05rem, 1.6vw, 1.2rem); color: var(--ink-soft); }
+
+  /* placeholder a preencher */
+  .tbd {
+    color: var(--violet);
+    border-bottom: 1px dashed currentColor;
+    font-style: normal;
+    white-space: nowrap;
+  }
+  .tbd-note {
+    font-size: .8125rem; color: var(--violet); display: block; margin-top: .75rem; line-height: 1.5;
+  }
+
+  /* ---------- escala de fundos ---------- */
+  .scale { display: flex; width: 100%; height: 100%; }
+  .scale span { flex: 1; }
+  .scale span:nth-child(1){background:var(--f1)} .scale span:nth-child(2){background:var(--f2)}
+  .scale span:nth-child(3){background:var(--f3)} .scale span:nth-child(4){background:var(--f4)}
+  .scale span:nth-child(5){background:var(--f5)} .scale span:nth-child(6){background:var(--f6)}
+  .scale span:nth-child(7){background:var(--f7)} .scale span:nth-child(8){background:var(--f8)}
+  .scale span:nth-child(9){background:var(--f9)} .scale span:nth-child(10){background:var(--f10)}
+
+  .rail { height: .5rem; overflow: hidden; }
+  .rail .scale { transform: scaleX(0); transform-origin: left; animation: sweep 1.1s .15s cubic-bezier(.2,.7,.2,1) forwards; }
+  @keyframes sweep { to { transform: scaleX(1); } }
+
+  /* ---------- hero ---------- */
+  .hero { padding-top: clamp(3rem, 8vw, 6rem); padding-bottom: clamp(2.5rem, 6vw, 4.5rem); }
+  .hero-grid { display: grid; gap: clamp(2.5rem, 5vw, 4rem); align-items: start; }
+  @media (min-width: 62rem) { .hero-grid { grid-template-columns: 1.35fr 1fr; } }
+
+  .hero h1 {
+    font-size: clamp(2.75rem, 8.5vw, 5.25rem);
+    letter-spacing: -.015em;
+    margin-top: 1.25rem;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent-text); }
+  .hero-sub {
+    font-family: var(--display); font-style: italic; font-weight: 400;
+    font-size: clamp(1.25rem, 2.6vw, 1.75rem); color: var(--ink-soft);
+    margin-top: .75rem; line-height: 1.3;
+  }
+  .hero-deck { margin-top: 1.75rem; }
+
+  .hero-aside {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 2px;
+    padding: clamp(1.5rem, 3vw, 2rem); box-shadow: var(--shadow);
+  }
+  .hero-aside dl { margin: 0; display: grid; gap: 1.1rem; }
+  .hero-aside dt { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .hero-aside dd { margin: .15rem 0 0; font-size: 1rem; color: var(--ink); }
+
+  /* ---------- botões ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .6rem;
+    background: var(--ink); color: var(--paper);
+    font-family: var(--body); font-weight: 600; font-size: 1rem; letter-spacing: .01em;
+    padding: 1.05rem 2rem; border: 1px solid var(--ink); border-radius: 2px;
+    text-decoration: none; cursor: pointer;
+    transition: transform .18s ease, background-color .18s ease, color .18s ease;
+  }
+  .btn:hover { background: var(--accent-text); border-color: var(--accent-text); color: #FFF; transform: translateY(-2px); }
+  .btn-gold { background: var(--accent); border-color: var(--accent); color: #241713; }
+  .btn-gold:hover { background: var(--f9); border-color: var(--f9); color: #241713; }
+  .btn-wide { width: 100%; padding-block: 1.15rem; }
+  :where(a, button):focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+
+  .cta-note { font-size: .875rem; color: var(--muted); margin-top: .85rem; }
+
+  /* ---------- caso ---------- */
+  .band { background: var(--paper-2); border-block: 1px solid var(--line); }
+
+  .case-grid { display: grid; gap: clamp(2rem, 4vw, 3.5rem); align-items: center; }
+  @media (min-width: 56rem) { .case-grid { grid-template-columns: 1fr 1fr; } }
+
+  .h2 { font-size: clamp(1.85rem, 4vw, 2.85rem); margin-top: .9rem; }
+  .section-intro { margin-top: 1.25rem; color: var(--ink-soft); }
+
+  .diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 2px; padding: clamp(1.25rem, 3vw, 1.75rem); }
+  .diagram-title { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-bottom: 1rem; }
+  .diagram .rail { height: 2.75rem; border-radius: 1px; }
+  .diagram .rail .scale { animation: none; transform: none; }
+  .ticks { display: flex; margin-top: .5rem; font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ticks span { flex: 1; text-align: center; }
+  .diagram-legend { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1.1rem; font-size: .8125rem; color: var(--ink-soft); }
+  .diagram-caption { margin-top: 1.1rem; font-size: .875rem; color: var(--muted); line-height: 1.6; border-top: 1px solid var(--line); padding-top: 1.1rem; }
+
+  /* ---------- pilares ---------- */
+  .cards { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: clamp(2.5rem, 5vw, 3.5rem); }
+  @media (min-width: 40rem) { .cards { grid-template-columns: 1fr 1fr; } }
+  .card { background: var(--paper); padding: clamp(1.75rem, 3.5vw, 2.5rem); }
+  .card h3 { font-size: 1.4rem; margin-top: .75rem; }
+  .card p { margin-top: .75rem; color: var(--ink-soft); font-size: .96rem; }
+  .card-mark { width: 2rem; height: 3px; background: var(--accent); display: block; }
+
+  /* ---------- passo a passo ---------- */
+  .steps { list-style: none; margin: clamp(2.5rem, 5vw, 3.5rem) 0 0; padding: 0; counter-reset: step; }
+  .step {
+    display: grid; grid-template-columns: 3.5rem 1fr; gap: clamp(1rem, 2.5vw, 2rem);
+    padding: 1.4rem 0; border-top: 1px solid var(--line); align-items: baseline;
+  }
+  .step:last-child { border-bottom: 1px solid var(--line); }
+  .step-num {
+    font-family: var(--display); font-size: 1.15rem; color: var(--accent-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .step-body h3 { font-family: var(--body); font-size: 1.0625rem; font-weight: 600; }
+  .step-body p { margin-top: .3rem; color: var(--muted); font-size: .94rem; }
+  .step:last-child .step-body h3 { color: var(--accent-text); }
+
+  /* ---------- citação ---------- */
+  .quote { text-align: center; }
+  .quote blockquote {
+    margin: 0 auto; max-width: 46rem;
+    font-family: var(--display); font-size: clamp(1.6rem, 4.4vw, 3rem); line-height: 1.2;
+    text-wrap: balance;
+  }
+  .quote blockquote em { font-style: italic; color: var(--accent-text); }
+  .quote figcaption { margin-top: 1.75rem; font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+
+  /* ---------- para quem ---------- */
+  .who-grid { display: grid; gap: clamp(2rem, 4vw, 3rem); margin-top: clamp(2rem, 4vw, 3rem); }
+  @media (min-width: 52rem) { .who-grid { grid-template-columns: 1fr 1fr; } }
+  .who h3 { font-family: var(--body); font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; color: var(--muted); }
+  .who ul { list-style: none; margin: 1.1rem 0 0; padding: 0; display: grid; gap: .85rem; }
+  .who li { display: grid; grid-template-columns: 1.35rem 1fr; gap: .5rem; align-items: start; color: var(--ink-soft); font-size: .98rem; }
+  .who li::before { content: "—"; color: var(--accent); }
+  .who.is-out li::before { content: "×"; color: var(--muted); font-size: 1rem; line-height: 1.4; }
+
+  /* ---------- oferta ---------- */
+  .offer-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 2px;
+    box-shadow: var(--shadow); max-width: 34rem; margin-inline: auto;
+    padding: clamp(1.75rem, 4vw, 2.75rem); text-align: center;
+  }
+  .offer-card .rail { height: .375rem; margin: calc(-1 * clamp(1.75rem, 4vw, 2.75rem)) calc(-1 * clamp(1.75rem, 4vw, 2.75rem)) clamp(1.75rem, 4vw, 2.75rem); }
+  .offer-card .rail .scale { animation: none; transform: none; }
+  .price { font-family: var(--display); font-size: clamp(2.5rem, 7vw, 3.75rem); line-height: 1; margin-top: .5rem; }
+  .price small { font-size: .3em; font-family: var(--body); font-weight: 500; color: var(--muted); display: block; margin-bottom: .4rem; letter-spacing: .1em; text-transform: uppercase; }
+  .offer-list { list-style: none; margin: 1.75rem 0; padding: 0; display: grid; gap: .7rem; text-align: left; font-size: .95rem; color: var(--ink-soft); }
+  .offer-list li { display: grid; grid-template-columns: 1.25rem 1fr; gap: .5rem; }
+  .offer-list li::before { content: "✓"; color: var(--accent-text); font-size: .9rem; }
+
+  /* ---------- faq ---------- */
+  .faq { max-width: 44rem; margin-top: clamp(2rem, 4vw, 3rem); }
+  .faq details { border-top: 1px solid var(--line); }
+  .faq details:last-of-type { border-bottom: 1px solid var(--line); }
+  .faq summary {
+    cursor: pointer; list-style: none; padding: 1.25rem 2rem 1.25rem 0; position: relative;
+    font-weight: 600; font-size: 1rem;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after {
+    content: "+"; position: absolute; right: .25rem; top: 1.1rem;
+    font-size: 1.35rem; color: var(--accent-text); font-weight: 400; line-height: 1;
+    transition: transform .2s ease;
+  }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { padding: 0 2rem 1.4rem 0; color: var(--ink-soft); font-size: .96rem; margin-top: -.35rem; }
+
+  /* ---------- rodapé ---------- */
+  footer { border-top: 1px solid var(--line); padding-block: 3rem; color: var(--muted); font-size: .8125rem; }
+  footer p + p { margin-top: .5rem; }
+
+  /* ---------- barra fixa ---------- */
+  .sticky {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: .75rem var(--pad); display: flex; align-items: center; gap: 1rem; justify-content: space-between;
+    transform: translateY(110%); transition: transform .3s cubic-bezier(.2,.7,.2,1);
+    box-shadow: 0 -8px 24px -18px rgba(0,0,0,.6);
+  }
+  .sticky.is-visible { transform: translateY(0); }
+  .sticky-label { font-size: .875rem; line-height: 1.35; color: var(--ink-soft); }
+  .sticky-label strong { display: block; color: var(--ink); font-family: var(--display); font-size: 1.05rem; }
+  .sticky .btn { padding: .8rem 1.4rem; font-size: .9375rem; white-space: nowrap; }
+  @media (max-width: 30rem) { .sticky-label { display: none; } .sticky .btn { width: 100%; } }
+
+  /* ---------- reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.is-in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .reveal { opacity: 1; transform: none; }
+    .rail .scale { transform: none; }
+  }
+</style>
+
+<header class="hero wrap">
+  <div class="hero-grid">
+    <div>
+      <p class="eyebrow">Aula prática · Caso real de salão</p>
+      <h1>Loiro de tinta<br><em>na prática</em></h1>
+      <p class="hero-sub">Da correção ao resultado final</p>
+      <div class="hero-deck prose">
+        <p class="lead">Uma cliente tentou fazer o loiro de tinta em casa e chegou ao salão com o cabelo manchado, longe do resultado que queria. Nesta aula você acompanha, do começo ao fim, como esse cabelo foi analisado, corrigido e transformado — e por que cada decisão técnica foi tomada.</p>
+      </div>
+      <div style="margin-top:2rem">
+        <a class="btn btn-gold" href="#oferta">Quero assistir à aula</a>
+        <p class="cta-note">Aula gravada, para assistir quando quiser.</p>
+      </div>
+    </div>
+
+    <aside class="hero-aside">
+      <dl>
+        <div>
+          <dt>Formato</dt>
+          <dd>Aula gravada, passo a passo, em um caso real</dd>
+        </div>
+        <div>
+          <dt>Duração</dt>
+          <dd><span class="tbd">00 min</span></dd>
+        </div>
+        <div>
+          <dt>Acesso</dt>
+          <dd><span class="tbd">definir período</span></dd>
+        </div>
+        <div>
+          <dt>Para quem</dt>
+          <dd>Profissionais que trabalham com coloração e querem mais segurança em loiros</dd>
+        </div>
+      </dl>
+    </aside>
+  </div>
+</header>
+
+<div class="rail" aria-hidden="true">
+  <div class="scale"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+</div>
+
+<section class="section band">
+  <div class="wrap case-grid">
+    <div class="reveal">
+      <p class="eyebrow is-muted">O caso</p>
+      <h2 class="h2">Um cabelo manchado é um diagnóstico, não um acidente</h2>
+      <div class="section-intro prose">
+        <p>Cabelo clareado em casa quase nunca clareia por igual: raiz, comprimento e pontas partem de históricos diferentes e reagem de formas diferentes. O resultado são manchas, faixas e um loiro que não fecha.</p>
+        <p style="margin-top:1rem">Antes de encostar em qualquer produto, o primeiro trabalho é ler o cabelo: em que ponto do clareamento cada região está, o que ela aguenta e até onde dá para ir com segurança. É esse raciocínio que a aula mostra por inteiro.</p>
+      </div>
+    </div>
+
+    <figure class="diagram reveal" style="margin:0">
+      <figcaption class="diagram-title">Fundos de clareamento — referência</figcaption>
+      <div class="rail" aria-hidden="true">
+        <div class="scale"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="ticks" aria-hidden="true">
+        <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+      <div class="diagram-legend">
+        <span>Vermelho</span>
+        <span>Laranja</span>
+        <span>Amarelo</span>
+      </div>
+      <p class="diagram-caption">Cada região do cabelo pode estar em um fundo diferente. Identificar isso é o que define a descoloração, a cor e o volume de oxidante — e o que separa uma correção segura de um dano evitável.</p>
+    </figure>
+  </div>
+</section>
+
+<section class="section wrap">
+  <div class="reveal">
+    <p class="eyebrow is-muted">O que você aprende</p>
+    <h2 class="h2">O raciocínio por trás de cada escolha</h2>
+    <p class="section-intro prose">Mais do que aplicar uma tintura, a aula mostra como decidir. São quatro decisões que se sustentam umas nas outras — e é por isso que copiar fórmula de internet falha.</p>
+  </div>
+
+  <div class="cards reveal">
+    <article class="card">
+      <span class="card-mark" aria-hidden="true"></span>
+      <h3>Análise e diagnóstico</h3>
+      <p>Como olhar estrutura, histórico químico e fundo de clareamento de cada região antes de decidir qualquer coisa. O diagnóstico é o que define todo o resto do atendimento.</p>
+    </article>
+    <article class="card">
+      <span class="card-mark" aria-hidden="true"></span>
+      <h3>Descoloração com segurança</h3>
+      <p>Como preparar o cabelo para a transformação e conduzir a descoloração respeitando o que aquele fio aguenta, sem comprometer a integridade do comprimento.</p>
+    </article>
+    <article class="card">
+      <span class="card-mark" aria-hidden="true"></span>
+      <h3>Escolha da coloração</h3>
+      <p>Como escolher as cores em função do fundo revelado e das manchas que precisam ser corrigidas — e não do tom que a cliente mostrou na foto.</p>
+    </article>
+    <article class="card">
+      <span class="card-mark" aria-hidden="true"></span>
+      <h3>Volume de OX por região</h3>
+      <p>Neste caso foram usados volumes diferentes de oxidante na raiz e no comprimento. Na aula eu explico exatamente por que fiz essa escolha e como você identifica o que cada cabelo pede.</p>
+    </article>
+  </div>
+</section>
+
+<section class="section band">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow is-muted">Passo a passo da aula</p>
+      <h2 class="h2">Você acompanha o atendimento inteiro</h2>
+      <p class="section-intro prose">Na ordem em que acontece no salão, sem pular a parte que normalmente ninguém mostra.</p>
+    </div>
+
+    <ol class="steps reveal">
+      <li class="step">
+        <span class="step-num" aria-hidden="true">01</span>
+        <div class="step-body">
+          <h3>Análise do cabelo e diagnóstico</h3>
+          <p>Leitura do histórico, da estrutura e do fundo de clareamento de cada região.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">02</span>
+        <div class="step-body">
+          <h3>Descoloração</h3>
+          <p>Preparo do cabelo e condução da descoloração de forma segura.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">03</span>
+        <div class="step-body">
+          <h3>Escolha das cores</h3>
+          <p>Definição da coloração a partir do que o cabelo revelou, não do que se esperava dele.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">04</span>
+        <div class="step-body">
+          <h3>Escolha do volume de oxidante</h3>
+          <p>Critério para decidir o OX certo em cada situação — e o que muda quando ele está errado.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">05</span>
+        <div class="step-body">
+          <h3>Aplicação diferenciada em raiz e comprimento</h3>
+          <p>Por que as duas regiões pedem tratamentos distintos e como aplicar cada uma.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">06</span>
+        <div class="step-body">
+          <h3>Correção das manchas</h3>
+          <p>Como uniformizar o que ficou irregular do processo feito em casa.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">07</span>
+        <div class="step-body">
+          <h3>Tratamento após o processo químico</h3>
+          <p>O cuidado que devolve condição ao fio depois da química — parte do serviço, não um extra.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">08</span>
+        <div class="step-body">
+          <h3>Finalização</h3>
+          <p>O acabamento que entrega o cabelo do jeito que a cliente vai levar para casa.</p>
+        </div>
+      </li>
+      <li class="step">
+        <span class="step-num" aria-hidden="true">09</span>
+        <div class="step-body">
+          <h3>Resultado final</h3>
+          <p>O antes e o depois do caso completo, com a leitura do que foi conquistado.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section wrap quote">
+  <figure class="reveal" style="margin:0">
+    <blockquote>O loiro de tinta não é uma receita pronta. É <em>análise, técnica e escolha correta</em>.</blockquote>
+    <figcaption>O que muda quando você entende o porquê</figcaption>
+  </figure>
+</section>
+
+<section class="section band">
+  <div class="wrap">
+    <div class="reveal">
+      <p class="eyebrow is-muted">Para quem é</p>
+      <h2 class="h2">Feita para quem atende no salão</h2>
+    </div>
+    <div class="who-grid reveal">
+      <div class="who">
+        <h3>É para você se</h3>
+        <ul>
+          <li>Você já trabalha com coloração e quer mais segurança em loiros.</li>
+          <li>Você trava quando chega uma cliente com cabelo manchado de processo caseiro.</li>
+          <li>Você quer entender o critério de escolha de cor e de OX, não decorar fórmula.</li>
+          <li>Você quer transformar situações difíceis do salão em resultado e cliente satisfeita.</li>
+        </ul>
+      </div>
+      <div class="who is-out">
+        <h3>Talvez não seja se</h3>
+        <ul>
+          <li>Você procura uma fórmula fixa que funcione em qualquer cabelo.</li>
+          <li>Você quer fazer o próprio loiro em casa, sem acompanhamento profissional.</li>
+          <li>Você espera um curso longo e teórico — esta é uma aula prática e objetiva, focada em um caso real.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section wrap" id="oferta">
+  <div class="offer-card reveal">
+    <div class="rail" aria-hidden="true">
+      <div class="scale"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+    <p class="eyebrow">Loiro de Tinta na Prática</p>
+    <p class="price"><small>Acesso à aula completa</small><span class="tbd">R$ 00,00</span></p>
+    <p class="cta-note"><span class="tbd">ou 00x de R$ 00,00</span></p>
+
+    <ul class="offer-list">
+      <li>Aula completa com o caso real, do diagnóstico ao resultado final</li>
+      <li>Critério de escolha de coloração e de volume de OX por região</li>
+      <li>Correção de manchas e tratamento pós-química</li>
+      <li><span class="tbd">bônus, se houver</span></li>
+      <li><span class="tbd">garantia de 0 dias</span></li>
+    </ul>
+
+    <a class="btn btn-gold btn-wide" href="#" data-checkout>Quero assistir agora</a>
+    <span class="tbd-note">⤷ trocar o <code>href="#"</code> deste botão pelo link de checkout da Hotmart</span>
+    <p class="cta-note">Pagamento processado pela Hotmart.</p>
+  </div>
+</section>
+
+<section class="section wrap" style="padding-top:0">
+  <div class="reveal">
+    <p class="eyebrow is-muted">Dúvidas frequentes</p>
+    <h2 class="h2">Antes de comprar</h2>
+  </div>
+
+  <div class="faq reveal">
+    <details>
+      <summary>Preciso já ter experiência com coloração?</summary>
+      <p>A aula foi feita para profissionais que já atendem e querem aprimorar resultados. Se você está começando agora, vai conseguir acompanhar, mas o foco é o raciocínio técnico de quem já lida com clientes no salão.</p>
+    </details>
+    <details>
+      <summary>A aula é ao vivo ou gravada?</summary>
+      <p>Gravada. Você assiste no seu ritmo e revê quantas vezes quiser durante o período de acesso. <span class="tbd">confirmar período de acesso</span></p>
+    </details>
+    <details>
+      <summary>A técnica funciona em qualquer cabelo?</summary>
+      <p>O que a aula ensina é como analisar cada cabelo e decidir a partir dele. Justamente por isso não existe fórmula única: você aprende a identificar fundo, estrutura e histórico capilar para escolher a descoloração, a cor e o oxidante certos em cada caso.</p>
+    </details>
+    <details>
+      <summary>Vou aprender a corrigir cabelo manchado?</summary>
+      <p>Sim. O caso da aula parte exatamente de um cabelo manchado por um processo feito em casa, e você acompanha a correção completa até a finalização.</p>
+    </details>
+    <details>
+      <summary>Como recebo o acesso depois da compra?</summary>
+      <p><span class="tbd">descrever o fluxo de entrega da Hotmart: e-mail de acesso, área de membros, prazo</span></p>
+    </details>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><strong style="color:var(--ink);font-family:var(--display);font-size:1rem">Loiro de Tinta na Prática</strong></p>
+    <p><a href="https://marceloemilene.com" style="color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--line)">marceloemilene.com</a> · <span class="tbd">nome da profissional / marca</span> · <span class="tbd">CNPJ ou CPF</span> · <span class="tbd">contato@marceloemilene.com</span></p>
+    <p>Resultados dependem da análise correta de cada cabelo e da execução do profissional. Esta aula é material educativo destinado a profissionais da beleza.</p>
+  </div>
+</footer>
+
+<div class="sticky" id="sticky">
+  <div class="sticky-label">
+    <strong>Loiro de Tinta na Prática</strong>
+    Da correção ao resultado final
+  </div>
+  <a class="btn btn-gold" href="#oferta">Quero assistir</a>
+</div>
+
+<script>
+  (function () {
+    var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!reduce && "IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-in");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { rootMargin: "0px 0px -12% 0px", threshold: 0.08 });
+      document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
+    } else {
+      document.querySelectorAll(".reveal").forEach(function (el) { el.classList.add("is-in"); });
+    }
+
+    var sticky = document.getElementById("sticky");
+    var offer = document.getElementById("oferta");
+    function onScroll() {
+      var past = window.scrollY > window.innerHeight * 0.9;
+      var atOffer = offer.getBoundingClientRect().top < window.innerHeight && offer.getBoundingClientRect().bottom > 0;
+      sticky.classList.toggle("is-visible", past && !atOffer);
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
