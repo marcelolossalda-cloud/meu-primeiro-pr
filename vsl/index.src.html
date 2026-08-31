@@ -536,6 +536,9 @@ fetch('assets/manifest.json').then(r => r.ok ? r.json() : null).then(m => {
     narration = new Audio(m.narracao);
     narration.preload = 'auto';
     narration.addEventListener('ended', () => { playing = false; syncPlayIcon(); });
+    /* com locução, o navegador exige um clique antes de tocar áudio:
+       volta ao início e espera o play do usuário */
+    pause(); seek(0);
   }
 }).catch(() => {});
 
