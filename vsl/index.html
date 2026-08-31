@@ -1,0 +1,695 @@
+<title>Caixa Rápido 7 Dias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Karla:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ink:#100C0B;        /* fundo da sala de projeção */
+  --ash:#1B1512;        /* painéis */
+  --ash-2:#241C18;      /* cartões */
+  --bone:#F2E9E0;       /* texto */
+  --smoke:#9B8C82;      /* texto secundário morno */
+  --brass:#D39A3E;      /* acento: lâmpada de penteadeira */
+  --brass-soft:#F0C87C;
+  --clay:#A8503F;       /* negativo / dor */
+  --line:rgba(242,233,224,.14);
+  --stage-max:1080px;
+
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Karla","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ink);
+  color:var(--bone);
+  font-family:var(--body);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{ /* atmosfera: luz quente vindo do espelho */
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(120% 60% at 50% -10%, rgba(211,154,62,.16), transparent 60%),
+    radial-gradient(80% 50% at 50% 110%, rgba(168,80,63,.10), transparent 60%);
+}
+.wrap{position:relative;z-index:1;max-width:var(--stage-max);margin:0 auto;padding:24px 20px 96px}
+
+/* ---------- topo ---------- */
+.masthead{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.brand{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+.brand span{color:var(--smoke)}
+.runtime{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--smoke)}
+h1.headline{
+  font-family:var(--display);font-weight:600;font-size:clamp(28px,4.6vw,46px);
+  line-height:1.08;margin:0 0 6px;text-wrap:balance;letter-spacing:-.01em;
+}
+.sub{color:var(--smoke);font-size:clamp(15px,1.8vw,17px);margin:0 0 22px;max-width:56ch}
+
+/* ---------- palco ---------- */
+.stage{
+  position:relative;width:100%;aspect-ratio:16/9;background:#080605;
+  container-type:size;container-name:stage;
+  border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  box-shadow:0 30px 90px -40px rgba(0,0,0,.9), 0 0 0 1px rgba(211,154,62,.06) inset;
+  isolation:isolate;
+}
+.stage:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.layer{position:absolute;inset:0}
+.media-layer{opacity:0;transition:opacity .8s ease;object-fit:cover;width:100%;height:100%}
+.media-layer.on{opacity:.42}
+.scene{position:absolute;inset:0;display:none;place-items:center;padding:9cqh 8cqw 30cqh}
+.scene.active{display:grid;animation:sceneIn .7s cubic-bezier(.2,.7,.2,1)}
+@keyframes sceneIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+.vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 40%, transparent 40%, rgba(0,0,0,.72) 100%);
+}
+.sweep{
+  position:absolute;inset:-40%;pointer-events:none;opacity:.35;
+  background:conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(211,154,62,.10) 40deg, transparent 90deg);
+  animation:sweep 26s linear infinite;
+}
+@keyframes sweep{to{transform:rotate(360deg)}}
+
+/* eyebrow do bloco */
+.block-tag{
+  position:absolute;top:3.4cqh;left:3.2cqw;z-index:6;
+  font-family:var(--mono);font-size:1.35cqw;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brass);opacity:.85;
+}
+.block-tag::before{content:"● ";color:var(--clay)}
+
+/* legenda queimada */
+.caption{
+  position:absolute;left:0;right:0;bottom:8cqh;z-index:7;padding:0 7cqw;
+  text-align:center;font-family:var(--display);font-weight:600;
+  font-size:4.1cqw;line-height:1.2;letter-spacing:-.01em;
+  text-wrap:balance;text-shadow:0 2px 24px rgba(0,0,0,.85),0 1px 3px rgba(0,0,0,.9);
+  transition:opacity .18s ease, transform .18s ease;
+}
+.caption.off{opacity:0;transform:translateY(4px)}
+.caption em{font-style:normal;color:var(--brass-soft)}
+.stage.nocc .caption{display:none}
+
+/* ---------- primitivas visuais das cenas ---------- */
+.scene-inner{width:100%;max-width:78cqw;text-align:center}
+
+.bulbs{display:flex;gap:4.2cqw;justify-content:center}
+.bulb{
+  width:2.6cqw;aspect-ratio:1;border-radius:50%;
+  background:var(--brass-soft);box-shadow:0 0 4cqw 1.2cqw rgba(211,154,62,.45);
+  animation:dim 7s ease-in-out infinite;
+}
+.bulb:nth-child(2){animation-delay:.7s}.bulb:nth-child(3){animation-delay:1.4s}
+.bulb:nth-child(4){animation-delay:2.1s}.bulb:nth-child(5){animation-delay:2.8s}
+.bulb:nth-child(6){animation-delay:3.5s}.bulb:nth-child(7){animation-delay:4.2s}
+@keyframes dim{0%,100%{opacity:1}45%{opacity:.18;box-shadow:0 0 1cqw .2cqw rgba(211,154,62,.15)}}
+.mirror{width:52cqw;height:1px;background:linear-gradient(90deg,transparent,rgba(242,233,224,.28),transparent);margin:4.5cqh auto 0}
+
+.numeral{font-family:var(--display);font-weight:700;font-size:15cqw;line-height:.9;letter-spacing:-.03em}
+.numeral small{font-family:var(--body);font-weight:500;font-size:.14em;letter-spacing:.24em;text-transform:uppercase;color:var(--smoke);display:block;margin-top:3cqh}
+.hour-run{display:flex;gap:7cqw;justify-content:center;align-items:baseline}
+.hour-run b{font-family:var(--display);font-size:11cqw;font-weight:600;opacity:.22;animation:pop 3.6s ease-in-out infinite}
+.hour-run b:nth-child(2){animation-delay:1.2s}.hour-run b:nth-child(3){animation-delay:2.4s}
+@keyframes pop{0%,100%{opacity:.2}22%{opacity:1;color:var(--brass-soft)}}
+
+.bars{display:grid;gap:4cqh;max-width:62cqw;margin:0 auto;text-align:left}
+.bar-row{display:grid;gap:1.4cqh}
+.bar-label{font-family:var(--mono);font-size:1.6cqw;letter-spacing:.16em;text-transform:uppercase;color:var(--smoke);display:flex;justify-content:space-between}
+.bar{height:2.6cqh;border-radius:2px;background:rgba(242,233,224,.09);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass);width:0;animation:grow 1.6s var(--d,.2s) cubic-bezier(.2,.7,.2,1) forwards}
+.bar.short i{background:var(--clay)}
+@keyframes grow{to{width:var(--w,100%)}}
+
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2cqw;max-width:66cqw;margin:0 auto}
+.card{
+  background:var(--ash-2);border:1px solid var(--line);border-radius:4px;
+  padding:3cqh 2.4cqw;text-align:left;font-size:2.3cqw;font-family:var(--display);
+  opacity:0;transform:translateY(10px);animation:rise .5s forwards;
+}
+.cards.settled .card{opacity:1;transform:none;animation:none}
+.card.struck{position:relative}
+.card.struck::after{
+  content:"";position:absolute;left:1.6cqw;right:1.6cqw;top:50%;height:2px;background:var(--clay);
+  transform:scaleX(0);transform-origin:left;animation:strike .5s var(--d,0s) forwards;
+}
+@keyframes strike{to{transform:scaleX(1)}}
+@keyframes rise{to{opacity:1;transform:none}}
+@keyframes reveal{to{opacity:1}}
+@keyframes markIn{from{background:rgba(242,233,224,.10);color:var(--smoke)}to{background:var(--clay);color:var(--bone)}}
+
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:2cqw;max-width:74cqw;margin:0 auto}
+.pillar{border:1px solid var(--line);border-radius:4px;padding:5cqh 2cqw;background:rgba(27,21,18,.7);opacity:.3;transition:.5s}
+.pillar .n{font-family:var(--mono);font-size:1.5cqw;letter-spacing:.2em;color:var(--smoke)}
+.pillar .k{font-family:var(--display);font-weight:600;font-size:3.1cqw;margin-top:1.4cqh;display:block;letter-spacing:-.01em}
+.pillar.lit{opacity:1;border-color:rgba(211,154,62,.55);background:rgba(211,154,62,.10);box-shadow:0 0 6cqw -1.5cqw rgba(211,154,62,.6)}
+.pillar.lit .n{color:var(--brass)}
+
+.timeline{display:grid;grid-template-columns:repeat(7,1fr);gap:1.2cqw;max-width:76cqw;margin:0 auto}
+.day{border:1px solid var(--line);border-radius:3px;padding:3cqh .8cqw;background:var(--ash-2);text-align:center;transition:.45s}
+.day .d{font-family:var(--mono);font-size:1.3cqw;letter-spacing:.14em;color:var(--smoke)}
+.day .t{display:block;margin-top:1.2cqh;font-size:1.8cqw;line-height:1.25;font-family:var(--display)}
+.day.lit{border-color:rgba(211,154,62,.5);background:rgba(211,154,62,.12)}
+.day.lit .d{color:var(--brass)}
+
+.dots{display:grid;grid-template-columns:repeat(10,1fr);gap:1.4cqw;max-width:46cqw;margin:0 auto}
+.dots i{aspect-ratio:1;border-radius:50%;background:rgba(242,233,224,.12);animation:fill .3s forwards}
+@keyframes fill{to{background:var(--clay)}}
+
+.seal{
+  width:24cqw;aspect-ratio:1;border-radius:50%;margin:0 auto;
+  border:1px solid rgba(211,154,62,.5);display:grid;place-content:center;text-align:center;
+  background:radial-gradient(circle at 50% 30%, rgba(211,154,62,.18), transparent 70%);
+}
+.seal b{font-family:var(--display);font-size:8cqw;font-weight:700;line-height:1}
+.seal span{font-family:var(--mono);font-size:1.3cqw;letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+
+.price{font-family:var(--display);font-weight:700;font-size:18cqw;line-height:.9;letter-spacing:-.04em}
+.price sup{font-size:.28em;vertical-align:super;color:var(--smoke);font-family:var(--body);font-weight:500}
+.mult{display:flex;gap:3.4cqw;align-items:center;justify-content:center;font-family:var(--display);font-weight:600;font-size:5.6cqw}
+.mult i{font-style:normal;color:var(--smoke);font-size:.55em}
+.mult b{opacity:0;animation:rise .5s var(--d,0s) forwards}
+
+.leak{width:36cqw;margin:0 auto;display:block;overflow:visible}
+.leak .water{transform-origin:bottom;animation:fillup 5s ease-in-out infinite}
+@keyframes fillup{0%{transform:scaleY(.25)}45%{transform:scaleY(.62)}100%{transform:scaleY(.25)}}
+.leak .drop{animation:drip 1.4s linear infinite}
+.leak .drop:nth-of-type(2){animation-delay:.45s}.leak .drop:nth-of-type(3){animation-delay:.9s}
+@keyframes drip{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(40px)}}
+.leak.patched .drop{animation:drip 1.4s linear 8.6}
+.leak.patched .water{animation:fillup 5s ease-in-out 2.42, fillup-stay 4s ease-out 12.1s forwards}
+@keyframes fillup-stay{0%{transform:scaleY(.25)}100%{transform:scaleY(.92)}}
+.patch{opacity:0;animation:rise .5s 12.1s forwards}
+
+.statement{font-family:var(--display);font-weight:600;font-size:5cqw;line-height:1.24;letter-spacing:-.01em;margin:0}
+.statement s{text-decoration-color:var(--clay);text-decoration-thickness:.35cqw;color:var(--smoke);opacity:.15;animation:reveal .5s var(--d,0s) forwards}
+.statement .hl{color:var(--brass-soft)}
+.chair{width:26cqw;margin:0 auto;display:block}
+.ping{transform-origin:center;opacity:0;animation:ping 2.4s ease-out 3.8s infinite}
+@keyframes ping{0%{r:6;opacity:.9}70%{r:26;opacity:0}100%{opacity:0}}
+.bubble{
+  border:1px dashed rgba(242,233,224,.35);border-radius:1.4cqw;padding:5cqh 4cqw;max-width:44cqw;margin:0 auto;
+  font-family:var(--mono);letter-spacing:.5em;color:var(--smoke);font-size:4cqw;
+}
+.contrast{display:grid;gap:2cqh;max-width:56cqw;margin:0 auto;text-align:left}
+.contrast div{opacity:0;animation:rise .5s var(--d,0s) forwards;display:flex;gap:2cqw;align-items:center;font-size:2.8cqw;font-family:var(--display);padding:2.6cqh 2.4cqw;border:1px solid var(--line);border-radius:4px;background:rgba(27,21,18,.6)}
+.contrast .x{color:var(--clay);font-family:var(--mono);font-size:.8em}
+.contrast .v{color:var(--brass);font-family:var(--mono);font-size:.8em}
+.mock{
+  border:1px solid rgba(211,154,62,.4);border-radius:8px;padding:5cqh 4cqw;max-width:52cqw;margin:0 auto;
+  background:linear-gradient(160deg, rgba(211,154,62,.14), rgba(27,21,18,.9));
+}
+.mock .kicker{font-family:var(--mono);font-size:1.4cqw;letter-spacing:.22em;text-transform:uppercase;color:var(--brass)}
+.mock .name{font-family:var(--display);font-weight:700;font-size:6.6cqw;line-height:1;margin:1.6cqh 0 1cqh;letter-spacing:-.02em;display:block}
+.mock .meta{font-family:var(--mono);font-size:1.35cqw;color:var(--smoke);letter-spacing:.14em}
+.bonus{display:grid;grid-template-columns:1fr 1fr;gap:2cqw;max-width:66cqw;margin:0 auto}
+.bonus div{opacity:0;animation:rise .5s var(--d,0s) forwards;border:1px solid var(--line);border-radius:4px;padding:3.4cqh 2.4cqw;text-align:left;background:var(--ash-2)}
+.bonus b{display:block;font-family:var(--display);font-size:2.7cqw;margin-bottom:1cqh}
+.bonus span{color:var(--smoke);font-size:1.8cqw;line-height:1.45}
+.cta-pulse{
+  display:inline-block;background:var(--brass);color:#14100E;font-family:var(--body);font-weight:700;
+  padding:3.4cqh 5cqw;border-radius:3px;font-size:3cqw;letter-spacing:.02em;
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(211,154,62,.45)}50%{transform:scale(1.035);box-shadow:0 0 0 3cqw rgba(211,154,62,0)}}
+.cal{display:grid;grid-template-columns:repeat(6,1fr);gap:.9cqw;max-width:36cqw;margin:0 auto}
+.cal i{aspect-ratio:1;border-radius:2px;background:rgba(242,233,224,.10);display:grid;place-content:center;font-family:var(--mono);font-size:1.4cqw;color:var(--smoke)}
+.cal i.mark{background:var(--clay);color:var(--bone);box-shadow:0 0 4cqw -.5cqw rgba(168,80,63,.9);animation:markIn .5s 7.2s backwards}
+.duo{display:flex;gap:4cqw;justify-content:center;align-items:center;font-family:var(--display);font-weight:600;font-size:6.4cqw}
+.duo .have{color:var(--bone)}
+.duo .need{color:var(--brass-soft);opacity:0;animation:rise .6s 2.4s forwards}
+.duo .plus{color:var(--smoke);font-size:.6em}
+
+/* ---------- controles ---------- */
+.controls{
+  display:flex;align-items:center;gap:14px;padding:12px 4px 0;
+}
+.ctrl{
+  background:none;border:1px solid var(--line);color:var(--bone);border-radius:3px;
+  width:38px;height:38px;display:grid;place-content:center;cursor:pointer;transition:.2s;flex:none;
+}
+.ctrl:hover{border-color:var(--brass);color:var(--brass)}
+.ctrl:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.ctrl svg{width:15px;height:15px;fill:currentColor}
+.track{flex:1;height:3px;background:rgba(242,233,224,.12);border-radius:2px;cursor:pointer;position:relative;opacity:0;transition:opacity .6s;pointer-events:none}
+.track.shown{opacity:1;pointer-events:auto}
+.track i{position:absolute;inset:0 auto 0 0;background:var(--brass);border-radius:2px;width:0}
+.tc{font-family:var(--mono);font-size:11px;color:var(--smoke);letter-spacing:.08em;font-variant-numeric:tabular-nums;flex:none}
+.cc{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;background:none;border:1px solid var(--line);color:var(--smoke);border-radius:3px;padding:9px 10px;cursor:pointer}
+.cc[aria-pressed="true"]{color:var(--brass);border-color:rgba(211,154,62,.5)}
+
+/* ---------- oferta abaixo do player ---------- */
+.offer{margin-top:26px;display:grid;gap:14px;justify-items:center;text-align:center}
+.buy{
+  display:inline-block;background:var(--brass);color:#14100E;text-decoration:none;font-weight:700;
+  padding:20px 44px;border-radius:3px;font-size:clamp(16px,2.4vw,21px);letter-spacing:.01em;
+  box-shadow:0 14px 40px -18px rgba(211,154,62,.9);transition:transform .18s, box-shadow .18s;
+}
+.buy:hover{transform:translateY(-2px);box-shadow:0 20px 50px -18px rgba(211,154,62,1)}
+.buy:focus-visible{outline:2px solid var(--brass-soft);outline-offset:4px}
+.guarantee{font-size:14px;color:var(--smoke);max-width:52ch}
+.guarantee b{color:var(--bone);font-weight:500}
+
+/* ---------- painel de produção ---------- */
+.panel{margin-top:72px;border-top:1px solid var(--line);padding-top:36px;display:grid;gap:34px}
+.panel h2{font-family:var(--display);font-weight:600;font-size:clamp(20px,3vw,30px);margin:0 0 4px;letter-spacing:-.01em}
+.panel h3{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin:0 0 12px;font-weight:500}
+.panel p{color:var(--smoke);max-width:68ch;margin:0 0 12px}
+.script{display:grid;gap:22px}
+.blk{display:block}
+.blk[open] .blk-head{margin-bottom:10px}
+.blk-head{display:flex;gap:12px;align-items:baseline;border-bottom:1px solid var(--line);padding:10px 0 8px;cursor:pointer;list-style:none}
+.blk-head::-webkit-details-marker{display:none}
+.blk-head::after{content:"+";margin-left:auto;font-family:var(--mono);color:var(--smoke)}
+.blk[open] .blk-head::after{content:"–"}
+.blk-head:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.blk-head b{font-family:var(--display);font-size:18px;font-weight:600}
+.blk-head span{font-family:var(--mono);font-size:11px;color:var(--brass);letter-spacing:.1em;font-variant-numeric:tabular-nums}
+.line{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:baseline;padding:3px 0;border-radius:3px;cursor:pointer}
+.line:hover{background:rgba(242,233,224,.05)}
+.line time{font-family:var(--mono);font-size:11px;color:var(--smoke);font-variant-numeric:tabular-nums}
+.line.now{background:rgba(211,154,62,.10)}
+.line.now time{color:var(--brass)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.note{border:1px solid var(--line);border-radius:4px;padding:18px;background:rgba(27,21,18,.5)}
+.note b{display:block;font-family:var(--display);font-size:17px;margin-bottom:6px}
+.note p{margin:0;font-size:14px}
+.note ul{margin:8px 0 0;padding-left:18px;color:var(--smoke);font-size:14px}
+.note li{margin-bottom:6px}
+.note a{color:var(--brass)}
+.note code{font-family:var(--mono);font-size:.88em;color:var(--bone);background:rgba(242,233,224,.07);padding:1px 5px;border-radius:3px}
+.note em{font-style:normal;color:var(--brass-soft)}
+footer{margin-top:56px;color:var(--smoke);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-align:center}
+
+@media (max-width:640px){
+  .wrap{padding:18px 14px 80px}
+  .line{grid-template-columns:52px 1fr;gap:10px}
+  .buy{padding:18px 28px;width:100%;text-align:center}
+}
+@media (prefers-reduced-motion:reduce){
+  /* sem movimento: tudo entra no estado final, na hora */
+  .sweep,.bulb,.hour-run b,.cta-pulse,.leak .water,.leak .drop,.scene.active{animation:none!important}
+  .card,.mult b,.duo .need,.patch,.contrast div,.bonus div,.statement s,.ping{
+    opacity:1!important;transform:none!important;animation:none!important;
+  }
+  .bar i{width:var(--w,100%);animation:none}
+  .dots i{background:var(--clay);animation:none}
+  .card.struck::after{transform:scaleX(1);animation:none}
+  .leak .water{transform:scaleY(.62)}
+  .leak.patched .water{transform:scaleY(.92)}
+  .leak.patched .drop{display:none}
+  .cal i.mark{animation:none}
+  .buy:hover{transform:none}
+  .caption{transition:none}
+}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="brand">Caixa Rápido <span>— Desafio de 7 Dias</span></div>
+    <div class="runtime" id="runtime">—</div>
+  </header>
+
+  <h1 class="headline">Atraia mais clientes. Venda mais no seu salão.</h1>
+  <p class="sub">Assista abaixo: por que o caixa não fecha mesmo com a agenda cheia — e o método de 7 dias criado para corrigir isso dentro da sua rotina.</p>
+
+  <div class="stage" id="stage" tabindex="0" role="region" aria-label="Vídeo de vendas: por que o caixa não fecha">
+    <video class="layer media-layer" id="mediaVideo" muted playsinline loop preload="none" aria-hidden="true"></video>
+    <img class="layer media-layer" id="mediaImage" alt="" aria-hidden="true">
+    <div class="layer" id="sceneHost" aria-hidden="true"></div>
+    <div class="sweep" aria-hidden="true"></div>
+    <div class="vignette" aria-hidden="true"></div>
+    <div class="block-tag" id="blockTag"></div>
+    <p class="caption" id="caption" aria-live="polite"></p>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl" id="btnPlay" aria-label="Pausar"><svg viewBox="0 0 24 24" id="icPlay"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
+    <button class="ctrl" id="btnRestart" aria-label="Recomeçar do início"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
+    <div class="track" id="track" role="slider" aria-label="Posição do vídeo" aria-valuemin="0" aria-valuenow="0" tabindex="0"><i id="progress"></i></div>
+    <div class="tc" id="tc">0:00</div>
+    <button class="cc" id="btnCC" aria-pressed="true">Legenda</button>
+  </div>
+
+  <div class="offer">
+    <a class="buy" id="buyBtn" href="#configurar-checkout">QUERO COMEÇAR POR R$ 97</a>
+    <p class="guarantee"><b>Pagamento único pela Hotmart.</b> 7 dias de garantia — se não fizer sentido, é só pedir o reembolso dentro do prazo, conforme as condições da Hotmart.</p>
+  </div>
+
+  <section class="panel">
+    <div>
+      <h3>Roteiro cronometrado</h3>
+      <h2>O que é falado, e quando</h2>
+      <p>Clique em qualquer linha para saltar o player até ela. Os tempos são calculados a partir da locução (ritmo natural, com as pausas do roteiro marcadas) — use como base para gravar a narração e conferir a sincronia.</p>
+      <div class="script" id="script"></div>
+    </div>
+
+    <div>
+      <h3>Produção</h3>
+      <h2>Como colocar no ar</h2>
+      <div class="notes">
+        <div class="note">
+          <b>Onde entra na página</b>
+          <p>Substitua o bloco visual do topo pelo player, logo abaixo da headline. O botão <em>QUERO COMEÇAR POR R$ 97</em> fica visível abaixo do vídeo desde o segundo zero — VSL de preço baixo não esconde o botão.</p>
+        </div>
+        <div class="note">
+          <b>Ajustes de conversão</b>
+          <ul>
+            <li>Autoplay com som desligado e legenda queimada — o público assiste no celular, dentro do salão, sem fone.</li>
+            <li>Thumbnail: rosto de profissional + o texto “Por que o caixa não fecha”.</li>
+            <li>Barra de progresso escondida nos primeiros 60 segundos (já é assim aqui).</li>
+          </ul>
+        </div>
+        <div class="note">
+          <b>Trocar por imagem e vídeo reais</b>
+          <p>Cada cena aceita um arquivo de banco livre por cima do visual animado. Coloque os arquivos em <code>vsl/assets/</code> e mapeie em <code>assets/manifest.json</code>. As fontes gratuitas, os termos de busca e a licença de cada uma estão em <a href="MIDIA.md">MIDIA.md</a>.</p>
+        </div>
+        <div class="note">
+          <b>Narração</b>
+          <p>Se existir <code>assets/narracao.mp3</code>, o player sincroniza a legenda pelo áudio em vez do relógio interno. O texto limpo para gravar (ou para TTS) está em <code>narracao.txt</code>; as legendas prontas, em <code>legendas.srt</code>.</p>
+        </div>
+        <div class="note">
+          <b>O que não prometer</b>
+          <p>Nenhuma linha promete valor de faturamento, e isso é proposital: “R$ 5 mil em 7 dias” derruba anúncio no Meta e gera reembolso em massa na Hotmart. A promessa fica em método e rotina.</p>
+        </div>
+        <div class="note">
+          <b>Personalizações que valem</b>
+          <ul>
+            <li>Bloco 1: um dado real do setor logo na abertura segura retenção. Nunca invente número.</li>
+            <li>Bloco 2: depoimento de aluna de 15s sobre “eu não conseguia oferecer produto”.</li>
+            <li>Bloco 4: a conta fria fica mais forte com o ticket médio real de home care do seu nicho.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>Caixa Rápido — Desafio de 7 Dias · roteiro RMBC · <span id="wordcount"></span></footer>
+</div>
+
+<script>
+/* ============================================================
+   MINI-VSL — CAIXA RÁPIDO 7 DIAS
+   Roteiro injetado por vsl/build.js a partir de roteiro.cues.js
+   ============================================================ */
+const CUES = /*__CUES__*/[{"t":"Existe um padrão que se repete","s":"abertura","b":"Bloco 1 — O padrão oculto"},{"t":"em milhares de salões de beleza no Brasil.","s":"abertura"},{"t":"E quase ninguém fala sobre ele em voz alta.","s":"abertura","p":0.8},{"t":"A profissional acorda cedo.","s":"rotina"},{"t":"Fica oito, dez, doze horas em pé.","s":"rotina"},{"t":"Atende uma cliente atrás da outra.","s":"rotina"},{"t":"A agenda até enche.","s":"rotina","p":0.5},{"t":"O corpo cansa.","s":"rotina","p":0.8},{"t":"E aí, no fim do mês, ela abre o caixa.","s":"caixa"},{"t":"E o número não corresponde ao esforço.","s":"caixa","p":1.6},{"t":"Se isso está acontecendo com você,","s":"atencao"},{"t":"preste muita atenção no que eu vou dizer agora:","s":"atencao","p":0.6},{"t":"O problema não é você.","s":"nao-e-voce","p":1.2},{"t":"Você não é devagar.","s":"nao-e-voce"},{"t":"Você não é ruim de atendimento.","s":"nao-e-voce"},{"t":"E você definitivamente não precisa se dedicar mais —","s":"nao-e-voce"},{"t":"você já se dedica demais.","s":"nao-e-voce","p":0.9},{"t":"O que existe aqui é uma falha estrutural","s":"vazamento"},{"t":"na forma como o dinheiro entra dentro de um salão.","s":"vazamento"},{"t":"Uma falha invisível.","s":"vazamento"},{"t":"É ela que faz a profissional mais talentosa da rua","s":"vazamento"},{"t":"faturar menos que a concorrente do lado.","s":"vazamento","p":0.8},{"t":"Nos próximos minutos, eu vou te mostrar","s":"promessa"},{"t":"exatamente onde está esse vazamento.","s":"promessa"},{"t":"E o método prático de 7 dias que foi criado para fechá-lo.","s":"promessa","p":1.4},{"t":"Vamos ao diagnóstico.","s":"diagnostico","p":0.6,"b":"Bloco 2 — O diagnóstico"},{"t":"Quando o faturamento trava,","s":"conselhos"},{"t":"o mercado sempre dá os mesmos quatro conselhos.","s":"conselhos"},{"t":"\"Poste mais no Instagram.\"","s":"conselhos","p":0.3},{"t":"\"Faça promoção.\"","s":"conselhos","p":0.3},{"t":"\"Baixe o preço.\"","s":"conselhos","p":0.3},{"t":"\"Trabalhe mais horas.\"","s":"conselhos","p":0.9},{"t":"Repare no que essas quatro receitas têm em comum.","s":"pressuposto"},{"t":"Todas elas partem do mesmo pressuposto:","s":"pressuposto"},{"t":"que o seu problema é falta de cliente.","s":"pressuposto","p":0.7},{"t":"Na maioria dos casos, não é.","s":"pressuposto","p":1.5},{"t":"A maioria das profissionais ignora um fato desconfortável.","s":"ja-entrou"},{"t":"O dinheiro que está faltando no seu caixa","s":"ja-entrou"},{"t":"já entrou pela porta do salão hoje.","s":"ja-entrou"},{"t":"E saiu sem ser aproveitado.","s":"ja-entrou","p":1},{"t":"Pense na cliente que sentou na sua cadeira essa semana.","s":"cadeira","p":0.5},{"t":"Você viu o fio quebrado.","s":"cadeira"},{"t":"Você sabia exatamente qual produto ela precisava levar para casa.","s":"cadeira"},{"t":"Você sabia que ela ia sair dali","s":"cadeira"},{"t":"e comprar qualquer coisa no mercado.","s":"cadeira"},{"t":"Algo que ia estragar o seu trabalho em duas semanas.","s":"cadeira","p":0.8},{"t":"E você não falou nada.","s":"silencio","p":1.4},{"t":"Não foi por falta de conhecimento técnico.","s":"silencio"},{"t":"Disso você tem de sobra.","s":"silencio","p":0.7},{"t":"Você não falou porque ninguém nunca te ensinou","s":"silencio"},{"t":"como falar sem se sentir uma vendedora chata.","s":"silencio","p":1},{"t":"Essa é a causa real.","s":"causa"},{"t":"Não é falta de esforço.","s":"causa"},{"t":"É falta de método de conversa.","s":"causa","p":1.2},{"t":"E aqui está a parte que ninguém te conta:","s":"todo-mes"},{"t":"enquanto isso continuar,","s":"todo-mes"},{"t":"cada dia de trabalho é um dia de dinheiro deixado na cadeira.","s":"todo-mes","p":0.6},{"t":"Não é um mês perdido.","s":"todo-mes"},{"t":"É todo mês.","s":"todo-mes"},{"t":"É o ano inteiro.","s":"todo-mes","p":1.6},{"t":"Agora, a descoberta.","s":"descoberta","p":0.6,"b":"Bloco 3 — O mecanismo único"},{"t":"Quando você analisa os salões que faturam bem","s":"descoberta"},{"t":"sem aumentar a jornada,","s":"descoberta"},{"t":"aparece uma estrutura em comum.","s":"descoberta"},{"t":"Três movimentos. Sempre na mesma ordem.","s":"descoberta","p":1},{"t":"Primeiro: ATRAIR.","s":"pilar-1","p":0.4},{"t":"Ações simples, de custo zero,","s":"pilar-1"},{"t":"para despertar interesse e trazer clientes novas.","s":"pilar-1"},{"t":"Sem depender de sorte e sem depender de algoritmo.","s":"pilar-1","p":0.8},{"t":"Segundo: APROVEITAR.","s":"pilar-2","p":0.4},{"t":"Um novo olhar durante o atendimento.","s":"pilar-2"},{"t":"Aprender a enxergar, em cada cliente que senta na cadeira,","s":"pilar-2"},{"t":"a oportunidade que já está ali.","s":"pilar-2"},{"t":"Visível. Esperando só para ser nomeada.","s":"pilar-2","p":0.8},{"t":"Terceiro: VENDER NATURALMENTE.","s":"pilar-3","p":0.4},{"t":"Transformar essa observação técnica em uma recomendação.","s":"pilar-3"},{"t":"De serviço, de produto ou de home care.","s":"pilar-3"},{"t":"Que soa como cuidado profissional.","s":"pilar-3"},{"t":"Não como empurrão de vendedora.","s":"pilar-3","p":1.5},{"t":"A metáfora é simples.","s":"balde","p":0.5},{"t":"A maioria das profissionais tenta encher um balde furado","s":"balde"},{"t":"colocando mais água dentro.","s":"balde"},{"t":"Mais cliente. Mais hora. Mais promoção.","s":"balde","p":0.7},{"t":"Esse método faz o contrário.","s":"balde"},{"t":"Ele tampa os furos primeiro.","s":"balde"},{"t":"Aí sim, cada litro que entra, fica.","s":"balde","p":1.2},{"t":"É por isso que ele funciona onde a promoção falha.","s":"margem"},{"t":"Promoção traz movimento e leva a sua margem junto.","s":"margem"},{"t":"Isso aqui aumenta o valor de cada atendimento","s":"margem"},{"t":"que você já faz hoje.","s":"margem","p":1.4},{"t":"A forma prática de aplicar essa estrutura se chama","s":"produto","b":"Bloco 4 — A oferta"},{"t":"Caixa Rápido — Desafio de 7 Dias.","s":"produto","p":0.7},{"t":"São 7 dias. 7 missões.","s":"produto"},{"t":"Uma por dia, para executar dentro do salão,","s":"produto"},{"t":"no meio da sua rotina normal.","s":"produto","p":0.9},{"t":"Dia 1: você define a sua meta.","s":"dias","p":0.2},{"t":"Dia 2: ações para atrair.","s":"dias","p":0.2},{"t":"Dia 3: enxergar as oportunidades na cadeira.","s":"dias","p":0.2},{"t":"Dia 4: a venda natural.","s":"dias","p":0.2},{"t":"Dia 5: home care.","s":"dias","p":0.2},{"t":"Dia 6: respostas prontas para \"está caro\" e \"vou pensar\".","s":"dias","p":0.2},{"t":"Dia 7: o seu plano de vendas,","s":"dias"},{"t":"pronto para continuar rodando depois que o desafio acabar.","s":"dias","p":1},{"t":"E vêm dois bônus incluídos.","s":"bonus"},{"t":"O treinamento de ChatGPT para comunicação e vendas,","s":"bonus"},{"t":"para você criar divulgação, legenda","s":"bonus"},{"t":"e mensagem de WhatsApp em minutos.","s":"bonus"},{"t":"E o acesso ao app USALON 30D.","s":"bonus","p":1.5},{"t":"Agora, a conta fria.","s":"conta-fria","p":0.6},{"t":"Uma única indicação de home care que você não fez hoje.","s":"conta-fria"},{"t":"Multiplique por trinta dias.","s":"conta-fria"},{"t":"Depois por doze meses.","s":"conta-fria","p":1},{"t":"Esse é o custo de não fazer nada.","s":"conta-fria","p":1.2},{"t":"O acesso completo ao desafio, com os dois bônus,","s":"preco"},{"t":"é um pagamento único de 97 reais.","s":"preco","p":1.4},{"t":"Clique no botão aqui embaixo","s":"cta","b":"Bloco 5 — Fechamento"},{"t":"e garanta o seu acesso por 97 reais.","s":"cta"},{"t":"Pagamento único, pela Hotmart.","s":"cta","p":0.9},{"t":"E olha: você não precisa decidir nada hoje.","s":"garantia"},{"t":"Você tem 7 dias de garantia.","s":"garantia"},{"t":"Entre, aplique as primeiras missões dentro do seu salão,","s":"garantia"},{"t":"e observe o que acontece no seu caixa.","s":"garantia"},{"t":"Se não fizer sentido para você,","s":"garantia"},{"t":"é só pedir o reembolso dentro do prazo,","s":"garantia"},{"t":"conforme as condições da Hotmart.","s":"garantia","p":0.8},{"t":"O risco de testar é zero.","s":"risco","p":0.9},{"t":"O risco de continuar exatamente como está,","s":"risco"},{"t":"você já conhece.","s":"risco"},{"t":"Ele aparece todo dia 30.","s":"risco","p":1.6},{"t":"Talento você já tem.","s":"fecho","p":0.8},{"t":"O que falta é estratégia.","s":"fecho","p":1},{"t":"Clique no botão e comece hoje.","s":"fecho","p":2}]/*__END_CUES__*/;
+
+/* --- modelo de tempo: locução calma em PT-BR (~2,85 palavras/s) --- */
+const RATE = 2.85, FLOOR = 1.05, OVERHEAD = 0.22;
+let t = 0;
+for (const c of CUES) {
+  const words = c.t.trim().split(/\s+/).length;
+  c.start = t;
+  c.dur = Math.max(FLOOR, words / RATE + OVERHEAD);
+  t += c.dur + (c.p || 0);
+  c.end = t;
+}
+const TOTAL = t;
+
+/* --- cenas: visual próprio, sem depender de banco de imagens --- */
+const bulbs = n => `<div class="bulbs">${'<i class="bulb"></i>'.repeat(n)}</div>`;
+const SCENES = {
+  'abertura': `<div class="scene-inner">${bulbs(7)}<div class="mirror"></div></div>`,
+  'rotina': `<div class="scene-inner"><div class="hour-run"><b>8h</b><b>10h</b><b>12h</b></div></div>`,
+  'caixa': `<div class="scene-inner"><div class="bars">
+      <div class="bar-row"><span class="bar-label">Esforço do mês<span>100%</span></span><div class="bar"><i style="--w:100%;--d:.4s"></i></div></div>
+      <div class="bar-row"><span class="bar-label">O que sobra no caixa<span>?</span></span><div class="bar short"><i style="--w:34%;--d:3.9s"></i></div></div>
+    </div></div>`,
+  'atencao': `<div class="scene-inner"><div class="bars"><div class="bar"><i style="--w:100%"></i></div></div><div class="mirror"></div></div>`,
+  'nao-e-voce': `<div class="scene-inner"><p class="statement"><s style="--d:3.2s">devagar</s> &nbsp; <s style="--d:4.8s">ruim de atendimento</s> &nbsp; <s style="--d:7.1s">falta de dedicação</s></p></div>`,
+  'vazamento': `<div class="scene-inner"><svg class="leak" viewBox="0 0 220 170" aria-hidden="true">
+      <clipPath id="bk"><path d="M46 46 h128 l-16 100 h-96 Z"/></clipPath>
+      <g clip-path="url(#bk)"><rect class="water" x="40" y="46" width="140" height="100" fill="#D39A3E" opacity=".55"/></g>
+      <path d="M46 46 h128 l-16 100 h-96 Z" fill="none" stroke="#F2E9E0" stroke-opacity=".5" stroke-width="2"/>
+      <circle class="drop" cx="66" cy="120" r="3.5" fill="#D39A3E"/>
+      <circle class="drop" cx="110" cy="132" r="3.5" fill="#D39A3E"/>
+      <circle class="drop" cx="150" cy="118" r="3.5" fill="#D39A3E"/>
+    </svg></div>`,
+  'promessa': `<div class="scene-inner"><div class="timeline">${[1,2,3,4,5,6,7].map(d=>`<div class="day"><span class="d">DIA ${d}</span></div>`).join('')}</div></div>`,
+  'diagnostico': `<div class="scene-inner"><p class="statement"><span class="hl">Diagnóstico</span></p></div>`,
+  'conselhos': `<div class="scene-inner"><div class="cards">
+      <div class="card" style="animation-delay:4.7s">“Poste mais no Instagram.”</div>
+      <div class="card" style="animation-delay:6.6s">“Faça promoção.”</div>
+      <div class="card" style="animation-delay:7.9s">“Baixe o preço.”</div>
+      <div class="card" style="animation-delay:9.5s">“Trabalhe mais horas.”</div>
+    </div></div>`,
+  'pressuposto': `<div class="scene-inner"><div class="cards settled">
+      <div class="card struck" style="--d:9.4s">“Poste mais no Instagram.”</div>
+      <div class="card struck" style="--d:9.7s">“Faça promoção.”</div>
+      <div class="card struck" style="--d:10s">“Baixe o preço.”</div>
+      <div class="card struck" style="--d:10.3s">“Trabalhe mais horas.”</div>
+    </div></div>`,
+  'ja-entrou': `<div class="scene-inner"><div class="mult"><b style="--d:6.1s">ENTROU</b><i>→</i><b style="--d:8.7s">SAIU</b></div></div>`,
+  'cadeira': `<div class="scene-inner"><svg class="chair" viewBox="0 0 200 150" aria-hidden="true">
+      <path d="M62 118 h76 M100 118 v18 M78 136 h44" stroke="#F2E9E0" stroke-opacity=".45" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M64 118 v-26 a36 36 0 0 1 72 0 v26 Z" fill="#241C18" stroke="#F2E9E0" stroke-opacity=".45" stroke-width="2"/>
+      <circle cx="100" cy="62" r="22" fill="none" stroke="#F2E9E0" stroke-opacity=".35" stroke-width="2"/>
+      <circle class="ping" cx="118" cy="52" r="6" fill="none" stroke="#D39A3E" stroke-width="2"/>
+      <circle cx="118" cy="52" r="3.5" fill="#D39A3E"/>
+    </svg></div>`,
+  'silencio': `<div class="scene-inner"><div class="bubble">— — —</div></div>`,
+  'causa': `<div class="scene-inner"><div class="contrast">
+      <div style="--d:1.6s"><span class="x">✕</span> falta de esforço</div>
+      <div style="--d:3.3s"><span class="v">✓</span> falta de método de conversa</div>
+    </div></div>`,
+  'todo-mes': `<div class="scene-inner"><div class="dots" id="dots"></div></div>`,
+  'descoberta': `<div class="scene-inner"><div class="pillars">
+      <div class="pillar"><span class="n">01</span><span class="k">—</span></div>
+      <div class="pillar"><span class="n">02</span><span class="k">—</span></div>
+      <div class="pillar"><span class="n">03</span><span class="k">—</span></div>
+    </div></div>`,
+  'balde': `<div class="scene-inner"><svg class="leak patched" viewBox="0 0 220 170" aria-hidden="true">
+      <clipPath id="bk2"><path d="M46 46 h128 l-16 100 h-96 Z"/></clipPath>
+      <g clip-path="url(#bk2)"><rect class="water" x="40" y="46" width="140" height="100" fill="#D39A3E" opacity=".6"/></g>
+      <path d="M46 46 h128 l-16 100 h-96 Z" fill="none" stroke="#F2E9E0" stroke-opacity=".5" stroke-width="2"/>
+      <g class="patch"><rect x="60" y="114" width="12" height="12" rx="2" fill="#A8503F"/><rect x="104" y="126" width="12" height="12" rx="2" fill="#A8503F"/><rect x="144" y="112" width="12" height="12" rx="2" fill="#A8503F"/></g>
+    </svg></div>`,
+  'margem': `<div class="scene-inner"><div class="bars">
+      <div class="bar-row"><span class="bar-label">Promoção: movimento<span>margem ↓</span></span><div class="bar short"><i style="--w:82%;--d:3.9s"></i></div></div>
+      <div class="bar-row"><span class="bar-label">Método: valor por atendimento<span>margem ↑</span></span><div class="bar"><i style="--w:96%;--d:7.3s"></i></div></div>
+    </div></div>`,
+  'produto': `<div class="scene-inner"><div class="mock">
+      <span class="kicker">Desafio prático</span>
+      <span class="name">Caixa Rápido<br>7 Dias</span>
+      <span class="meta">7 MISSÕES · UMA POR DIA · DENTRO DA ROTINA</span>
+    </div></div>`,
+  'dias': `<div class="scene-inner"><div class="timeline" id="days">
+      ${[['Meta'],['Atrair'],['Enxergar'],['Venda natural'],['Home care'],['Objeções'],['Plano']].map((d,i)=>`<div class="day"><span class="d">DIA ${i+1}</span><span class="t">${d[0]}</span></div>`).join('')}
+    </div></div>`,
+  'bonus': `<div class="scene-inner"><div class="bonus">
+      <div style="--d:2s"><b>ChatGPT para vendas</b><span>Divulgação, legenda e mensagem de WhatsApp em minutos.</span></div>
+      <div style="--d:9.3s"><b>App USALON 30D</b><span>Acesso incluído junto do desafio.</span></div>
+    </div></div>`,
+  'conta-fria': `<div class="scene-inner"><div class="mult"><b style="--d:2.2s">1 indicação</b><i>×</i><b style="--d:6.3s">30 dias</b><i>×</i><b style="--d:7.9s">12 meses</b></div></div>`,
+  'preco': `<div class="scene-inner"><div class="price"><sup>R$</sup>97</div><div class="numeral"><small>pagamento único</small></div></div>`,
+  'cta': `<div class="scene-inner"><span class="cta-pulse">QUERO COMEÇAR POR R$ 97</span></div>`,
+  'garantia': `<div class="scene-inner"><div class="seal"><b>7</b><span>dias de garantia</span></div></div>`,
+  'risco': `<div class="scene-inner"><div class="cal" id="cal"></div></div>`,
+  'fecho': `<div class="scene-inner"><div class="duo"><span class="have">Talento</span><span class="plus">+</span><span class="need">Estratégia</span></div></div>`,
+};
+
+const $ = s => document.querySelector(s);
+const stage = $('#stage'), sceneHost = $('#sceneHost'), caption = $('#caption'),
+      blockTag = $('#blockTag'), track = $('#track'), progress = $('#progress'),
+      tc = $('#tc'), btnPlay = $('#btnPlay'), icPlay = $('#icPlay'),
+      btnRestart = $('#btnRestart'), btnCC = $('#btnCC'),
+      mediaVideo = $('#mediaVideo'), mediaImage = $('#mediaImage');
+
+const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
+$('#runtime').textContent = `duração ${fmt(TOTAL)}`;
+$('#wordcount').textContent = `${CUES.reduce((a,c)=>a+c.t.split(/\s+/).length,0)} palavras · ${fmt(TOTAL)}`;
+
+/* --- roteiro cronometrado abaixo do player --- */
+(function buildScript(){
+  const host = $('#script');
+  let blk = null;
+  CUES.forEach((c, i) => {
+    if (c.b) {
+      blk = document.createElement('details');
+      blk.className = 'blk';
+      if (!host.children.length) blk.open = true;
+      blk.innerHTML = `<summary class="blk-head"><b>${c.b}</b><span>${fmt(c.start)}</span></summary>`;
+      host.appendChild(blk);
+    }
+    const line = document.createElement('div');
+    line.className = 'line'; line.dataset.i = i;
+    line.innerHTML = `<time>${fmt(c.start)}</time><span>${c.t}</span>`;
+    line.addEventListener('click', () => { seek(c.start); play(); });
+    (blk || host).appendChild(line);
+  });
+})();
+const lineEls = [...document.querySelectorAll('.line')];
+
+/* --- mídia opcional de banco livre (assets/manifest.json) --- */
+let manifest = {}, narration = null;
+fetch('assets/manifest.json').then(r => r.ok ? r.json() : null).then(m => {
+  if (!m) return;
+  manifest = m.cenas || {};
+  if (m.narracao) {
+    narration = new Audio(m.narracao);
+    narration.preload = 'auto';
+    narration.addEventListener('ended', () => { playing = false; syncPlayIcon(); });
+  }
+}).catch(() => {});
+
+let currentMedia = null;
+function setMedia(sceneId) {
+  const src = manifest[sceneId];
+  if (src === currentMedia) return;
+  currentMedia = src;
+  mediaVideo.classList.remove('on'); mediaImage.classList.remove('on');
+  if (!src) { mediaVideo.removeAttribute('src'); mediaImage.removeAttribute('src'); return; }
+  if (/\.(mp4|webm|mov)$/i.test(src)) {
+    mediaImage.removeAttribute('src');
+    mediaVideo.src = src;
+    mediaVideo.oncanplay = () => { mediaVideo.classList.add('on'); mediaVideo.play().catch(()=>{}); };
+    mediaVideo.onerror = () => mediaVideo.classList.remove('on');
+  } else {
+    mediaVideo.removeAttribute('src');
+    mediaImage.src = src;
+    mediaImage.onload = () => mediaImage.classList.add('on');
+    mediaImage.onerror = () => mediaImage.classList.remove('on');
+  }
+}
+
+/* --- motor da linha do tempo --- */
+let time = 0, playing = false, last = 0, curCue = -1, curScene = '';
+
+function sceneHTML(id) {
+  const pil = { 'pilar-1': 0, 'pilar-2': 1, 'pilar-3': 2 }[id];
+  if (pil !== undefined) {
+    return `<div class="scene-inner"><div class="pillars">
+      ${['ATRAIR','APROVEITAR','VENDER'].map((k, i) =>
+        `<div class="pillar${i === pil ? ' lit' : ''}"><span class="n">0${i+1}</span><span class="k">${k}</span></div>`).join('')}
+    </div></div>`;
+  }
+  return SCENES[id] || '';
+}
+
+function renderScene(id) {
+  if (id === curScene) return;
+  curScene = id;
+  sceneHost.innerHTML = `<div class="scene active">${sceneHTML(id)}</div>`;
+  setMedia(id);
+  if (id === 'todo-mes') {
+    const d = sceneHost.querySelector('#dots');
+    for (let i = 0; i < 30; i++) {
+      const s = document.createElement('i');
+      s.style.animationDelay = (4.5 + i * 0.16) + 's';
+      d.appendChild(s);
+    }
+  }
+  if (id === 'risco') {
+    const c = sceneHost.querySelector('#cal');
+    for (let i = 1; i <= 30; i++) {
+      const s = document.createElement('i');
+      s.textContent = i;
+      if (i === 30) s.className = 'mark';
+      c.appendChild(s);
+    }
+  }
+}
+
+function renderDays(sec) {
+  const days = sceneHost.querySelectorAll('#days .day');
+  if (!days.length) return;
+  const scene = CUES.filter(c => c.s === 'dias');
+  const from = scene[0].start, span = scene[scene.length-1].end - from;
+  const lit = Math.min(7, Math.max(0, Math.ceil(((sec - from) / span) * 7)));
+  days.forEach((d, i) => d.classList.toggle('lit', i < lit));
+}
+
+function frame(now) {
+  if (playing) {
+    if (narration && !narration.paused) time = narration.currentTime;
+    else time += Math.min(0.25, (now - last) / 1000);
+    if (time >= TOTAL) { time = TOTAL; playing = false; syncPlayIcon(); }
+  }
+  last = now;
+  update();
+  requestAnimationFrame(frame);
+}
+
+function update() {
+  let i = curCue;
+  if (i < 0 || time < CUES[i].start || time >= CUES[i].end) {
+    i = CUES.findIndex(c => time >= c.start && time < c.end);
+    if (i < 0) i = time >= TOTAL ? CUES.length - 1 : 0;
+  }
+  if (i !== curCue) {
+    curCue = i;
+    const c = CUES[i];
+    caption.classList.add('off');
+    setTimeout(() => { caption.textContent = c.t; caption.classList.remove('off'); }, 120);
+    renderScene(c.s);
+    let tag = '';
+    for (let k = i; k >= 0; k--) if (CUES[k].b) { tag = CUES[k].b; break; }
+    blockTag.textContent = tag;
+    lineEls.forEach(el => el.classList.toggle('now', +el.dataset.i === i));
+  }
+  renderDays(time);
+  progress.style.width = (time / TOTAL * 100) + '%';
+  tc.textContent = `${fmt(time)} / ${fmt(TOTAL)}`;
+  track.setAttribute('aria-valuenow', Math.round(time));
+  track.setAttribute('aria-valuetext', fmt(time));
+  track.classList.toggle('shown', time >= 60); /* barra escondida nos 60s iniciais */
+}
+
+function syncPlayIcon() {
+  icPlay.innerHTML = playing
+    ? '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'
+    : '<path d="M7 4l13 8-13 8z"/>';
+  btnPlay.setAttribute('aria-label', playing ? 'Pausar' : 'Reproduzir');
+}
+function play() {
+  playing = true; syncPlayIcon();
+  if (narration) { narration.currentTime = time; narration.play().catch(()=>{}); }
+  if (mediaVideo.src) mediaVideo.play().catch(()=>{});
+}
+function pause() {
+  playing = false; syncPlayIcon();
+  if (narration) narration.pause();
+  mediaVideo.pause();
+}
+function seek(s) {
+  time = Math.max(0, Math.min(TOTAL, s));
+  curCue = -1;
+  if (narration) narration.currentTime = time;
+  update();
+}
+
+btnPlay.addEventListener('click', () => playing ? pause() : play());
+btnRestart.addEventListener('click', () => { seek(0); play(); });
+btnCC.addEventListener('click', () => {
+  const on = btnCC.getAttribute('aria-pressed') === 'true';
+  btnCC.setAttribute('aria-pressed', String(!on));
+  stage.classList.toggle('nocc', on);
+});
+track.addEventListener('click', e => {
+  const r = track.getBoundingClientRect();
+  seek((e.clientX - r.left) / r.width * TOTAL);
+});
+track.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') { seek(time + 5); e.preventDefault(); }
+  if (e.key === 'ArrowLeft') { seek(time - 5); e.preventDefault(); }
+});
+stage.addEventListener('click', () => playing ? pause() : play());
+document.addEventListener('keydown', e => {
+  if (e.target.closest('a, button, [role="slider"]')) return;
+  if (e.code === 'Space') { e.preventDefault(); playing ? pause() : play(); }
+  if (e.code === 'ArrowRight') seek(time + 5);
+  if (e.code === 'ArrowLeft') seek(time - 5);
+});
+
+renderScene(CUES[0].s);
+update();
+playing = true; syncPlayIcon();
+requestAnimationFrame(now => { last = now; requestAnimationFrame(frame); });
+</script>
