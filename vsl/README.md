@@ -19,6 +19,8 @@ vsl/
 ├── build.js            gera index.html + legendas + narração + tempos
 ├── legendas.srt/.vtt   legendas cronometradas
 ├── narracao.txt        texto limpo para gravar a locução (ou TTS)
+├── roteiro-vsl.md      a VSL escrita, em blocos — para ler, editar ou subir no NotebookLM
+├── roteiro-vsl.pdf     a mesma coisa em PDF
 ├── MIDIA.md            imagem e vídeo de bancos gratuitos, cena a cena
 ├── baixar-midia.py     baixa a mídia do Pexels e preenche o manifest
 ├── gravar-video.js     grava a página como arquivo de vídeo
