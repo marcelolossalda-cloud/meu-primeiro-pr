@@ -34,10 +34,21 @@ const arte = fs.readFileSync(path.join(dir, 'arte.js'), 'utf8')
   .trim();
 
 const json = JSON.stringify(CUES.map(c => ({ t: c.t, s: c.s, ...(c.p ? { p: c.p } : {}), ...(c.b ? { b: c.b } : {}) })), null, 0);
+/* na versão publicada a trilha viaja embutida; no repositório fica em audio/ */
+const mp3 = path.join(dir, 'audio', 'trilha.mp3');
+const temTrilha = fs.existsSync(mp3);
+
 const out = src
   .replace(/\/\*__CUES__\*\/[\s\S]*?\/\*__END_CUES__\*\//, `/*__CUES__*/${json}/*__END_CUES__*/`)
   .replace(/\/\*__ART__\*\/[\s\S]*?\/\*__END_ART__\*\//, `/*__ART__*/\n${arte}\n/*__END_ART__*/`);
 fs.writeFileSync(path.join(dir, 'index.html'), out);
+
+if (temTrilha) {
+  const dataUri = 'data:audio/mpeg;base64,' + fs.readFileSync(mp3).toString('base64');
+  fs.writeFileSync(path.join(dir, 'index.artifact.html'), out.replace(
+    /\/\*__TRILHA__\*\/[\s\S]*?\/\*__END_TRILHA__\*\//,
+    `/*__TRILHA__*/'${dataUri}'/*__END_TRILHA__*/`));
+}
 
 /* ---------- legendas ---------- */
 const pad = (n, w = 2) => String(n).padStart(w, '0');
@@ -61,6 +72,13 @@ for (const c of timed) {
 }
 fs.writeFileSync(path.join(dir, 'narracao.txt'), narr.trim() + '\n');
 
+/* ---------- tempos (usado por trilha.py e por quem for editar) ---------- */
+fs.writeFileSync(path.join(dir, 'tempos.json'), JSON.stringify({
+  total: TOTAL,
+  falas: timed.map(c => ({ inicio: +c.start.toFixed(3), fim: +c.end.toFixed(3), cena: c.s, bloco: c.b || undefined, texto: c.t })),
+}, null, 1));
+
 const words = CUES.reduce((a, c) => a + c.t.trim().split(/\s+/).length, 0);
-console.log(`index.html + legendas.srt + legendas.vtt + narracao.txt`);
+console.log('index.html' + (temTrilha ? ' + index.artifact.html (trilha embutida)' : '') +
+  ' + legendas.srt + legendas.vtt + narracao.txt + tempos.json');
 console.log(`${CUES.length} falas · ${words} palavras · ${Math.floor(TOTAL / 60)}:${pad(Math.round(TOTAL) % 60)} de duração`);

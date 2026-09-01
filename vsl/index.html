@@ -83,6 +83,9 @@ h1.headline{
 .art-layer{overflow:hidden}
 .art-wrap{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
 .art-wrap.on{opacity:var(--art-o,.55)}
+/* cena com gráfico por cima: a ilustração vai para fora de foco, como fundo de câmera aberta */
+.art-wrap.fundo .art-svg{filter:blur(5px) saturate(.85)}
+.art-wrap.fundo::after{content:"";position:absolute;inset:0;background:rgba(8,6,5,.42)}
 .art-svg{width:100%;height:100%;display:block;transform-origin:58% 45%;animation:kenburns 34s ease-in-out infinite alternate}
 @keyframes kenburns{from{transform:scale(1.01) translate3d(0,0,0)}to{transform:scale(1.07) translate3d(-1%,-.6%,0)}}
 .lamp{animation:lampFlicker 6.5s ease-in-out infinite;animation-delay:calc(var(--i) * .55s)}
@@ -353,6 +356,7 @@ footer{margin-top:56px;color:var(--smoke);font-family:var(--mono);font-size:11px
     <button class="ctrl" id="btnRestart" aria-label="Recomeçar do início"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
     <div class="track" id="track" role="slider" aria-label="Posição do vídeo" aria-valuemin="0" aria-valuenow="0" tabindex="0"><i id="progress"></i></div>
     <div class="tc" id="tc">0:00</div>
+    <button class="cc" id="btnSom" aria-pressed="false">Som</button>
     <button class="cc" id="btnCC" aria-pressed="true">Legenda</button>
   </div>
 
@@ -418,6 +422,7 @@ footer{margin-top:56px;color:var(--smoke);font-family:var(--mono);font-size:11px
    Roteiro injetado por vsl/build.js a partir de roteiro.cues.js
    ============================================================ */
 const CUES = /*__CUES__*/[{"t":"Existe um padrão que se repete","s":"abertura","b":"Bloco 1 — O padrão oculto"},{"t":"em milhares de salões de beleza no Brasil.","s":"abertura"},{"t":"E quase ninguém fala sobre ele em voz alta.","s":"abertura","p":0.8},{"t":"A profissional acorda cedo.","s":"rotina"},{"t":"Fica oito, dez, doze horas em pé.","s":"rotina"},{"t":"Atende uma cliente atrás da outra.","s":"rotina"},{"t":"A agenda até enche.","s":"rotina","p":0.5},{"t":"O corpo cansa.","s":"rotina","p":0.8},{"t":"E aí, no fim do mês, ela abre o caixa.","s":"caixa"},{"t":"E o número não corresponde ao esforço.","s":"caixa","p":1.6},{"t":"Se isso está acontecendo com você,","s":"atencao"},{"t":"preste muita atenção no que eu vou dizer agora:","s":"atencao","p":0.6},{"t":"O problema não é você.","s":"nao-e-voce","p":1.2},{"t":"Você não é devagar.","s":"nao-e-voce"},{"t":"Você não é ruim de atendimento.","s":"nao-e-voce"},{"t":"E você definitivamente não precisa se dedicar mais —","s":"nao-e-voce"},{"t":"você já se dedica demais.","s":"nao-e-voce","p":0.9},{"t":"O que existe aqui é uma falha estrutural","s":"vazamento"},{"t":"na forma como o dinheiro entra dentro de um salão.","s":"vazamento"},{"t":"Uma falha invisível.","s":"vazamento"},{"t":"É ela que faz a profissional mais talentosa da rua","s":"vazamento"},{"t":"faturar menos que a concorrente do lado.","s":"vazamento","p":0.8},{"t":"Nos próximos minutos, eu vou te mostrar","s":"promessa"},{"t":"exatamente onde está esse vazamento.","s":"promessa"},{"t":"E o método prático de 7 dias que foi criado para fechá-lo.","s":"promessa","p":1.4},{"t":"Vamos ao diagnóstico.","s":"diagnostico","p":0.6,"b":"Bloco 2 — O diagnóstico"},{"t":"Quando o faturamento trava,","s":"conselhos"},{"t":"o mercado sempre dá os mesmos quatro conselhos.","s":"conselhos"},{"t":"\"Poste mais no Instagram.\"","s":"conselhos","p":0.3},{"t":"\"Faça promoção.\"","s":"conselhos","p":0.3},{"t":"\"Baixe o preço.\"","s":"conselhos","p":0.3},{"t":"\"Trabalhe mais horas.\"","s":"conselhos","p":0.9},{"t":"Repare no que essas quatro receitas têm em comum.","s":"pressuposto"},{"t":"Todas elas partem do mesmo pressuposto:","s":"pressuposto"},{"t":"que o seu problema é falta de cliente.","s":"pressuposto","p":0.7},{"t":"Na maioria dos casos, não é.","s":"pressuposto","p":1.5},{"t":"A maioria das profissionais ignora um fato desconfortável.","s":"ja-entrou"},{"t":"O dinheiro que está faltando no seu caixa","s":"ja-entrou"},{"t":"já entrou pela porta do salão hoje.","s":"ja-entrou"},{"t":"E saiu sem ser aproveitado.","s":"ja-entrou","p":1},{"t":"Pense na cliente que sentou na sua cadeira essa semana.","s":"cadeira","p":0.5},{"t":"Você viu o fio quebrado.","s":"cadeira"},{"t":"Você sabia exatamente qual produto ela precisava levar para casa.","s":"cadeira"},{"t":"Você sabia que ela ia sair dali","s":"cadeira"},{"t":"e comprar qualquer coisa no mercado.","s":"cadeira"},{"t":"Algo que ia estragar o seu trabalho em duas semanas.","s":"cadeira","p":0.8},{"t":"E você não falou nada.","s":"silencio","p":1.4},{"t":"Não foi por falta de conhecimento técnico.","s":"silencio"},{"t":"Disso você tem de sobra.","s":"silencio","p":0.7},{"t":"Você não falou porque ninguém nunca te ensinou","s":"silencio"},{"t":"como falar sem se sentir uma vendedora chata.","s":"silencio","p":1},{"t":"Essa é a causa real.","s":"causa"},{"t":"Não é falta de esforço.","s":"causa"},{"t":"É falta de método de conversa.","s":"causa","p":1.2},{"t":"E aqui está a parte que ninguém te conta:","s":"todo-mes"},{"t":"enquanto isso continuar,","s":"todo-mes"},{"t":"cada dia de trabalho é um dia de dinheiro deixado na cadeira.","s":"todo-mes","p":0.6},{"t":"Não é um mês perdido.","s":"todo-mes"},{"t":"É todo mês.","s":"todo-mes"},{"t":"É o ano inteiro.","s":"todo-mes","p":1.6},{"t":"Agora, a descoberta.","s":"descoberta","p":0.6,"b":"Bloco 3 — O mecanismo único"},{"t":"Quando você analisa os salões que faturam bem","s":"descoberta"},{"t":"sem aumentar a jornada,","s":"descoberta"},{"t":"aparece uma estrutura em comum.","s":"descoberta"},{"t":"Três movimentos. Sempre na mesma ordem.","s":"descoberta","p":1},{"t":"Primeiro: ATRAIR.","s":"pilar-1","p":0.4},{"t":"Ações simples, de custo zero,","s":"pilar-1"},{"t":"para despertar interesse e trazer clientes novas.","s":"pilar-1"},{"t":"Sem depender de sorte e sem depender de algoritmo.","s":"pilar-1","p":0.8},{"t":"Segundo: APROVEITAR.","s":"pilar-2","p":0.4},{"t":"Um novo olhar durante o atendimento.","s":"pilar-2"},{"t":"Aprender a enxergar, em cada cliente que senta na cadeira,","s":"pilar-2"},{"t":"a oportunidade que já está ali.","s":"pilar-2"},{"t":"Visível. Esperando só para ser nomeada.","s":"pilar-2","p":0.8},{"t":"Terceiro: VENDER NATURALMENTE.","s":"pilar-3","p":0.4},{"t":"Transformar essa observação técnica em uma recomendação.","s":"pilar-3"},{"t":"De serviço, de produto ou de home care.","s":"pilar-3"},{"t":"Que soa como cuidado profissional.","s":"pilar-3"},{"t":"Não como empurrão de vendedora.","s":"pilar-3","p":1.5},{"t":"A metáfora é simples.","s":"balde","p":0.5},{"t":"A maioria das profissionais tenta encher um balde furado","s":"balde"},{"t":"colocando mais água dentro.","s":"balde"},{"t":"Mais cliente. Mais hora. Mais promoção.","s":"balde","p":0.7},{"t":"Esse método faz o contrário.","s":"balde"},{"t":"Ele tampa os furos primeiro.","s":"balde"},{"t":"Aí sim, cada litro que entra, fica.","s":"balde","p":1.2},{"t":"É por isso que ele funciona onde a promoção falha.","s":"margem"},{"t":"Promoção traz movimento e leva a sua margem junto.","s":"margem"},{"t":"Isso aqui aumenta o valor de cada atendimento","s":"margem"},{"t":"que você já faz hoje.","s":"margem","p":1.4},{"t":"A forma prática de aplicar essa estrutura se chama","s":"produto","b":"Bloco 4 — A oferta"},{"t":"Caixa Rápido — Desafio de 7 Dias.","s":"produto","p":0.7},{"t":"São 7 dias. 7 missões.","s":"produto"},{"t":"Uma por dia, para executar dentro do salão,","s":"produto"},{"t":"no meio da sua rotina normal.","s":"produto","p":0.9},{"t":"Dia 1: você define a sua meta.","s":"dias","p":0.2},{"t":"Dia 2: ações para atrair.","s":"dias","p":0.2},{"t":"Dia 3: enxergar as oportunidades na cadeira.","s":"dias","p":0.2},{"t":"Dia 4: a venda natural.","s":"dias","p":0.2},{"t":"Dia 5: home care.","s":"dias","p":0.2},{"t":"Dia 6: respostas prontas para \"está caro\" e \"vou pensar\".","s":"dias","p":0.2},{"t":"Dia 7: o seu plano de vendas,","s":"dias"},{"t":"pronto para continuar rodando depois que o desafio acabar.","s":"dias","p":1},{"t":"E vêm dois bônus incluídos.","s":"bonus"},{"t":"O treinamento de ChatGPT para comunicação e vendas,","s":"bonus"},{"t":"para você criar divulgação, legenda","s":"bonus"},{"t":"e mensagem de WhatsApp em minutos.","s":"bonus"},{"t":"E o acesso ao app USALON 30D.","s":"bonus","p":1.5},{"t":"Agora, a conta fria.","s":"conta-fria","p":0.6},{"t":"Uma única indicação de home care que você não fez hoje.","s":"conta-fria"},{"t":"Multiplique por trinta dias.","s":"conta-fria"},{"t":"Depois por doze meses.","s":"conta-fria","p":1},{"t":"Esse é o custo de não fazer nada.","s":"conta-fria","p":1.2},{"t":"O acesso completo ao desafio, com os dois bônus,","s":"preco"},{"t":"é um pagamento único de 97 reais.","s":"preco","p":1.4},{"t":"Clique no botão aqui embaixo","s":"cta","b":"Bloco 5 — Fechamento"},{"t":"e garanta o seu acesso por 97 reais.","s":"cta"},{"t":"Pagamento único, pela Hotmart.","s":"cta","p":0.9},{"t":"E olha: você não precisa decidir nada hoje.","s":"garantia"},{"t":"Você tem 7 dias de garantia.","s":"garantia"},{"t":"Entre, aplique as primeiras missões dentro do seu salão,","s":"garantia"},{"t":"e observe o que acontece no seu caixa.","s":"garantia"},{"t":"Se não fizer sentido para você,","s":"garantia"},{"t":"é só pedir o reembolso dentro do prazo,","s":"garantia"},{"t":"conforme as condições da Hotmart.","s":"garantia","p":0.8},{"t":"O risco de testar é zero.","s":"risco","p":0.9},{"t":"O risco de continuar exatamente como está,","s":"risco"},{"t":"você já conhece.","s":"risco"},{"t":"Ele aparece todo dia 30.","s":"risco","p":1.6},{"t":"Talento você já tem.","s":"fecho","p":0.8},{"t":"O que falta é estratégia.","s":"fecho","p":1},{"t":"Clique no botão e comece hoje.","s":"fecho","p":2}]/*__END_CUES__*/;
+const TRILHA = /*__TRILHA__*/'audio/trilha.mp3'/*__END_TRILHA__*/;
 
 /* --- modelo de tempo: locução calma em PT-BR (~2,85 palavras/s) --- */
 const RATE = 2.85, FLOOR = 1.05, OVERHEAD = 0.22;
@@ -503,6 +508,18 @@ const frascos = (x, y, alturas, destaque = -1) => alturas.map((h, i) => {
   </g>`;
 }).join('');
 
+
+/* silhueta humana: cabeça, pescoço e ombros caídos — sem isso a forma vira borrão */
+const silhueta = (cx, cy, r, { cor = '#050403', altura = 6.2, ombro = 2.15 } = {}) => `
+  <g fill="${cor}">
+    <circle cx="${cx}" cy="${cy}" r="${r}"/>
+    <path d="M${cx - .3 * r} ${cy + .72 * r} h${.6 * r} v${.5 * r} h${-.6 * r} Z"/>
+    <path d="M${cx - ombro * r} ${cy + altura * r}
+             C${cx - ombro * r - .1 * r} ${cy + 2.9 * r} ${cx - 1.25 * r} ${cy + 1.5 * r} ${cx - .5 * r} ${cy + 1.18 * r}
+             L${cx + .5 * r} ${cy + 1.18 * r}
+             C${cx + 1.25 * r} ${cy + 1.5 * r} ${cx + ombro * r + .1 * r} ${cy + 2.9 * r} ${cx + ombro * r} ${cy + altura * r} Z"/>
+  </g>`;
+
 const ART = {
 
   /* salão vazio no fim do expediente: espelho, bancada, cadeira sozinha */
@@ -539,19 +556,20 @@ const ART = {
 
   /* mãos e tesoura em primeiro plano */
   tesoura: () => quadro('te', `
-    <ellipse cx="820" cy="420" rx="560" ry="330" fill="url(#gte)" opacity=".5"/>
+    <ellipse cx="1000" cy="400" rx="520" ry="330" fill="url(#gte)" opacity=".62"/>
     <g opacity=".95">
-      ${[0, 1, 2, 3, 4, 5].map(i => `<path d="M${560 + i * 90} 250 q ${30 - i * 8} 220 ${-14} 430" stroke="#150F0D" stroke-width="${16 - i}" fill="none" stroke-linecap="round" opacity=".85"/>`).join('')}
+      ${[0, 1, 2, 3, 4, 5, 6].map(i => `<path d="M${840 + i * 84} 190 q ${46 - i * 14} 250 ${-40} 500" stroke="#150F0D" stroke-width="${20 - i * 1.6}" fill="none" stroke-linecap="round" opacity="${.9 - i * .07}"/>`).join('')}
     </g>
-    <g class="snip" style="transform-origin:1040px 470px">
-      <path d="M900 520 l260 -70" stroke="#241C18" stroke-width="15" stroke-linecap="round"/>
-      <path d="M900 420 l260 70" stroke="#241C18" stroke-width="15" stroke-linecap="round"/>
-      <circle cx="1180" cy="436" r="26" fill="none" stroke="#241C18" stroke-width="13"/>
-      <circle cx="1180" cy="504" r="26" fill="none" stroke="#241C18" stroke-width="13"/>
-      <circle cx="1010" cy="470" r="9" fill="${A.brass}"/>
+    <g class="snip" style="transform-origin:1180px 470px">
+      <path d="M1040 520 l260 -70" stroke="#191311" stroke-width="16" stroke-linecap="round"/>
+      <path d="M1040 420 l260 70" stroke="#191311" stroke-width="16" stroke-linecap="round"/>
+      <circle cx="1320" cy="436" r="28" fill="none" stroke="#191311" stroke-width="14"/>
+      <circle cx="1320" cy="504" r="28" fill="none" stroke="#191311" stroke-width="14"/>
+      <circle cx="1150" cy="470" r="9" fill="${A.brass}"/>
+      <path d="M1046 448 l250 -60" stroke="url(#rte)" stroke-width="4" fill="none" opacity=".7"/>
     </g>
-    <path d="M760 900 q120 -220 330 -250 l90 60 q-190 60 -260 190 Z" fill="${A.dark}"/>
-    <path d="M300 900 q60 -180 240 -230" stroke="url(#rte)" stroke-width="6" fill="none" opacity=".5"/>`),
+    <path d="M1180 900 q60 -260 300 -320 l120 80 v240 Z" fill="${A.dark}"/>
+    <path d="M980 900 q40 -200 220 -270 l60 40 q-180 70 -220 230 Z" fill="${A.dark}"/>`),
 
   /* cliente sentada na cadeira, fio em destaque */
   cadeira: () => quadro('cd', `
@@ -569,9 +587,8 @@ const ART = {
     </g>
 
     <!-- cliente: silhueta contra a luz -->
+    ${silhueta(734, 560, 82, { altura: 4.4, ombro: 1.9 })}
     <g fill="#050403">
-      <path d="M604 900 q10 -190 130 -226 q120 36 130 226 Z"/>
-      <circle cx="734" cy="560" r="82"/>
       <path d="M652 556 q6 -104 82 -104 q76 0 82 104 q10 130 -22 190 q-60 -120 -60 -190 q0 70 -60 190 q-32 -60 -22 -190 Z"/>
     </g>
     <path d="M660 540 a80 80 0 0 1 62 -84" stroke="url(#rcd)" stroke-width="9" fill="none" opacity=".9"/>
@@ -579,35 +596,30 @@ const ART = {
     <circle class="ping" cx="820" cy="664" r="8" fill="none" stroke="${A.brass}" stroke-width="4"/>
     <circle cx="820" cy="664" r="7" fill="${A.brassSoft}"/>`),
 
-  /* profissional em pé: cansada (baixa) ou confiante (ereta) */
+  /* profissional em pé: cansada (ombros caídos) ou confiante (ereta) */
   profissional: (postura = 'cansada') => quadro('pf', `
-    <ellipse cx="800" cy="330" rx="520" ry="330" fill="url(#gpf)" opacity="${postura === 'confiante' ? .7 : .38}"/>
-    <g transform="translate(0,${postura === 'cansada' ? 40 : 0})">
-      <circle cx="800" cy="${postura === 'cansada' ? 300 : 268}" r="86" fill="${A.dark}"/>
-      <path d="M800 ${postura === 'cansada' ? 360 : 330}
-               q-190 40 -230 250 q-16 90 -10 320 h480 q6 -230 -10 -320 q-40 -210 -230 -250 Z" fill="${A.dark}"/>
-      ${postura === 'confiante'
-        ? '<path d="M600 690 q200 60 400 0 l0 40 q-200 60 -400 0 Z" fill="#0A0706"/>'
-        : '<path d="M596 640 q40 150 20 260" stroke="#0A0706" stroke-width="46" fill="none" stroke-linecap="round"/>'}
-    </g>
-    <path d="M718 ${postura === 'cansada' ? 300 : 268} a86 86 0 0 1 60 -84" stroke="url(#rpf)" stroke-width="7" fill="none"/>
-    <g filter="url(#bbpf)" opacity=".55"><rect x="60" y="520" width="300" height="380" rx="14" fill="#150F0D"/></g>`),
+    <ellipse cx="820" cy="330" rx="520" ry="330" fill="url(#gpf)" opacity="${postura === 'confiante' ? .85 : .45}"/>
+    <path d="M120 800 h1360 l50 40 H60 Z" fill="#150F0D"/>
+    ${postura === 'cansada'
+      ? silhueta(800, 320, 88, { altura: 6.6, ombro: 2.4 })
+      : silhueta(800, 286, 88, { altura: 7.0, ombro: 2.0 })}
+    ${postura === 'cansada'
+      ? `<path d="M624 470 q-30 150 -6 300" stroke="#050403" stroke-width="52" fill="none" stroke-linecap="round"/>`
+      : `<path d="M640 600 q160 70 320 0 l0 46 q-160 66 -320 0 Z" fill="#0A0706"/>`}
+    <path d="M716 ${postura === 'cansada' ? 300 : 266} a88 88 0 0 1 66 -86" stroke="url(#rpf)" stroke-width="10" fill="none" opacity=".85"/>
+    <g filter="url(#bbpf)" opacity=".5"><rect x="40" y="500" width="300" height="400" rx="14" fill="#150F0D"/></g>`),
 
   /* duas silhuetas conversando; o brilho entre elas é a fala */
   conversa: (calada = false) => quadro('cv', `
-    <ellipse cx="800" cy="420" rx="440" ry="280" fill="url(#gcv)" opacity=".45"/>
-    <g>
-      <circle cx="470" cy="330" r="80" fill="${A.dark}"/>
-      <path d="M470 400 q-170 40 -200 240 q-12 80 -8 260 h416 q4 -180 -8 -260 q-30 -200 -200 -240 Z" fill="${A.dark}"/>
-    </g>
-    <g>
-      <circle cx="1140" cy="360" r="76" fill="#0A0706"/>
-      <path d="M1140 428 q-160 38 -190 230 q-10 76 -6 242 h392 q4 -166 -6 -242 q-30 -192 -190 -230 Z" fill="#0A0706"/>
-    </g>
+    <ellipse cx="800" cy="420" rx="460" ry="300" fill="url(#gcv)" opacity=".7"/>
+    <path d="M120 780 h1360 l50 40 H60 Z" fill="#150F0D"/>
+    ${silhueta(470, 330, 84)}
+    ${silhueta(1140, 356, 78, { cor: '#0A0706', altura: 5.6 })}
+    <path d="M392 320 a84 84 0 0 1 62 -80" stroke="url(#rcv)" stroke-width="9" fill="none" opacity=".8"/>
     ${calada
-      ? `<g opacity=".5"><path d="M700 380 h200" stroke="${A.clay}" stroke-width="6" stroke-linecap="round" stroke-dasharray="26 22"/></g>`
-      : `<g class="fala"><path d="M690 330 h230 a26 26 0 0 1 26 26 v92 a26 26 0 0 1 -26 26 h-150 l-56 46 v-46 h-24 a26 26 0 0 1 -26 -26 v-92 a26 26 0 0 1 26 -26 Z" fill="none" stroke="${A.brass}" stroke-width="4" opacity=".9"/>
-         <path d="M726 372 h160 M726 404 h120" stroke="${A.brassSoft}" stroke-width="6" stroke-linecap="round" opacity=".8"/></g>`}`),
+      ? `<g opacity=".65"><path d="M660 400 h280" stroke="${A.clay}" stroke-width="7" stroke-linecap="round" stroke-dasharray="26 26"/></g>`
+      : `<g class="fala"><path d="M660 300 h250 a26 26 0 0 1 26 26 v104 a26 26 0 0 1 -26 26 h-160 l-62 50 v-50 h-28 a26 26 0 0 1 -26 -26 v-104 a26 26 0 0 1 26 -26 Z" fill="#0E0A09" stroke="${A.brass}" stroke-width="4" opacity=".95"/>
+         <path d="M700 348 h170 M700 384 h130" stroke="${A.brassSoft}" stroke-width="7" stroke-linecap="round" opacity=".85"/></g>`}`),
 
   /* celular na mão, tela acesa com o feed */
   celular: (conteudo = 'feed') => quadro('ce', `
@@ -633,10 +645,7 @@ const ART = {
     <rect x="560" y="90" width="480" height="700" rx="10" fill="#0E0A09" stroke="rgba(242,233,224,.18)" stroke-width="3"/>
     <path d="M600 130 h400 v620 h-400 Z" fill="url(#gpo)" opacity=".85"/>
     <path d="M1000 130 L1420 900 H1000 Z" fill="url(#gpo)" opacity=".25"/>
-    <g>
-      <circle cx="800" cy="330" r="70" fill="${A.dark}"/>
-      <path d="M800 396 q-150 34 -176 214 q-10 70 -6 226 h364 q4 -156 -6 -226 q-26 -180 -176 -214 Z" fill="${A.dark}"/>
-    </g>
+    ${silhueta(800, 330, 74, { altura: 6.4 })}
     ${[0, 1, 2, 3].map(i => `<circle class="moeda" style="--i:${i}" cx="${1120 + i * 90}" cy="${430 + (i % 2) * 90}" r="16" fill="${A.brass}" opacity=".75"/>`).join('')}`),
 
   /* prateleira de home care contra a luz */
@@ -692,10 +701,9 @@ const ART = {
   saida: () => quadro('sa', `
     <ellipse cx="1120" cy="330" rx="520" ry="320" fill="url(#gsa)" opacity=".6"/>
     <rect x="980" y="120" width="420" height="660" rx="10" fill="url(#gsa)" opacity=".5"/>
-    <g>
-      <circle cx="640" cy="300" r="82" fill="${A.dark}"/>
-      <path d="M640 372 q-180 38 -212 250 q-12 82 -8 278 h440 q4 -196 -8 -278 q-32 -212 -212 -250 Z" fill="${A.dark}"/>
-      <path d="M846 520 q60 40 40 150 l-52 8 q10 -96 -30 -130 Z" fill="${A.dark}"/>
+    ${silhueta(640, 300, 84, { altura: 6.8 })}
+    <g fill="#050403">
+      <path d="M800 470 q70 50 52 170 l-56 8 q14 -104 -34 -142 Z"/>
       <rect x="800" y="640" width="90" height="110" rx="8" fill="#1A1411"/>
       <path d="M812 640 q33 -40 66 0" stroke="#2A211C" stroke-width="6" fill="none"/>
     </g>
@@ -819,7 +827,7 @@ const stage = $('#stage'), sceneHost = $('#sceneHost'), caption = $('#caption'),
       tc = $('#tc'), btnPlay = $('#btnPlay'), icPlay = $('#icPlay'),
       btnRestart = $('#btnRestart'), btnCC = $('#btnCC'),
       mediaVideo = $('#mediaVideo'), mediaImage = $('#mediaImage'),
-      artHost = $('#artHost'), bokeh = $('#bokeh');
+      artHost = $('#artHost'), bokeh = $('#bokeh'), btnSom = $('#btnSom');
 
 const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 $('#runtime').textContent = `duração ${fmt(TOTAL)}`;
@@ -860,6 +868,19 @@ fetch('assets/manifest.json').then(r => r.ok ? r.json() : null).then(m => {
     pause(); seek(0);
   }
 }).catch(() => {});
+
+/* trilha sonora: começa desligada, como VSL deve começar.
+   O navegador só libera áudio depois de um clique, então o som entra pelo botão. */
+const trilha = new Audio(TRILHA);
+trilha.preload = 'auto';
+let somLigado = false;
+
+function audioMestre() {
+  /* quem manda no relógio: a locução do usuário, senão a trilha, senão o tempo interno */
+  if (narration && !narration.paused) return narration;
+  if (somLigado && !trilha.paused) return trilha;
+  return null;
+}
 
 let currentMedia = null;
 function setMedia(sceneId) {
@@ -904,7 +925,9 @@ function renderScene(id) {
   /* a ilustração recua quando a cena tem gráfico por cima, e assume o
      quadro quando o que conta é a imagem */
   const arte = CENA_ARTE[id];
-  artHost.innerHTML = arte ? `<div class="art-wrap" style="--art-o:${grafico ? .5 : .95}">${arte()}</div>` : '';
+  artHost.innerHTML = arte
+    ? `<div class="art-wrap${grafico ? ' fundo' : ''}" style="--art-o:${grafico ? .7 : .95}">${arte()}</div>`
+    : '';
   const wrap = artHost.firstElementChild;
   if (wrap) requestAnimationFrame(() => wrap.classList.add('on'));
   setMedia(id);
@@ -973,7 +996,8 @@ addEventListener('resize', medirBokeh);
 
 function frame(now) {
   if (playing) {
-    if (narration && !narration.paused) time = narration.currentTime;
+    const mestre = audioMestre();
+    if (mestre) time = mestre.currentTime;
     else time += Math.min(.25, (now - last) / 1000);
     if (time >= TOTAL) { time = TOTAL; playing = false; syncPlayIcon(); }
   }
@@ -1018,22 +1042,37 @@ function syncPlayIcon() {
 function play() {
   playing = true; syncPlayIcon();
   if (narration) { narration.currentTime = time; narration.play().catch(()=>{}); }
+  if (somLigado) { trilha.currentTime = time; trilha.play().catch(() => desligarSom()); }
   if (mediaVideo.src) mediaVideo.play().catch(()=>{});
 }
 function pause() {
   playing = false; syncPlayIcon();
   if (narration) narration.pause();
+  trilha.pause();
   mediaVideo.pause();
 }
 function seek(s) {
   time = Math.max(0, Math.min(TOTAL, s));
   curCue = -1;
   if (narration) narration.currentTime = time;
+  if (somLigado) trilha.currentTime = time;
   update();
+}
+function desligarSom() {
+  somLigado = false;
+  trilha.pause();
+  btnSom.setAttribute('aria-pressed', 'false');
 }
 
 btnPlay.addEventListener('click', () => playing ? pause() : play());
 btnRestart.addEventListener('click', () => { seek(0); play(); });
+btnSom.addEventListener('click', () => {
+  if (somLigado) { desligarSom(); return; }
+  somLigado = true;
+  btnSom.setAttribute('aria-pressed', 'true');
+  trilha.currentTime = time;
+  if (playing) trilha.play().catch(() => desligarSom());
+});
 btnCC.addEventListener('click', () => {
   const on = btnCC.getAttribute('aria-pressed') === 'true';
   btnCC.setAttribute('aria-pressed', String(!on));

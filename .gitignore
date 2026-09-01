@@ -1,2 +1,7 @@
+# mídia de banco que o usuário baixar
 vsl/assets/*
 !vsl/assets/manifest.json
+
+# saídas geradas: o bruto da gravação e a página com a trilha embutida
+vsl/video/*.webm
+vsl/index.artifact.html

@@ -37,6 +37,9 @@ Nada quebra.
 e o player passa a sincronizar a legenda pelo áudio, no lugar do relógio interno. O texto para gravar
 está em `narracao.txt`.
 
+**Trilha:** já vem pronta em `vsl/audio/trilha.mp3`, sintetizada por `trilha.py` — som seu, sem
+licença de terceiros. Com a locução ligada, a trilha continua tocando por baixo como cama.
+
 ---
 
 ## 2. Onde baixar (grátis, uso comercial liberado)

@@ -1,0 +1,802 @@
+{
+ "total": 371.95807017543854,
+ "falas": [
+  {
+   "inicio": 0,
+   "fim": 2.325,
+   "cena": "abertura",
+   "bloco": "Bloco 1 — O padrão oculto",
+   "texto": "Existe um padrão que se repete"
+  },
+  {
+   "inicio": 2.325,
+   "fim": 5.352,
+   "cena": "abertura",
+   "texto": "em milhares de salões de beleza no Brasil."
+  },
+  {
+   "inicio": 5.352,
+   "fim": 8.73,
+   "cena": "abertura",
+   "texto": "E quase ninguém fala sobre ele em voz alta."
+  },
+  {
+   "inicio": 9.53,
+   "fim": 11.154,
+   "cena": "rotina",
+   "texto": "A profissional acorda cedo."
+  },
+  {
+   "inicio": 11.154,
+   "fim": 13.83,
+   "cena": "rotina",
+   "texto": "Fica oito, dez, doze horas em pé."
+  },
+  {
+   "inicio": 13.83,
+   "fim": 16.155,
+   "cena": "rotina",
+   "texto": "Atende uma cliente atrás da outra."
+  },
+  {
+   "inicio": 16.155,
+   "fim": 17.779,
+   "cena": "rotina",
+   "texto": "A agenda até enche."
+  },
+  {
+   "inicio": 18.279,
+   "fim": 19.551,
+   "cena": "rotina",
+   "texto": "O corpo cansa."
+  },
+  {
+   "inicio": 20.351,
+   "fim": 24.08,
+   "cena": "caixa",
+   "texto": "E aí, no fim do mês, ela abre o caixa."
+  },
+  {
+   "inicio": 24.08,
+   "fim": 26.756,
+   "cena": "caixa",
+   "texto": "E o número não corresponde ao esforço."
+  },
+  {
+   "inicio": 28.356,
+   "fim": 30.681,
+   "cena": "atencao",
+   "texto": "Se isso está acontecendo com você,"
+  },
+  {
+   "inicio": 30.681,
+   "fim": 34.059,
+   "cena": "atencao",
+   "texto": "preste muita atenção no que eu vou dizer agora:"
+  },
+  {
+   "inicio": 34.659,
+   "fim": 36.634,
+   "cena": "nao-e-voce",
+   "texto": "O problema não é você."
+  },
+  {
+   "inicio": 37.834,
+   "fim": 39.457,
+   "cena": "nao-e-voce",
+   "texto": "Você não é devagar."
+  },
+  {
+   "inicio": 39.457,
+   "fim": 41.782,
+   "cena": "nao-e-voce",
+   "texto": "Você não é ruim de atendimento."
+  },
+  {
+   "inicio": 41.782,
+   "fim": 45.16,
+   "cena": "nao-e-voce",
+   "texto": "E você definitivamente não precisa se dedicar mais —"
+  },
+  {
+   "inicio": 45.16,
+   "fim": 47.135,
+   "cena": "nao-e-voce",
+   "texto": "você já se dedica demais."
+  },
+  {
+   "inicio": 48.035,
+   "fim": 51.062,
+   "cena": "vazamento",
+   "texto": "O que existe aqui é uma falha estrutural"
+  },
+  {
+   "inicio": 51.062,
+   "fim": 54.791,
+   "cena": "vazamento",
+   "texto": "na forma como o dinheiro entra dentro de um salão."
+  },
+  {
+   "inicio": 54.791,
+   "fim": 56.063,
+   "cena": "vazamento",
+   "texto": "Uma falha invisível."
+  },
+  {
+   "inicio": 56.063,
+   "fim": 59.792,
+   "cena": "vazamento",
+   "texto": "É ela que faz a profissional mais talentosa da rua"
+  },
+  {
+   "inicio": 59.792,
+   "fim": 62.468,
+   "cena": "vazamento",
+   "texto": "faturar menos que a concorrente do lado."
+  },
+  {
+   "inicio": 63.268,
+   "fim": 65.944,
+   "cena": "promessa",
+   "texto": "Nos próximos minutos, eu vou te mostrar"
+  },
+  {
+   "inicio": 65.944,
+   "fim": 67.919,
+   "cena": "promessa",
+   "texto": "exatamente onde está esse vazamento."
+  },
+  {
+   "inicio": 67.919,
+   "fim": 72.349,
+   "cena": "promessa",
+   "texto": "E o método prático de 7 dias que foi criado para fechá-lo."
+  },
+  {
+   "inicio": 73.749,
+   "fim": 75.022,
+   "cena": "diagnostico",
+   "bloco": "Bloco 2 — O diagnóstico",
+   "texto": "Vamos ao diagnóstico."
+  },
+  {
+   "inicio": 75.622,
+   "fim": 77.245,
+   "cena": "conselhos",
+   "texto": "Quando o faturamento trava,"
+  },
+  {
+   "inicio": 77.245,
+   "fim": 80.272,
+   "cena": "conselhos",
+   "texto": "o mercado sempre dá os mesmos quatro conselhos."
+  },
+  {
+   "inicio": 80.272,
+   "fim": 81.896,
+   "cena": "conselhos",
+   "texto": "\"Poste mais no Instagram.\""
+  },
+  {
+   "inicio": 82.196,
+   "fim": 83.246,
+   "cena": "conselhos",
+   "texto": "\"Faça promoção.\""
+  },
+  {
+   "inicio": 83.546,
+   "fim": 84.818,
+   "cena": "conselhos",
+   "texto": "\"Baixe o preço.\""
+  },
+  {
+   "inicio": 85.118,
+   "fim": 86.391,
+   "cena": "conselhos",
+   "texto": "\"Trabalhe mais horas.\""
+  },
+  {
+   "inicio": 87.291,
+   "fim": 90.669,
+   "cena": "pressuposto",
+   "texto": "Repare no que essas quatro receitas têm em comum."
+  },
+  {
+   "inicio": 90.669,
+   "fim": 92.994,
+   "cena": "pressuposto",
+   "texto": "Todas elas partem do mesmo pressuposto:"
+  },
+  {
+   "inicio": 92.994,
+   "fim": 96.021,
+   "cena": "pressuposto",
+   "texto": "que o seu problema é falta de cliente."
+  },
+  {
+   "inicio": 96.721,
+   "fim": 99.046,
+   "cena": "pressuposto",
+   "texto": "Na maioria dos casos, não é."
+  },
+  {
+   "inicio": 100.546,
+   "fim": 103.574,
+   "cena": "ja-entrou",
+   "texto": "A maioria das profissionais ignora um fato desconfortável."
+  },
+  {
+   "inicio": 103.574,
+   "fim": 106.601,
+   "cena": "ja-entrou",
+   "texto": "O dinheiro que está faltando no seu caixa"
+  },
+  {
+   "inicio": 106.601,
+   "fim": 109.277,
+   "cena": "ja-entrou",
+   "texto": "já entrou pela porta do salão hoje."
+  },
+  {
+   "inicio": 109.277,
+   "fim": 111.251,
+   "cena": "ja-entrou",
+   "texto": "E saiu sem ser aproveitado."
+  },
+  {
+   "inicio": 112.251,
+   "fim": 115.98,
+   "cena": "cadeira",
+   "texto": "Pense na cliente que sentou na sua cadeira essa semana."
+  },
+  {
+   "inicio": 116.48,
+   "fim": 118.454,
+   "cena": "cadeira",
+   "texto": "Você viu o fio quebrado."
+  },
+  {
+   "inicio": 118.454,
+   "fim": 122.183,
+   "cena": "cadeira",
+   "texto": "Você sabia exatamente qual produto ela precisava levar para casa."
+  },
+  {
+   "inicio": 122.183,
+   "fim": 124.859,
+   "cena": "cadeira",
+   "texto": "Você sabia que ela ia sair dali"
+  },
+  {
+   "inicio": 124.859,
+   "fim": 127.184,
+   "cena": "cadeira",
+   "texto": "e comprar qualquer coisa no mercado."
+  },
+  {
+   "inicio": 127.184,
+   "fim": 130.913,
+   "cena": "cadeira",
+   "texto": "Algo que ia estragar o seu trabalho em duas semanas."
+  },
+  {
+   "inicio": 131.713,
+   "fim": 133.688,
+   "cena": "silencio",
+   "texto": "E você não falou nada."
+  },
+  {
+   "inicio": 135.088,
+   "fim": 137.764,
+   "cena": "silencio",
+   "texto": "Não foi por falta de conhecimento técnico."
+  },
+  {
+   "inicio": 137.764,
+   "fim": 139.738,
+   "cena": "silencio",
+   "texto": "Disso você tem de sobra."
+  },
+  {
+   "inicio": 140.438,
+   "fim": 143.465,
+   "cena": "silencio",
+   "texto": "Você não falou porque ninguém nunca te ensinou"
+  },
+  {
+   "inicio": 143.465,
+   "fim": 146.492,
+   "cena": "silencio",
+   "texto": "como falar sem se sentir uma vendedora chata."
+  },
+  {
+   "inicio": 147.492,
+   "fim": 149.466,
+   "cena": "causa",
+   "texto": "Essa é a causa real."
+  },
+  {
+   "inicio": 149.466,
+   "fim": 151.441,
+   "cena": "causa",
+   "texto": "Não é falta de esforço."
+  },
+  {
+   "inicio": 151.441,
+   "fim": 153.766,
+   "cena": "causa",
+   "texto": "É falta de método de conversa."
+  },
+  {
+   "inicio": 154.966,
+   "fim": 158.344,
+   "cena": "todo-mes",
+   "texto": "E aqui está a parte que ninguém te conta:"
+  },
+  {
+   "inicio": 158.344,
+   "fim": 159.617,
+   "cena": "todo-mes",
+   "texto": "enquanto isso continuar,"
+  },
+  {
+   "inicio": 159.617,
+   "fim": 164.047,
+   "cena": "todo-mes",
+   "texto": "cada dia de trabalho é um dia de dinheiro deixado na cadeira."
+  },
+  {
+   "inicio": 164.647,
+   "fim": 166.622,
+   "cena": "todo-mes",
+   "texto": "Não é um mês perdido."
+  },
+  {
+   "inicio": 166.622,
+   "fim": 167.894,
+   "cena": "todo-mes",
+   "texto": "É todo mês."
+  },
+  {
+   "inicio": 167.894,
+   "fim": 169.518,
+   "cena": "todo-mes",
+   "texto": "É o ano inteiro."
+  },
+  {
+   "inicio": 171.118,
+   "fim": 172.39,
+   "cena": "descoberta",
+   "bloco": "Bloco 3 — O mecanismo único",
+   "texto": "Agora, a descoberta."
+  },
+  {
+   "inicio": 172.99,
+   "fim": 176.017,
+   "cena": "descoberta",
+   "texto": "Quando você analisa os salões que faturam bem"
+  },
+  {
+   "inicio": 176.017,
+   "fim": 177.641,
+   "cena": "descoberta",
+   "texto": "sem aumentar a jornada,"
+  },
+  {
+   "inicio": 177.641,
+   "fim": 179.615,
+   "cena": "descoberta",
+   "texto": "aparece uma estrutura em comum."
+  },
+  {
+   "inicio": 179.615,
+   "fim": 181.941,
+   "cena": "descoberta",
+   "texto": "Três movimentos. Sempre na mesma ordem."
+  },
+  {
+   "inicio": 182.941,
+   "fim": 183.991,
+   "cena": "pilar-1",
+   "texto": "Primeiro: ATRAIR."
+  },
+  {
+   "inicio": 184.391,
+   "fim": 186.365,
+   "cena": "pilar-1",
+   "texto": "Ações simples, de custo zero,"
+  },
+  {
+   "inicio": 186.365,
+   "fim": 189.041,
+   "cena": "pilar-1",
+   "texto": "para despertar interesse e trazer clientes novas."
+  },
+  {
+   "inicio": 189.041,
+   "fim": 192.419,
+   "cena": "pilar-1",
+   "texto": "Sem depender de sorte e sem depender de algoritmo."
+  },
+  {
+   "inicio": 193.219,
+   "fim": 194.269,
+   "cena": "pilar-2",
+   "texto": "Segundo: APROVEITAR."
+  },
+  {
+   "inicio": 194.669,
+   "fim": 196.994,
+   "cena": "pilar-2",
+   "texto": "Um novo olhar durante o atendimento."
+  },
+  {
+   "inicio": 196.994,
+   "fim": 200.723,
+   "cena": "pilar-2",
+   "texto": "Aprender a enxergar, em cada cliente que senta na cadeira,"
+  },
+  {
+   "inicio": 200.723,
+   "fim": 203.048,
+   "cena": "pilar-2",
+   "texto": "a oportunidade que já está ali."
+  },
+  {
+   "inicio": 203.048,
+   "fim": 205.374,
+   "cena": "pilar-2",
+   "texto": "Visível. Esperando só para ser nomeada."
+  },
+  {
+   "inicio": 206.174,
+   "fim": 207.446,
+   "cena": "pilar-3",
+   "texto": "Terceiro: VENDER NATURALMENTE."
+  },
+  {
+   "inicio": 207.846,
+   "fim": 210.522,
+   "cena": "pilar-3",
+   "texto": "Transformar essa observação técnica em uma recomendação."
+  },
+  {
+   "inicio": 210.522,
+   "fim": 213.549,
+   "cena": "pilar-3",
+   "texto": "De serviço, de produto ou de home care."
+  },
+  {
+   "inicio": 213.549,
+   "fim": 215.524,
+   "cena": "pilar-3",
+   "texto": "Que soa como cuidado profissional."
+  },
+  {
+   "inicio": 215.524,
+   "fim": 217.498,
+   "cena": "pilar-3",
+   "texto": "Não como empurrão de vendedora."
+  },
+  {
+   "inicio": 218.998,
+   "fim": 220.622,
+   "cena": "balde",
+   "texto": "A metáfora é simples."
+  },
+  {
+   "inicio": 221.122,
+   "fim": 224.499,
+   "cena": "balde",
+   "texto": "A maioria das profissionais tenta encher um balde furado"
+  },
+  {
+   "inicio": 224.499,
+   "fim": 226.123,
+   "cena": "balde",
+   "texto": "colocando mais água dentro."
+  },
+  {
+   "inicio": 226.123,
+   "fim": 228.448,
+   "cena": "balde",
+   "texto": "Mais cliente. Mais hora. Mais promoção."
+  },
+  {
+   "inicio": 229.148,
+   "fim": 231.123,
+   "cena": "balde",
+   "texto": "Esse método faz o contrário."
+  },
+  {
+   "inicio": 231.123,
+   "fim": 233.097,
+   "cena": "balde",
+   "texto": "Ele tampa os furos primeiro."
+  },
+  {
+   "inicio": 233.097,
+   "fim": 235.773,
+   "cena": "balde",
+   "texto": "Aí sim, cada litro que entra, fica."
+  },
+  {
+   "inicio": 236.973,
+   "fim": 240.702,
+   "cena": "margem",
+   "texto": "É por isso que ele funciona onde a promoção falha."
+  },
+  {
+   "inicio": 240.702,
+   "fim": 244.08,
+   "cena": "margem",
+   "texto": "Promoção traz movimento e leva a sua margem junto."
+  },
+  {
+   "inicio": 244.08,
+   "fim": 247.107,
+   "cena": "margem",
+   "texto": "Isso aqui aumenta o valor de cada atendimento"
+  },
+  {
+   "inicio": 247.107,
+   "fim": 249.081,
+   "cena": "margem",
+   "texto": "que você já faz hoje."
+  },
+  {
+   "inicio": 250.481,
+   "fim": 253.859,
+   "cena": "produto",
+   "bloco": "Bloco 4 — A oferta",
+   "texto": "A forma prática de aplicar essa estrutura se chama"
+  },
+  {
+   "inicio": 253.859,
+   "fim": 256.535,
+   "cena": "produto",
+   "texto": "Caixa Rápido — Desafio de 7 Dias."
+  },
+  {
+   "inicio": 257.235,
+   "fim": 259.21,
+   "cena": "produto",
+   "texto": "São 7 dias. 7 missões."
+  },
+  {
+   "inicio": 259.21,
+   "fim": 262.237,
+   "cena": "produto",
+   "texto": "Uma por dia, para executar dentro do salão,"
+  },
+  {
+   "inicio": 262.237,
+   "fim": 264.562,
+   "cena": "produto",
+   "texto": "no meio da sua rotina normal."
+  },
+  {
+   "inicio": 265.462,
+   "fim": 268.138,
+   "cena": "dias",
+   "texto": "Dia 1: você define a sua meta."
+  },
+  {
+   "inicio": 268.338,
+   "fim": 270.312,
+   "cena": "dias",
+   "texto": "Dia 2: ações para atrair."
+  },
+  {
+   "inicio": 270.512,
+   "fim": 273.189,
+   "cena": "dias",
+   "texto": "Dia 3: enxergar as oportunidades na cadeira."
+  },
+  {
+   "inicio": 273.389,
+   "fim": 275.363,
+   "cena": "dias",
+   "texto": "Dia 4: a venda natural."
+  },
+  {
+   "inicio": 275.563,
+   "fim": 277.186,
+   "cena": "dias",
+   "texto": "Dia 5: home care."
+  },
+  {
+   "inicio": 277.386,
+   "fim": 281.115,
+   "cena": "dias",
+   "texto": "Dia 6: respostas prontas para \"está caro\" e \"vou pensar\"."
+  },
+  {
+   "inicio": 281.315,
+   "fim": 283.991,
+   "cena": "dias",
+   "texto": "Dia 7: o seu plano de vendas,"
+  },
+  {
+   "inicio": 283.991,
+   "fim": 287.369,
+   "cena": "dias",
+   "texto": "pronto para continuar rodando depois que o desafio acabar."
+  },
+  {
+   "inicio": 288.369,
+   "fim": 290.344,
+   "cena": "bonus",
+   "texto": "E vêm dois bônus incluídos."
+  },
+  {
+   "inicio": 290.344,
+   "fim": 293.371,
+   "cena": "bonus",
+   "texto": "O treinamento de ChatGPT para comunicação e vendas,"
+  },
+  {
+   "inicio": 293.371,
+   "fim": 295.345,
+   "cena": "bonus",
+   "texto": "para você criar divulgação, legenda"
+  },
+  {
+   "inicio": 295.345,
+   "fim": 297.67,
+   "cena": "bonus",
+   "texto": "e mensagem de WhatsApp em minutos."
+  },
+  {
+   "inicio": 297.67,
+   "fim": 300.346,
+   "cena": "bonus",
+   "texto": "E o acesso ao app USALON 30D."
+  },
+  {
+   "inicio": 301.846,
+   "fim": 303.47,
+   "cena": "conta-fria",
+   "texto": "Agora, a conta fria."
+  },
+  {
+   "inicio": 304.07,
+   "fim": 308.15,
+   "cena": "conta-fria",
+   "texto": "Uma única indicação de home care que você não fez hoje."
+  },
+  {
+   "inicio": 308.15,
+   "fim": 309.773,
+   "cena": "conta-fria",
+   "texto": "Multiplique por trinta dias."
+  },
+  {
+   "inicio": 309.773,
+   "fim": 311.397,
+   "cena": "conta-fria",
+   "texto": "Depois por doze meses."
+  },
+  {
+   "inicio": 312.397,
+   "fim": 315.424,
+   "cena": "conta-fria",
+   "texto": "Esse é o custo de não fazer nada."
+  },
+  {
+   "inicio": 316.624,
+   "fim": 320.002,
+   "cena": "preco",
+   "texto": "O acesso completo ao desafio, com os dois bônus,"
+  },
+  {
+   "inicio": 320.002,
+   "fim": 322.678,
+   "cena": "preco",
+   "texto": "é um pagamento único de 97 reais."
+  },
+  {
+   "inicio": 324.078,
+   "fim": 326.052,
+   "cena": "cta",
+   "bloco": "Bloco 5 — Fechamento",
+   "texto": "Clique no botão aqui embaixo"
+  },
+  {
+   "inicio": 326.052,
+   "fim": 329.079,
+   "cena": "cta",
+   "texto": "e garanta o seu acesso por 97 reais."
+  },
+  {
+   "inicio": 329.079,
+   "fim": 330.703,
+   "cena": "cta",
+   "texto": "Pagamento único, pela Hotmart."
+  },
+  {
+   "inicio": 331.603,
+   "fim": 334.63,
+   "cena": "garantia",
+   "texto": "E olha: você não precisa decidir nada hoje."
+  },
+  {
+   "inicio": 334.63,
+   "fim": 336.955,
+   "cena": "garantia",
+   "texto": "Você tem 7 dias de garantia."
+  },
+  {
+   "inicio": 336.955,
+   "fim": 340.333,
+   "cena": "garantia",
+   "texto": "Entre, aplique as primeiras missões dentro do seu salão,"
+  },
+  {
+   "inicio": 340.333,
+   "fim": 343.36,
+   "cena": "garantia",
+   "texto": "e observe o que acontece no seu caixa."
+  },
+  {
+   "inicio": 343.36,
+   "fim": 345.685,
+   "cena": "garantia",
+   "texto": "Se não fizer sentido para você,"
+  },
+  {
+   "inicio": 345.685,
+   "fim": 348.712,
+   "cena": "garantia",
+   "texto": "é só pedir o reembolso dentro do prazo,"
+  },
+  {
+   "inicio": 348.712,
+   "fim": 350.686,
+   "cena": "garantia",
+   "texto": "conforme as condições da Hotmart."
+  },
+  {
+   "inicio": 351.486,
+   "fim": 353.812,
+   "cena": "risco",
+   "texto": "O risco de testar é zero."
+  },
+  {
+   "inicio": 354.712,
+   "fim": 357.388,
+   "cena": "risco",
+   "texto": "O risco de continuar exatamente como está,"
+  },
+  {
+   "inicio": 357.388,
+   "fim": 358.661,
+   "cena": "risco",
+   "texto": "você já conhece."
+  },
+  {
+   "inicio": 358.661,
+   "fim": 360.635,
+   "cena": "risco",
+   "texto": "Ele aparece todo dia 30."
+  },
+  {
+   "inicio": 362.235,
+   "fim": 363.858,
+   "cena": "fecho",
+   "texto": "Talento você já tem."
+  },
+  {
+   "inicio": 364.658,
+   "fim": 366.633,
+   "cena": "fecho",
+   "texto": "O que falta é estratégia."
+  },
+  {
+   "inicio": 367.633,
+   "fim": 369.958,
+   "cena": "fecho",
+   "texto": "Clique no botão e comece hoje."
+  }
+ ]
+}

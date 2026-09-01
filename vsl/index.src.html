@@ -83,6 +83,9 @@ h1.headline{
 .art-layer{overflow:hidden}
 .art-wrap{position:absolute;inset:0;opacity:0;transition:opacity .9s ease}
 .art-wrap.on{opacity:var(--art-o,.55)}
+/* cena com gráfico por cima: a ilustração vai para fora de foco, como fundo de câmera aberta */
+.art-wrap.fundo .art-svg{filter:blur(5px) saturate(.85)}
+.art-wrap.fundo::after{content:"";position:absolute;inset:0;background:rgba(8,6,5,.42)}
 .art-svg{width:100%;height:100%;display:block;transform-origin:58% 45%;animation:kenburns 34s ease-in-out infinite alternate}
 @keyframes kenburns{from{transform:scale(1.01) translate3d(0,0,0)}to{transform:scale(1.07) translate3d(-1%,-.6%,0)}}
 .lamp{animation:lampFlicker 6.5s ease-in-out infinite;animation-delay:calc(var(--i) * .55s)}
@@ -353,6 +356,7 @@ footer{margin-top:56px;color:var(--smoke);font-family:var(--mono);font-size:11px
     <button class="ctrl" id="btnRestart" aria-label="Recomeçar do início"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
     <div class="track" id="track" role="slider" aria-label="Posição do vídeo" aria-valuemin="0" aria-valuenow="0" tabindex="0"><i id="progress"></i></div>
     <div class="tc" id="tc">0:00</div>
+    <button class="cc" id="btnSom" aria-pressed="false">Som</button>
     <button class="cc" id="btnCC" aria-pressed="true">Legenda</button>
   </div>
 
@@ -418,6 +422,7 @@ footer{margin-top:56px;color:var(--smoke);font-family:var(--mono);font-size:11px
    Roteiro injetado por vsl/build.js a partir de roteiro.cues.js
    ============================================================ */
 const CUES = /*__CUES__*/[]/*__END_CUES__*/;
+const TRILHA = /*__TRILHA__*/'audio/trilha.mp3'/*__END_TRILHA__*/;
 
 /* --- modelo de tempo: locução calma em PT-BR (~2,85 palavras/s) --- */
 const RATE = 2.85, FLOOR = 1.05, OVERHEAD = 0.22;
@@ -550,7 +555,7 @@ const stage = $('#stage'), sceneHost = $('#sceneHost'), caption = $('#caption'),
       tc = $('#tc'), btnPlay = $('#btnPlay'), icPlay = $('#icPlay'),
       btnRestart = $('#btnRestart'), btnCC = $('#btnCC'),
       mediaVideo = $('#mediaVideo'), mediaImage = $('#mediaImage'),
-      artHost = $('#artHost'), bokeh = $('#bokeh');
+      artHost = $('#artHost'), bokeh = $('#bokeh'), btnSom = $('#btnSom');
 
 const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 $('#runtime').textContent = `duração ${fmt(TOTAL)}`;
@@ -591,6 +596,19 @@ fetch('assets/manifest.json').then(r => r.ok ? r.json() : null).then(m => {
     pause(); seek(0);
   }
 }).catch(() => {});
+
+/* trilha sonora: começa desligada, como VSL deve começar.
+   O navegador só libera áudio depois de um clique, então o som entra pelo botão. */
+const trilha = new Audio(TRILHA);
+trilha.preload = 'auto';
+let somLigado = false;
+
+function audioMestre() {
+  /* quem manda no relógio: a locução do usuário, senão a trilha, senão o tempo interno */
+  if (narration && !narration.paused) return narration;
+  if (somLigado && !trilha.paused) return trilha;
+  return null;
+}
 
 let currentMedia = null;
 function setMedia(sceneId) {
@@ -635,7 +653,9 @@ function renderScene(id) {
   /* a ilustração recua quando a cena tem gráfico por cima, e assume o
      quadro quando o que conta é a imagem */
   const arte = CENA_ARTE[id];
-  artHost.innerHTML = arte ? `<div class="art-wrap" style="--art-o:${grafico ? .5 : .95}">${arte()}</div>` : '';
+  artHost.innerHTML = arte
+    ? `<div class="art-wrap${grafico ? ' fundo' : ''}" style="--art-o:${grafico ? .7 : .95}">${arte()}</div>`
+    : '';
   const wrap = artHost.firstElementChild;
   if (wrap) requestAnimationFrame(() => wrap.classList.add('on'));
   setMedia(id);
@@ -704,7 +724,8 @@ addEventListener('resize', medirBokeh);
 
 function frame(now) {
   if (playing) {
-    if (narration && !narration.paused) time = narration.currentTime;
+    const mestre = audioMestre();
+    if (mestre) time = mestre.currentTime;
     else time += Math.min(.25, (now - last) / 1000);
     if (time >= TOTAL) { time = TOTAL; playing = false; syncPlayIcon(); }
   }
@@ -749,22 +770,37 @@ function syncPlayIcon() {
 function play() {
   playing = true; syncPlayIcon();
   if (narration) { narration.currentTime = time; narration.play().catch(()=>{}); }
+  if (somLigado) { trilha.currentTime = time; trilha.play().catch(() => desligarSom()); }
   if (mediaVideo.src) mediaVideo.play().catch(()=>{});
 }
 function pause() {
   playing = false; syncPlayIcon();
   if (narration) narration.pause();
+  trilha.pause();
   mediaVideo.pause();
 }
 function seek(s) {
   time = Math.max(0, Math.min(TOTAL, s));
   curCue = -1;
   if (narration) narration.currentTime = time;
+  if (somLigado) trilha.currentTime = time;
   update();
+}
+function desligarSom() {
+  somLigado = false;
+  trilha.pause();
+  btnSom.setAttribute('aria-pressed', 'false');
 }
 
 btnPlay.addEventListener('click', () => playing ? pause() : play());
 btnRestart.addEventListener('click', () => { seek(0); play(); });
+btnSom.addEventListener('click', () => {
+  if (somLigado) { desligarSom(); return; }
+  somLigado = true;
+  btnSom.setAttribute('aria-pressed', 'true');
+  trilha.currentTime = time;
+  if (playing) trilha.play().catch(() => desligarSom());
+});
 btnCC.addEventListener('click', () => {
   const on = btnCC.getAttribute('aria-pressed') === 'true';
   btnCC.setAttribute('aria-pressed', String(!on));

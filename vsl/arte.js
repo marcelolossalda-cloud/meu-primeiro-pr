@@ -68,6 +68,18 @@ const frascos = (x, y, alturas, destaque = -1) => alturas.map((h, i) => {
   </g>`;
 }).join('');
 
+
+/* silhueta humana: cabeça, pescoço e ombros caídos — sem isso a forma vira borrão */
+const silhueta = (cx, cy, r, { cor = '#050403', altura = 6.2, ombro = 2.15 } = {}) => `
+  <g fill="${cor}">
+    <circle cx="${cx}" cy="${cy}" r="${r}"/>
+    <path d="M${cx - .3 * r} ${cy + .72 * r} h${.6 * r} v${.5 * r} h${-.6 * r} Z"/>
+    <path d="M${cx - ombro * r} ${cy + altura * r}
+             C${cx - ombro * r - .1 * r} ${cy + 2.9 * r} ${cx - 1.25 * r} ${cy + 1.5 * r} ${cx - .5 * r} ${cy + 1.18 * r}
+             L${cx + .5 * r} ${cy + 1.18 * r}
+             C${cx + 1.25 * r} ${cy + 1.5 * r} ${cx + ombro * r + .1 * r} ${cy + 2.9 * r} ${cx + ombro * r} ${cy + altura * r} Z"/>
+  </g>`;
+
 const ART = {
 
   /* salão vazio no fim do expediente: espelho, bancada, cadeira sozinha */
@@ -104,19 +116,20 @@ const ART = {
 
   /* mãos e tesoura em primeiro plano */
   tesoura: () => quadro('te', `
-    <ellipse cx="820" cy="420" rx="560" ry="330" fill="url(#gte)" opacity=".5"/>
+    <ellipse cx="1000" cy="400" rx="520" ry="330" fill="url(#gte)" opacity=".62"/>
     <g opacity=".95">
-      ${[0, 1, 2, 3, 4, 5].map(i => `<path d="M${560 + i * 90} 250 q ${30 - i * 8} 220 ${-14} 430" stroke="#150F0D" stroke-width="${16 - i}" fill="none" stroke-linecap="round" opacity=".85"/>`).join('')}
+      ${[0, 1, 2, 3, 4, 5, 6].map(i => `<path d="M${840 + i * 84} 190 q ${46 - i * 14} 250 ${-40} 500" stroke="#150F0D" stroke-width="${20 - i * 1.6}" fill="none" stroke-linecap="round" opacity="${.9 - i * .07}"/>`).join('')}
     </g>
-    <g class="snip" style="transform-origin:1040px 470px">
-      <path d="M900 520 l260 -70" stroke="#241C18" stroke-width="15" stroke-linecap="round"/>
-      <path d="M900 420 l260 70" stroke="#241C18" stroke-width="15" stroke-linecap="round"/>
-      <circle cx="1180" cy="436" r="26" fill="none" stroke="#241C18" stroke-width="13"/>
-      <circle cx="1180" cy="504" r="26" fill="none" stroke="#241C18" stroke-width="13"/>
-      <circle cx="1010" cy="470" r="9" fill="${A.brass}"/>
+    <g class="snip" style="transform-origin:1180px 470px">
+      <path d="M1040 520 l260 -70" stroke="#191311" stroke-width="16" stroke-linecap="round"/>
+      <path d="M1040 420 l260 70" stroke="#191311" stroke-width="16" stroke-linecap="round"/>
+      <circle cx="1320" cy="436" r="28" fill="none" stroke="#191311" stroke-width="14"/>
+      <circle cx="1320" cy="504" r="28" fill="none" stroke="#191311" stroke-width="14"/>
+      <circle cx="1150" cy="470" r="9" fill="${A.brass}"/>
+      <path d="M1046 448 l250 -60" stroke="url(#rte)" stroke-width="4" fill="none" opacity=".7"/>
     </g>
-    <path d="M760 900 q120 -220 330 -250 l90 60 q-190 60 -260 190 Z" fill="${A.dark}"/>
-    <path d="M300 900 q60 -180 240 -230" stroke="url(#rte)" stroke-width="6" fill="none" opacity=".5"/>`),
+    <path d="M1180 900 q60 -260 300 -320 l120 80 v240 Z" fill="${A.dark}"/>
+    <path d="M980 900 q40 -200 220 -270 l60 40 q-180 70 -220 230 Z" fill="${A.dark}"/>`),
 
   /* cliente sentada na cadeira, fio em destaque */
   cadeira: () => quadro('cd', `
@@ -134,9 +147,8 @@ const ART = {
     </g>
 
     <!-- cliente: silhueta contra a luz -->
+    ${silhueta(734, 560, 82, { altura: 4.4, ombro: 1.9 })}
     <g fill="#050403">
-      <path d="M604 900 q10 -190 130 -226 q120 36 130 226 Z"/>
-      <circle cx="734" cy="560" r="82"/>
       <path d="M652 556 q6 -104 82 -104 q76 0 82 104 q10 130 -22 190 q-60 -120 -60 -190 q0 70 -60 190 q-32 -60 -22 -190 Z"/>
     </g>
     <path d="M660 540 a80 80 0 0 1 62 -84" stroke="url(#rcd)" stroke-width="9" fill="none" opacity=".9"/>
@@ -144,35 +156,30 @@ const ART = {
     <circle class="ping" cx="820" cy="664" r="8" fill="none" stroke="${A.brass}" stroke-width="4"/>
     <circle cx="820" cy="664" r="7" fill="${A.brassSoft}"/>`),
 
-  /* profissional em pé: cansada (baixa) ou confiante (ereta) */
+  /* profissional em pé: cansada (ombros caídos) ou confiante (ereta) */
   profissional: (postura = 'cansada') => quadro('pf', `
-    <ellipse cx="800" cy="330" rx="520" ry="330" fill="url(#gpf)" opacity="${postura === 'confiante' ? .7 : .38}"/>
-    <g transform="translate(0,${postura === 'cansada' ? 40 : 0})">
-      <circle cx="800" cy="${postura === 'cansada' ? 300 : 268}" r="86" fill="${A.dark}"/>
-      <path d="M800 ${postura === 'cansada' ? 360 : 330}
-               q-190 40 -230 250 q-16 90 -10 320 h480 q6 -230 -10 -320 q-40 -210 -230 -250 Z" fill="${A.dark}"/>
-      ${postura === 'confiante'
-        ? '<path d="M600 690 q200 60 400 0 l0 40 q-200 60 -400 0 Z" fill="#0A0706"/>'
-        : '<path d="M596 640 q40 150 20 260" stroke="#0A0706" stroke-width="46" fill="none" stroke-linecap="round"/>'}
-    </g>
-    <path d="M718 ${postura === 'cansada' ? 300 : 268} a86 86 0 0 1 60 -84" stroke="url(#rpf)" stroke-width="7" fill="none"/>
-    <g filter="url(#bbpf)" opacity=".55"><rect x="60" y="520" width="300" height="380" rx="14" fill="#150F0D"/></g>`),
+    <ellipse cx="820" cy="330" rx="520" ry="330" fill="url(#gpf)" opacity="${postura === 'confiante' ? .85 : .45}"/>
+    <path d="M120 800 h1360 l50 40 H60 Z" fill="#150F0D"/>
+    ${postura === 'cansada'
+      ? silhueta(800, 320, 88, { altura: 6.6, ombro: 2.4 })
+      : silhueta(800, 286, 88, { altura: 7.0, ombro: 2.0 })}
+    ${postura === 'cansada'
+      ? `<path d="M624 470 q-30 150 -6 300" stroke="#050403" stroke-width="52" fill="none" stroke-linecap="round"/>`
+      : `<path d="M640 600 q160 70 320 0 l0 46 q-160 66 -320 0 Z" fill="#0A0706"/>`}
+    <path d="M716 ${postura === 'cansada' ? 300 : 266} a88 88 0 0 1 66 -86" stroke="url(#rpf)" stroke-width="10" fill="none" opacity=".85"/>
+    <g filter="url(#bbpf)" opacity=".5"><rect x="40" y="500" width="300" height="400" rx="14" fill="#150F0D"/></g>`),
 
   /* duas silhuetas conversando; o brilho entre elas é a fala */
   conversa: (calada = false) => quadro('cv', `
-    <ellipse cx="800" cy="420" rx="440" ry="280" fill="url(#gcv)" opacity=".45"/>
-    <g>
-      <circle cx="470" cy="330" r="80" fill="${A.dark}"/>
-      <path d="M470 400 q-170 40 -200 240 q-12 80 -8 260 h416 q4 -180 -8 -260 q-30 -200 -200 -240 Z" fill="${A.dark}"/>
-    </g>
-    <g>
-      <circle cx="1140" cy="360" r="76" fill="#0A0706"/>
-      <path d="M1140 428 q-160 38 -190 230 q-10 76 -6 242 h392 q4 -166 -6 -242 q-30 -192 -190 -230 Z" fill="#0A0706"/>
-    </g>
+    <ellipse cx="800" cy="420" rx="460" ry="300" fill="url(#gcv)" opacity=".7"/>
+    <path d="M120 780 h1360 l50 40 H60 Z" fill="#150F0D"/>
+    ${silhueta(470, 330, 84)}
+    ${silhueta(1140, 356, 78, { cor: '#0A0706', altura: 5.6 })}
+    <path d="M392 320 a84 84 0 0 1 62 -80" stroke="url(#rcv)" stroke-width="9" fill="none" opacity=".8"/>
     ${calada
-      ? `<g opacity=".5"><path d="M700 380 h200" stroke="${A.clay}" stroke-width="6" stroke-linecap="round" stroke-dasharray="26 22"/></g>`
-      : `<g class="fala"><path d="M690 330 h230 a26 26 0 0 1 26 26 v92 a26 26 0 0 1 -26 26 h-150 l-56 46 v-46 h-24 a26 26 0 0 1 -26 -26 v-92 a26 26 0 0 1 26 -26 Z" fill="none" stroke="${A.brass}" stroke-width="4" opacity=".9"/>
-         <path d="M726 372 h160 M726 404 h120" stroke="${A.brassSoft}" stroke-width="6" stroke-linecap="round" opacity=".8"/></g>`}`),
+      ? `<g opacity=".65"><path d="M660 400 h280" stroke="${A.clay}" stroke-width="7" stroke-linecap="round" stroke-dasharray="26 26"/></g>`
+      : `<g class="fala"><path d="M660 300 h250 a26 26 0 0 1 26 26 v104 a26 26 0 0 1 -26 26 h-160 l-62 50 v-50 h-28 a26 26 0 0 1 -26 -26 v-104 a26 26 0 0 1 26 -26 Z" fill="#0E0A09" stroke="${A.brass}" stroke-width="4" opacity=".95"/>
+         <path d="M700 348 h170 M700 384 h130" stroke="${A.brassSoft}" stroke-width="7" stroke-linecap="round" opacity=".85"/></g>`}`),
 
   /* celular na mão, tela acesa com o feed */
   celular: (conteudo = 'feed') => quadro('ce', `
@@ -198,10 +205,7 @@ const ART = {
     <rect x="560" y="90" width="480" height="700" rx="10" fill="#0E0A09" stroke="rgba(242,233,224,.18)" stroke-width="3"/>
     <path d="M600 130 h400 v620 h-400 Z" fill="url(#gpo)" opacity=".85"/>
     <path d="M1000 130 L1420 900 H1000 Z" fill="url(#gpo)" opacity=".25"/>
-    <g>
-      <circle cx="800" cy="330" r="70" fill="${A.dark}"/>
-      <path d="M800 396 q-150 34 -176 214 q-10 70 -6 226 h364 q4 -156 -6 -226 q-26 -180 -176 -214 Z" fill="${A.dark}"/>
-    </g>
+    ${silhueta(800, 330, 74, { altura: 6.4 })}
     ${[0, 1, 2, 3].map(i => `<circle class="moeda" style="--i:${i}" cx="${1120 + i * 90}" cy="${430 + (i % 2) * 90}" r="16" fill="${A.brass}" opacity=".75"/>`).join('')}`),
 
   /* prateleira de home care contra a luz */
@@ -257,10 +261,9 @@ const ART = {
   saida: () => quadro('sa', `
     <ellipse cx="1120" cy="330" rx="520" ry="320" fill="url(#gsa)" opacity=".6"/>
     <rect x="980" y="120" width="420" height="660" rx="10" fill="url(#gsa)" opacity=".5"/>
-    <g>
-      <circle cx="640" cy="300" r="82" fill="${A.dark}"/>
-      <path d="M640 372 q-180 38 -212 250 q-12 82 -8 278 h440 q4 -196 -8 -278 q-32 -212 -212 -250 Z" fill="${A.dark}"/>
-      <path d="M846 520 q60 40 40 150 l-52 8 q10 -96 -30 -130 Z" fill="${A.dark}"/>
+    ${silhueta(640, 300, 84, { altura: 6.8 })}
+    <g fill="#050403">
+      <path d="M800 470 q70 50 52 170 l-56 8 q14 -104 -34 -142 Z"/>
       <rect x="800" y="640" width="90" height="110" rx="8" fill="#1A1411"/>
       <path d="M812 640 q33 -40 66 0" stroke="#2A211C" stroke-width="6" fill="none"/>
     </g>
