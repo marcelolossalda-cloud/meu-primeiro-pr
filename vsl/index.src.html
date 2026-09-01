@@ -276,41 +276,129 @@ h1.headline{
 .guarantee{font-size:14px;color:var(--smoke);max-width:52ch}
 .guarantee b{color:var(--bone);font-weight:500}
 
-/* ---------- painel de produção ---------- */
-.panel{margin-top:72px;border-top:1px solid var(--line);padding-top:36px;display:grid;gap:34px}
-.panel h2{font-family:var(--display);font-weight:600;font-size:clamp(20px,3vw,30px);margin:0 0 4px;letter-spacing:-.01em}
-.panel h3{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin:0 0 12px;font-weight:500}
-.panel p{color:var(--smoke);max-width:68ch;margin:0 0 12px}
-.script{display:grid;gap:22px}
-.blk{display:block}
-.blk[open] .blk-head{margin-bottom:10px}
-.blk-head{display:flex;gap:12px;align-items:baseline;border-bottom:1px solid var(--line);padding:10px 0 8px;cursor:pointer;list-style:none}
-.blk-head::-webkit-details-marker{display:none}
-.blk-head::after{content:"+";margin-left:auto;font-family:var(--mono);color:var(--smoke)}
-.blk[open] .blk-head::after{content:"–"}
-.blk-head:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
-.blk-head b{font-family:var(--display);font-size:18px;font-weight:600}
-.blk-head span{font-family:var(--mono);font-size:11px;color:var(--brass);letter-spacing:.1em;font-variant-numeric:tabular-nums}
-.line{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:baseline;padding:3px 0;border-radius:3px;cursor:pointer}
-.line:hover{background:rgba(242,233,224,.05)}
-.line time{font-family:var(--mono);font-size:11px;color:var(--smoke);font-variant-numeric:tabular-nums}
-.line.now{background:rgba(211,154,62,.10)}
-.line.now time{color:var(--brass)}
-.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-.note{border:1px solid var(--line);border-radius:4px;padding:18px;background:rgba(27,21,18,.5)}
-.note b{display:block;font-family:var(--display);font-size:17px;margin-bottom:6px}
-.note p{margin:0;font-size:14px}
-.note ul{margin:8px 0 0;padding-left:18px;color:var(--smoke);font-size:14px}
-.note li{margin-bottom:6px}
-.note a{color:var(--brass)}
-.note code{font-family:var(--mono);font-size:.88em;color:var(--bone);background:rgba(242,233,224,.07);padding:1px 5px;border-radius:3px}
-.note em{font-style:normal;color:var(--brass-soft)}
-footer{margin-top:56px;color:var(--smoke);font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-align:center}
+/* ---------- página de vendas ---------- */
+.topbar{
+  position:relative;z-index:2;display:flex;gap:22px;justify-content:center;flex-wrap:wrap;
+  padding:10px 16px;background:rgba(211,154,62,.10);border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);
+}
+.topbar span{display:flex;align-items:center;gap:8px}
+.topbar span::before{content:"✓";color:var(--brass-soft)}
 
+.eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--brass);margin:0 0 12px;max-width:60ch;
+}
+.hero{margin-bottom:12px}
+.secao{padding:64px 0 0;display:grid;gap:22px}
+.secao h2{
+  font-family:var(--display);font-weight:600;font-size:clamp(24px,3.6vw,38px);
+  line-height:1.12;margin:0;letter-spacing:-.015em;text-wrap:balance;max-width:22ch;
+}
+.lead{color:var(--smoke);font-size:clamp(16px,1.9vw,18px);max-width:62ch;margin:0}
+.nao-e{color:var(--smoke);font-size:15px;max-width:62ch;margin:0;padding-left:16px;border-left:2px solid var(--clay)}
+
+.checks{list-style:none;margin:0;padding:0;display:grid;gap:14px;max-width:64ch}
+.checks li{position:relative;padding-left:34px;font-size:clamp(15px,1.9vw,18px);line-height:1.5}
+.checks li::before{
+  content:"✓";position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;
+  display:grid;place-content:center;font-size:12px;color:var(--brass);
+  background:rgba(211,154,62,.14);border:1px solid rgba(211,154,62,.4);
+}
+
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tri-card{border:1px solid var(--line);border-radius:5px;padding:24px 22px;background:rgba(27,21,18,.6)}
+.tri-card .n{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--brass)}
+.tri-card b{display:block;font-family:var(--display);font-size:clamp(18px,2.4vw,23px);font-weight:600;margin:8px 0 8px}
+.tri-card p{margin:0;color:var(--smoke);font-size:15px;line-height:1.55}
+
+.dias-lista{list-style:none;counter-reset:d;margin:0;padding:0;display:grid;gap:2px;max-width:70ch}
+.dias-lista li{
+  display:grid;grid-template-columns:82px 1fr;gap:16px;align-items:baseline;
+  padding:15px 4px;border-bottom:1px solid var(--line);font-size:clamp(15px,1.8vw,17px);
+}
+.dias-lista li span{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass)}
+
+.bonus-lista{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+.bonus-lista>div{border:1px solid rgba(211,154,62,.32);border-radius:5px;padding:22px;background:linear-gradient(160deg,rgba(211,154,62,.10),rgba(27,21,18,.5))}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+.bonus-lista b{display:block;font-family:var(--display);font-size:clamp(17px,2.2vw,21px);margin:8px 0 6px}
+.bonus-lista p{margin:0;color:var(--smoke);font-size:15px;line-height:1.5}
+
+.passos{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.passos>div{display:grid;gap:8px;align-content:start}
+.passos .n{
+  width:34px;height:34px;border-radius:50%;display:grid;place-content:center;
+  font-family:var(--mono);font-size:14px;color:var(--ink);background:var(--brass);font-weight:700;
+}
+.passos b{font-family:var(--display);font-size:18px;font-weight:600}
+.passos p{margin:0;color:var(--smoke);font-size:15px;line-height:1.5}
+
+.cta-inline{display:flex;flex-wrap:wrap;align-items:center;gap:18px;margin-top:10px}
+.micro{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--smoke);text-transform:uppercase}
+
+.placeholder{border:1px dashed rgba(242,233,224,.28);border-radius:5px;padding:26px;max-width:70ch}
+.placeholder b{display:block;font-family:var(--display);font-size:18px;margin-bottom:8px;color:var(--brass-soft)}
+.placeholder p{margin:0;color:var(--smoke);font-size:15px;line-height:1.55}
+
+.garantia-secao{grid-template-columns:auto 1fr;align-items:center;gap:34px}
+.selo-garantia{
+  width:132px;height:132px;border-radius:50%;flex:none;display:grid;place-content:center;text-align:center;
+  border:1px solid rgba(211,154,62,.5);background:radial-gradient(circle at 50% 30%,rgba(211,154,62,.2),transparent 70%);
+}
+.selo-garantia b{font-family:var(--display);font-size:46px;font-weight:700;line-height:1}
+.selo-garantia span{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass)}
+
+.faq{display:grid;gap:2px;max-width:74ch}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{
+  cursor:pointer;list-style:none;padding:18px 34px 18px 0;position:relative;
+  font-family:var(--display);font-size:clamp(16px,2vw,19px);font-weight:600;
+}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:6px;top:16px;color:var(--brass);font-family:var(--mono);font-size:19px}
+.faq details[open] summary::after{content:"–"}
+.faq summary:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.faq p{margin:0 0 20px;color:var(--smoke);font-size:15px;line-height:1.6;max-width:66ch}
+
+.fechamento{
+  margin-top:72px;padding:56px 24px 60px;text-align:center;display:grid;gap:14px;justify-items:center;
+  border:1px solid rgba(211,154,62,.3);border-radius:6px;
+  background:radial-gradient(120% 100% at 50% 0%,rgba(211,154,62,.12),transparent 70%);
+}
+.preco-final{font-family:var(--display);font-weight:700;font-size:clamp(64px,12vw,110px);line-height:.9;letter-spacing:-.04em}
+.preco-final sup{font-size:.28em;vertical-align:super;color:var(--smoke);font-family:var(--body);font-weight:500}
+.buy.grande{padding:24px 56px;font-size:clamp(17px,2.6vw,22px)}
+
+footer{margin-top:56px;color:var(--smoke);text-align:center;display:grid;gap:10px}
+footer p{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+footer .legal{max-width:70ch;margin:0 auto;line-height:1.7;letter-spacing:0;font-family:var(--body);opacity:.8}
+
+.sticky{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:16px;
+  justify-content:space-between;padding:12px 16px;background:rgba(16,12,11,.96);
+  border-top:1px solid rgba(211,154,62,.3);backdrop-filter:blur(8px);
+  transform:translateY(100%);transition:transform .35s ease;
+}
+.sticky.on{transform:none}
+.sticky-txt{display:grid;line-height:1.25}
+.sticky-txt b{font-family:var(--display);font-size:20px}
+.sticky-txt span{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--smoke)}
+.sticky .buy{padding:14px 24px;font-size:14px}
+
+@media (max-width:820px){
+  .tri,.passos,.bonus-lista{grid-template-columns:1fr}
+  .garantia-secao{grid-template-columns:1fr;gap:20px;justify-items:start}
+}
 @media (max-width:640px){
-  .wrap{padding:18px 14px 80px}
-  .line{grid-template-columns:52px 1fr;gap:10px}
-  .buy{padding:18px 28px;width:100%;text-align:center}
+  .wrap{padding:18px 14px 110px}
+  .secao{padding-top:48px}
+  .buy{padding:18px 24px;width:100%;text-align:center}
+  .sticky .buy{width:auto;padding:14px 20px}
+  .cta-inline{gap:12px}
+  .dias-lista li{grid-template-columns:1fr;gap:4px}
+  .topbar{gap:14px;font-size:10px}
+  .fechamento{padding:40px 18px 44px}
 }
 @media (prefers-reduced-motion:reduce){
   /* sem movimento: tudo entra no estado final, na hora */
@@ -330,90 +418,145 @@ footer{margin-top:56px;color:var(--smoke);font-family:var(--mono);font-size:11px
 }
 </style>
 
+<div class="topbar">
+  <span>Pagamento único</span><span>7 dias de garantia</span><span>Acesso imediato</span>
+</div>
+
 <div class="wrap">
   <header class="masthead">
     <div class="brand">Caixa Rápido <span>— Desafio de 7 Dias</span></div>
     <div class="runtime" id="runtime">—</div>
   </header>
 
-  <h1 class="headline">Atraia mais clientes. Venda mais no seu salão.</h1>
-  <p class="sub">Assista abaixo: por que o caixa não fecha mesmo com a agenda cheia — e o método de 7 dias criado para corrigir isso dentro da sua rotina.</p>
+  <section class="hero">
+    <p class="eyebrow">Para a profissional que tem agenda cheia e mesmo assim fecha o mês no vermelho</p>
+    <h1 class="headline">Atraia mais clientes. Venda mais no seu salão.</h1>
+    <p class="sub">Assista abaixo: por que o caixa não fecha mesmo com a agenda cheia — e o método de 7 dias criado para corrigir isso dentro da sua rotina, sem trabalhar mais horas.</p>
 
-  <div class="stage" id="stage" tabindex="0" role="region" aria-label="Vídeo de vendas: por que o caixa não fecha">
-    <video class="layer media-layer" id="mediaVideo" muted playsinline loop preload="none" aria-hidden="true"></video>
-    <img class="layer media-layer" id="mediaImage" alt="" aria-hidden="true">
-    <canvas class="layer bokeh" id="bokeh" aria-hidden="true"></canvas>
-    <div class="layer art-layer" id="artHost" aria-hidden="true"></div>
-    <div class="layer" id="sceneHost" aria-hidden="true"></div>
-    <div class="sweep" aria-hidden="true"></div>
-    <div class="vignette" aria-hidden="true"></div>
-    <div class="block-tag" id="blockTag"></div>
-    <p class="caption" id="caption" aria-live="polite"></p>
-  </div>
-
-  <div class="controls">
-    <button class="ctrl" id="btnPlay" aria-label="Pausar"><svg viewBox="0 0 24 24" id="icPlay"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
-    <button class="ctrl" id="btnRestart" aria-label="Recomeçar do início"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
-    <div class="track" id="track" role="slider" aria-label="Posição do vídeo" aria-valuemin="0" aria-valuenow="0" tabindex="0"><i id="progress"></i></div>
-    <div class="tc" id="tc">0:00</div>
-    <button class="cc" id="btnSom" aria-pressed="false">Som</button>
-    <button class="cc" id="btnCC" aria-pressed="true">Legenda</button>
-  </div>
-
-  <div class="offer">
-    <a class="buy" id="buyBtn" href="#configurar-checkout">QUERO COMEÇAR POR R$ 97</a>
-    <p class="guarantee"><b>Pagamento único pela Hotmart.</b> 7 dias de garantia — se não fizer sentido, é só pedir o reembolso dentro do prazo, conforme as condições da Hotmart.</p>
-  </div>
-
-  <section class="panel">
-    <div>
-      <h3>Roteiro cronometrado</h3>
-      <h2>O que é falado, e quando</h2>
-      <p>Clique em qualquer linha para saltar o player até ela. Os tempos são calculados a partir da locução (ritmo natural, com as pausas do roteiro marcadas) — use como base para gravar a narração e conferir a sincronia.</p>
-      <div class="script" id="script"></div>
+    <div class="stage" id="stage" tabindex="0" role="region" aria-label="Vídeo: por que o caixa não fecha">
+      <video class="layer media-layer" id="mediaVideo" muted playsinline loop preload="none" aria-hidden="true"></video>
+      <img class="layer media-layer" id="mediaImage" alt="" aria-hidden="true">
+      <canvas class="layer bokeh" id="bokeh" aria-hidden="true"></canvas>
+      <div class="layer art-layer" id="artHost" aria-hidden="true"></div>
+      <div class="layer" id="sceneHost" aria-hidden="true"></div>
+      <div class="sweep" aria-hidden="true"></div>
+      <div class="vignette" aria-hidden="true"></div>
+      <div class="block-tag" id="blockTag"></div>
+      <p class="caption" id="caption" aria-live="polite"></p>
     </div>
 
-    <div>
-      <h3>Produção</h3>
-      <h2>Como colocar no ar</h2>
-      <div class="notes">
-        <div class="note">
-          <b>Onde entra na página</b>
-          <p>Substitua o bloco visual do topo pelo player, logo abaixo da headline. O botão <em>QUERO COMEÇAR POR R$ 97</em> fica visível abaixo do vídeo desde o segundo zero — VSL de preço baixo não esconde o botão.</p>
-        </div>
-        <div class="note">
-          <b>Ajustes de conversão</b>
-          <ul>
-            <li>Autoplay com som desligado e legenda queimada — o público assiste no celular, dentro do salão, sem fone.</li>
-            <li>Thumbnail: rosto de profissional + o texto “Por que o caixa não fecha”.</li>
-            <li>Barra de progresso escondida nos primeiros 60 segundos (já é assim aqui).</li>
-          </ul>
-        </div>
-        <div class="note">
-          <b>Trocar por imagem e vídeo reais</b>
-          <p>Cada cena aceita um arquivo de banco livre por cima do visual animado. Coloque os arquivos em <code>vsl/assets/</code> e mapeie em <code>assets/manifest.json</code>. As fontes gratuitas, os termos de busca e a licença de cada uma estão em <a href="MIDIA.md">MIDIA.md</a>.</p>
-        </div>
-        <div class="note">
-          <b>Narração</b>
-          <p>Se existir <code>assets/narracao.mp3</code>, o player sincroniza a legenda pelo áudio em vez do relógio interno. O texto limpo para gravar (ou para TTS) está em <code>narracao.txt</code>; as legendas prontas, em <code>legendas.srt</code>.</p>
-        </div>
-        <div class="note">
-          <b>O que não prometer</b>
-          <p>Nenhuma linha promete valor de faturamento, e isso é proposital: “R$ 5 mil em 7 dias” derruba anúncio no Meta e gera reembolso em massa na Hotmart. A promessa fica em método e rotina.</p>
-        </div>
-        <div class="note">
-          <b>Personalizações que valem</b>
-          <ul>
-            <li>Bloco 1: um dado real do setor logo na abertura segura retenção. Nunca invente número.</li>
-            <li>Bloco 2: depoimento de aluna de 15s sobre “eu não conseguia oferecer produto”.</li>
-            <li>Bloco 4: a conta fria fica mais forte com o ticket médio real de home care do seu nicho.</li>
-          </ul>
-        </div>
-      </div>
+    <div class="controls">
+      <button class="ctrl" id="btnPlay" aria-label="Pausar"><svg viewBox="0 0 24 24" id="icPlay"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></button>
+      <button class="ctrl" id="btnRestart" aria-label="Recomeçar do início"><svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7a5 5 0 1 1-5 5H5a7 7 0 1 0 7-7z"/></svg></button>
+      <div class="track" id="track" role="slider" aria-label="Posição do vídeo" aria-valuemin="0" aria-valuenow="0" tabindex="0"><i id="progress"></i></div>
+      <div class="tc" id="tc">0:00</div>
+      <button class="cc" id="btnSom" aria-pressed="false">Som</button>
+      <button class="cc" id="btnCC" aria-pressed="true">Legenda</button>
+    </div>
+
+    <div class="offer">
+      <a class="buy" href="#checkout">QUERO COMEÇAR POR R$ 97</a>
+      <p class="guarantee"><b>Pagamento único de R$ 97 pela Hotmart.</b> Acesso imediato e 7 dias de garantia — se não fizer sentido, é só pedir o reembolso dentro do prazo, conforme as condições da Hotmart.</p>
     </div>
   </section>
 
-  <footer>Caixa Rápido — Desafio de 7 Dias · roteiro RMBC · <span id="wordcount"></span></footer>
+  <section class="secao">
+    <h2>Isso aqui é para você se</h2>
+    <ul class="checks">
+      <li>a sua agenda enche, você atende o dia inteiro e no fim do mês o número não corresponde ao esforço.</li>
+      <li>você vê o que a cliente precisa levar para casa, mas trava na hora de falar — e ela compra qualquer coisa no mercado.</li>
+      <li>você já tentou promoção, já baixou preço, já postou mais, e o caixa continuou igual.</li>
+      <li>você quer aumentar o valor de cada atendimento que já faz hoje, sem esticar a jornada.</li>
+    </ul>
+    <p class="nao-e">Não é para quem procura fórmula mágica de faturamento garantido. Aqui é método aplicado dentro da sua rotina, um passo por dia.</p>
+  </section>
+
+  <section class="secao">
+    <h2>O dinheiro que falta já entrou pela sua porta</h2>
+    <p class="lead">A maioria tenta encher um balde furado colocando mais água dentro: mais cliente, mais hora, mais promoção. O desafio faz o contrário — tampa os furos primeiro. Aí cada litro que entra, fica.</p>
+    <div class="tri">
+      <div class="tri-card"><span class="n">01</span><b>Atrair</b><p>Ações simples, de custo zero, para trazer clientes novas sem depender de sorte nem de algoritmo.</p></div>
+      <div class="tri-card"><span class="n">02</span><b>Aproveitar</b><p>Um novo olhar no atendimento: enxergar, em cada cliente que senta na cadeira, a oportunidade que já está ali.</p></div>
+      <div class="tri-card"><span class="n">03</span><b>Vender naturalmente</b><p>Transformar a observação técnica em recomendação que soa como cuidado profissional, não como empurrão.</p></div>
+    </div>
+  </section>
+
+  <section class="secao">
+    <h2>O que você recebe</h2>
+    <p class="lead">7 dias, 7 missões. Uma por dia, para executar dentro do salão, no meio da rotina normal.</p>
+    <ol class="dias-lista">
+      <li><span>Dia 1</span> Você define a sua meta — quanto quer tirar a mais e de onde esse dinheiro vai sair.</li>
+      <li><span>Dia 2</span> Ações de custo zero para atrair clientes novas.</li>
+      <li><span>Dia 3</span> Enxergar as oportunidades que já sentam na sua cadeira.</li>
+      <li><span>Dia 4</span> A venda natural: como recomendar sem parecer vendedora.</li>
+      <li><span>Dia 5</span> Home care — o que indicar, para quem e em que momento.</li>
+      <li><span>Dia 6</span> Respostas prontas para “está caro” e “vou pensar”.</li>
+      <li><span>Dia 7</span> O seu plano de vendas, pronto para continuar rodando depois que o desafio acabar.</li>
+    </ol>
+    <div class="bonus-lista">
+      <div><span class="tag">Bônus 1</span><b>ChatGPT para comunicação e vendas</b><p>Treinamento para criar divulgação, legenda e mensagem de WhatsApp em minutos.</p></div>
+      <div><span class="tag">Bônus 2</span><b>App USALON 30D</b><p>Acesso liberado junto com o desafio.</p></div>
+    </div>
+    <div class="cta-inline">
+      <a class="buy" href="#checkout">QUERO COMEÇAR POR R$ 97</a>
+      <span class="micro">Pagamento único · acesso imediato · 7 dias de garantia</span>
+    </div>
+  </section>
+
+  <section class="secao">
+    <h2>Como funciona</h2>
+    <div class="passos">
+      <div><span class="n">1</span><b>Você garante o acesso</b><p>Pagamento único de R$ 97 pela Hotmart, no cartão, Pix ou boleto.</p></div>
+      <div><span class="n">2</span><b>Recebe o acesso na hora</b><p>Assim que o pagamento é confirmado, o desafio e os bônus liberam no seu e-mail.</p></div>
+      <div><span class="n">3</span><b>Executa uma missão por dia</b><p>Cada dia tem uma tarefa curta, para aplicar no salão sem parar de atender.</p></div>
+    </div>
+  </section>
+
+  <section class="secao" id="depoimentos">
+    <h2>Quem já aplicou</h2>
+    <div class="placeholder">
+      <b>Espaço reservado para depoimentos reais</b>
+      <p>Substitua este bloco por 2 ou 3 depoimentos de alunas — de preferência em vídeo curto, ou print com o nome e a cidade. Depoimento tem que ser real e autorizado: pessoa de banco de imagem aqui é propaganda enganosa e derruba conta de anúncio.</p>
+    </div>
+  </section>
+
+  <section class="secao garantia-secao">
+    <div class="selo-garantia"><b>7</b><span>dias de garantia</span></div>
+    <div>
+      <h2>O risco de testar é zero</h2>
+      <p class="lead">Entre, aplique as primeiras missões dentro do seu salão e observe o que acontece no seu caixa. Se não fizer sentido para você, peça o reembolso dentro do prazo, conforme as condições da Hotmart. Sem justificativa, sem ligação de retenção.</p>
+    </div>
+  </section>
+
+  <section class="secao">
+    <h2>Perguntas que chegam antes da compra</h2>
+    <div class="faq">
+      <details><summary>Não tenho tempo. Quanto isso vai tomar do meu dia?</summary><p>Cada missão é curta e feita dentro do atendimento que você já faz. O desafio foi montado para caber na rotina de quem passa o dia em pé, não para virar mais um curso parado na aba do navegador.</p></details>
+      <details><summary>Eu não sei vender. Não sou boa nisso.</summary><p>É exatamente esse o ponto. O que falta não é talento técnico, é método de conversa: o que olhar, o que falar e em que momento. Os dias 4, 5 e 6 tratam só disso, com frases prontas.</p></details>
+      <details><summary>Funciona para quem atende sozinha, em casa ou em espaço alugado?</summary><p>Sim. As missões dependem do seu atendimento, não do tamanho do salão nem de equipe.</p></details>
+      <details><summary>Preciso ter Instagram ou saber gravar vídeo?</summary><p>Não. As ações de atrair são de custo zero e não dependem de algoritmo. O bônus de ChatGPT ajuda se você quiser divulgar, mas nada aqui depende de rede social.</p></details>
+      <details><summary>Como recebo o acesso?</summary><p>Assim que a Hotmart confirma o pagamento, o acesso chega no seu e-mail. Cartão e Pix costumam liberar na hora; boleto depende da compensação.</p></details>
+      <details><summary>Quanto eu vou faturar?</summary><p>Não existe número garantido, e desconfie de quem promete. O que o desafio entrega é método e rotina: o quanto você aumenta depende do seu ticket, do seu volume de atendimento e da sua aplicação.</p></details>
+    </div>
+  </section>
+
+  <section class="fechamento" id="checkout">
+    <p class="eyebrow">Acesso completo ao desafio + os dois bônus</p>
+    <div class="preco-final"><sup>R$</sup>97</div>
+    <p class="micro">pagamento único · sem mensalidade · 7 dias de garantia</p>
+    <a class="buy grande" href="#configurar-checkout" id="buyBtn">QUERO COMEÇAR AGORA</a>
+    <p class="guarantee">Talento você já tem. O que falta é estratégia.</p>
+  </section>
+
+  <footer>
+    <p>Caixa Rápido — Desafio de 7 Dias · pagamento processado pela Hotmart</p>
+    <p class="legal">Este material não promete faturamento específico. Os resultados dependem da aplicação de cada profissional, do seu ticket médio e do seu volume de atendimento. Nada aqui constitui garantia de ganho.</p>
+  </footer>
+</div>
+
+<div class="sticky" id="sticky" hidden>
+  <div class="sticky-txt"><b>R$ 97</b><span>pagamento único · 7 dias de garantia</span></div>
+  <a class="buy" href="#checkout">QUERO COMEÇAR</a>
 </div>
 
 <script>
@@ -549,6 +692,9 @@ const CENA_ARTE = {
   'fecho': () => ART.profissional('confiante'),
 };
 
+/* ---- troque por seu link da Hotmart e pronto: todos os botões apontam para ele ---- */
+const CHECKOUT = '';   // ex.: 'https://pay.hotmart.com/XXXXXXXXX'
+
 const $ = s => document.querySelector(s);
 const stage = $('#stage'), sceneHost = $('#sceneHost'), caption = $('#caption'),
       blockTag = $('#blockTag'), track = $('#track'), progress = $('#progress'),
@@ -557,30 +703,27 @@ const stage = $('#stage'), sceneHost = $('#sceneHost'), caption = $('#caption'),
       mediaVideo = $('#mediaVideo'), mediaImage = $('#mediaImage'),
       artHost = $('#artHost'), bokeh = $('#bokeh'), btnSom = $('#btnSom');
 
+if (CHECKOUT) {
+  document.querySelectorAll('a.buy').forEach(a => {
+    a.href = CHECKOUT;
+    a.rel = 'noopener';
+  });
+}
+
+/* barra de compra fixa: entra quando o primeiro botão sai da tela */
+const sticky = $('#sticky');
+const primeiroBotao = document.querySelector('.offer .buy');
+if (sticky && primeiroBotao && 'IntersectionObserver' in window) {
+  new IntersectionObserver(([e]) => {
+    const mostrar = !e.isIntersecting && e.boundingClientRect.top < 0;
+    sticky.hidden = false;
+    sticky.classList.toggle('on', mostrar);
+  }, { threshold: 0 }).observe(primeiroBotao);
+}
+
 const fmt = s => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 $('#runtime').textContent = `duração ${fmt(TOTAL)}`;
-$('#wordcount').textContent = `${CUES.reduce((a,c)=>a+c.t.split(/\s+/).length,0)} palavras · ${fmt(TOTAL)}`;
 
-/* --- roteiro cronometrado abaixo do player --- */
-(function buildScript(){
-  const host = $('#script');
-  let blk = null;
-  CUES.forEach((c, i) => {
-    if (c.b) {
-      blk = document.createElement('details');
-      blk.className = 'blk';
-      if (!host.children.length) blk.open = true;
-      blk.innerHTML = `<summary class="blk-head"><b>${c.b}</b><span>${fmt(c.start)}</span></summary>`;
-      host.appendChild(blk);
-    }
-    const line = document.createElement('div');
-    line.className = 'line'; line.dataset.i = i;
-    line.innerHTML = `<time>${fmt(c.start)}</time><span>${c.t}</span>`;
-    line.addEventListener('click', () => { seek(c.start); play(); });
-    (blk || host).appendChild(line);
-  });
-})();
-const lineEls = [...document.querySelectorAll('.line')];
 
 /* --- mídia opcional de banco livre (assets/manifest.json) --- */
 let manifest = {}, narration = null;
@@ -751,7 +894,6 @@ function update() {
     let tag = '';
     for (let k = i; k >= 0; k--) if (CUES[k].b) { tag = CUES[k].b; break; }
     blockTag.textContent = tag;
-    lineEls.forEach(el => el.classList.toggle('now', +el.dataset.i === i));
   }
   renderDays(time);
   progress.style.width = (time / TOTAL * 100) + '%';

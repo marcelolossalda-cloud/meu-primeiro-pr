@@ -10,10 +10,21 @@ com as cenas (tesoura, secador, gota, tique-taque, moeda, chimes dos pilares).
 Tudo é sintetizado aqui — nenhum sample de terceiros, nenhuma licença envolvida.
 A trilha fica baixa de propósito (pico em -6 dB): ela é cama para a locução,
 não protagonista. Ajuste GANHO_* se quiser mais ou menos presença.
+
+Para usar uma música licenciada sua (Epidemic Sound, Artlist, Soundstripe...) no
+lugar da cama sintetizada, mantendo os efeitos sincronizados com as cenas:
+
+    python3 vsl/trilha.py --musica ~/Downloads/faixa.mp3
+    python3 vsl/trilha.py --musica faixa.mp3 --ganho 0.7   # mais presença da música
+
+A música é cortada (ou repetida) no tamanho exato da VSL, ganha fade de entrada e
+saída, e continua abaixando naquele respiro de "e você não falou nada".
+Baixe a faixa com a sua conta e confira se o seu plano cobre anúncio pago —
+plano pessoal costuma não cobrir tráfego, e trilha fora de licença derruba vídeo.
 """
 
+import argparse
 import json
-import math
 import os
 import subprocess
 import sys
@@ -171,7 +182,48 @@ def batida_grave():
 
 
 # -------------------------------------------------------------------- trilha
+def ffmpeg():
+    if os.environ.get('FFMPEG'):
+        return os.environ['FFMPEG']
+    try:
+        import imageio_ffmpeg
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError:
+        return 'ffmpeg'
+
+
+def musica_externa(arquivo, dur):
+    """decodifica a faixa licenciada e ajusta ao tamanho da VSL"""
+    bruto = subprocess.run(
+        [ffmpeg(), '-v', 'quiet', '-i', arquivo, '-f', 's16le', '-ac', '1', '-ar', str(SR), '-'],
+        capture_output=True, check=True).stdout
+    x = np.frombuffer(bruto, '<i2').astype(np.float64) / 32768
+    if len(x) == 0:
+        sys.exit(f'não consegui ler áudio de {arquivo}')
+    n = int(dur * SR)
+    if len(x) < n:                      # curta demais: repete com emenda suave
+        emenda = int(1.5 * SR)
+        voltas = []
+        while sum(len(v) for v in voltas) < n:
+            t = x.copy()
+            if voltas:
+                t[:emenda] *= np.linspace(0, 1, emenda)
+                voltas[-1][-emenda:] *= np.linspace(1, 0, emenda)
+            voltas.append(t)
+        x = np.concatenate(voltas)
+    x = x[:n]
+    e = int(3 * SR)
+    x[:e] *= np.linspace(0, 1, e)
+    x[-e:] *= np.linspace(1, 0, e)
+    return x / max(1e-9, np.abs(x).max())
+
+
 def main():
+    ap = argparse.ArgumentParser(description='trilha da VSL Caixa Rápido')
+    ap.add_argument('--musica', help='faixa licenciada para usar no lugar da cama sintetizada')
+    ap.add_argument('--ganho', type=float, default=.55, help='volume da faixa (padrão 0.55)')
+    args = ap.parse_args()
+
     if not os.path.exists(TEMPOS):
         sys.exit('tempos.json não existe — rode `node vsl/build.js` antes.')
     dados = json.load(open(TEMPOS, encoding='utf-8'))
@@ -188,6 +240,9 @@ def main():
 
     mix = Mix(total + 4)
 
+    if args.musica:
+        mix.add(musica_externa(args.musica, total), 0, args.ganho)
+
     # --- cama harmônica: menor e escura nos blocos 1-2, abre em maior no 3
     acordes = [
         [55.00, 82.41, 110.00],            # Lá menor — a dor
@@ -196,7 +251,7 @@ def main():
         [65.41, 98.00, 174.61, 196.00],    # Fá — a oferta
         [65.41, 98.00, 164.81, 196.00],    # resolução
     ]
-    for i, (ini, fim) in enumerate(limites):
+    for i, (ini, fim) in enumerate(limites) if not args.musica else []:
         dur = fim - ini + 3
         cor = .25 if i < 2 else .75
         camada = cama(dur, acordes[i], cor)
@@ -207,7 +262,7 @@ def main():
         mix.add(camada, ini - 1.5, GANHO_CAMA)
 
     # --- pulso: lento e cardíaco no diagnóstico, mais firme na oferta
-    t = 6.0
+    t = 6.0 if not args.musica else total
     while t < total - 3:
         b3 = limites[2][0]
         intervalo = 2.0 if t < b3 else 1.5
@@ -217,7 +272,7 @@ def main():
 
     # --- plucks a partir da solução (bloco 3)
     escala = [261.63, 293.66, 329.63, 392.00, 440.00]
-    t = limites[2][0]
+    t = limites[2][0] if not args.musica else total
     i = 0
     while t < total - 4:
         nota = escala[(i * 3 + (i // 5)) % len(escala)]

@@ -8,7 +8,8 @@ Abra `index.html` no navegador para assistir.
 
 ```
 vsl/
-├── index.html          página pronta (gerada — não edite à mão)
+├── index.html          página de vendas pronta (gerada — não edite à mão)
+├── producao.html       material interno: roteiro cronometrado e notas
 ├── index.artifact.html mesma página com a trilha embutida, para publicar solta
 ├── index.src.html      fonte da página: estilo, cenas e player
 ├── roteiro.cues.js     fonte do roteiro: cada fala, cena e pausa
@@ -47,6 +48,16 @@ Isso regenera `index.html`, `legendas.srt`, `legendas.vtt` e `narracao.txt` já 
 recalculados. O ritmo assumido é de locução calma em português (~2,85 palavras por segundo);
 as constantes ficam no topo do `<script>` em `index.src.html`.
 
+## Link do checkout
+
+Abra `index.src.html`, preencha a constante no topo do `<script>`:
+
+```js
+const CHECKOUT = 'https://pay.hotmart.com/SEU-LINK';
+```
+
+e rode `node vsl/build.js`. Os quatro botões da página passam a apontar para lá.
+
 ## Som
 
 `audio/trilha.mp3` é sintetizada por `trilha.py` — nenhum sample de terceiros, nenhuma licença
@@ -64,6 +75,18 @@ Para mexer na trilha, edite `trilha.py` e rode:
 ```bash
 node vsl/build.js && python3 vsl/trilha.py
 ```
+
+Se você tem assinatura de banco de música (Epidemic Sound, Artlist, Soundstripe), baixe a faixa
+pela sua conta e use no lugar da cama sintetizada, mantendo os efeitos sincronizados com as cenas:
+
+```bash
+python3 vsl/trilha.py --musica ~/Downloads/faixa.mp3
+python3 vsl/trilha.py --musica faixa.mp3 --ganho 0.7   # mais presença da música
+```
+
+A faixa é cortada no tamanho exato da VSL, ganha fade e continua abaixando no respiro de "e você
+não falou nada". Confira se o seu plano cobre **anúncio pago** — plano pessoal normalmente não
+cobre tráfego, e trilha fora de licença derruba vídeo.
 
 Ela fica em -28 dB de média, de propósito: é cama para a locução entrar por cima. `GANHO_CAMA`,
 `GANHO_PULSO` e `GANHO_EFEITO` no topo do arquivo controlam o equilíbrio.
