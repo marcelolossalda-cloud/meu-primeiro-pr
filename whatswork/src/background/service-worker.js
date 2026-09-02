@@ -7,7 +7,7 @@
  */
 importScripts('/src/lib/store.js');
 
-var ALARM = 'wacrm:tick';
+var ALARM = 'whatswork:tick';
 
 chrome.runtime.onInstalled.addListener(function () {
   chrome.alarms.create(ALARM, { periodInMinutes: 1 });
@@ -18,7 +18,7 @@ chrome.runtime.onStartup.addListener(function () {
 });
 
 chrome.runtime.onMessage.addListener(function (msg) {
-  if (msg && msg.type === 'wacrm:reschedule') tick();
+  if (msg && msg.type === 'whatswork:reschedule') tick();
 });
 
 chrome.alarms.onAlarm.addListener(function (alarm) {
@@ -31,7 +31,7 @@ function tick() {
 
 /** Promove agendamentos vencidos para "due" e acorda o content script. */
 function markDueMessages() {
-  return WACRM.listScheduled().then(function (list) {
+  return WhatsWorkStore.listScheduled().then(function (list) {
     var now = Date.now();
     var changed = false;
     list.forEach(function (item) {
@@ -41,31 +41,31 @@ function markDueMessages() {
       }
     });
     if (!changed) return null;
-    return WACRM.put(WACRM.KEYS.SCHEDULED, list).then(notifyTabs);
+    return WhatsWorkStore.put(WhatsWorkStore.KEYS.SCHEDULED, list).then(notifyTabs);
   });
 }
 
 function notifyTabs() {
   return chrome.tabs.query({ url: 'https://web.whatsapp.com/*' }).then(function (tabs) {
     if (!tabs.length) {
-      return notify('wacrm:no-tab', 'WA CRM Lite', 'Há mensagem agendada para agora, mas o WhatsApp Web não está aberto.');
+      return notify('whatswork:no-tab', 'WhatsWork', 'Há mensagem agendada para agora, mas o WhatsApp Web não está aberto.');
     }
     tabs.forEach(function (tab) {
-      chrome.tabs.sendMessage(tab.id, { type: 'wacrm:process-queue' }).catch(function () { /* aba sem content script */ });
+      chrome.tabs.sendMessage(tab.id, { type: 'whatswork:process-queue' }).catch(function () { /* aba sem content script */ });
     });
   });
 }
 
 function fireDueReminders() {
-  return WACRM.listReminders().then(function (list) {
+  return WhatsWorkStore.listReminders().then(function (list) {
     var now = Date.now();
     var due = list.filter(function (r) { return !r.done && !r.notified && r.dueAt <= now; });
     if (!due.length) return null;
     due.forEach(function (rem) {
       rem.notified = true;
-      notify('wacrm:rem:' + rem.id, 'Follow-up' + (rem.name ? ' — ' + rem.name : ''), rem.text);
+      notify('whatswork:rem:' + rem.id, 'Follow-up' + (rem.name ? ' — ' + rem.name : ''), rem.text);
     });
-    return WACRM.put(WACRM.KEYS.REMINDERS, list);
+    return WhatsWorkStore.put(WhatsWorkStore.KEYS.REMINDERS, list);
   });
 }
 

@@ -1,0 +1,13 @@
+{
+  "name": "whatswork",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Extensão de navegador que adiciona um painel de CRM ao WhatsApp Web.",
+  "scripts": {
+    "validate": "node tools/validate.js",
+    "test": "node tools/validate.js && node tests/e2e.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

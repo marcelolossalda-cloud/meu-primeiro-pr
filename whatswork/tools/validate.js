@@ -72,6 +72,45 @@ for (const file of jsFiles) {
   }
 }
 
+/* ------------------------------------------------ trava de segurança
+
+   Estas checagens existem para que as garantias do README continuem verdadeiras
+   conforme a extensão for personalizada: sem permissão a mais, sem código
+   remoto, sem injeção de HTML e sem chamada de rede. Se alguma delas passar a
+   atrapalhar, a decisão é consciente — mexer aqui e no README junto. */
+
+const ALLOWED_PERMISSIONS = ['storage', 'alarms', 'notifications'];
+const ALLOWED_HOSTS = ['https://web.whatsapp.com/*'];
+
+(manifest.permissions || []).forEach((perm) => {
+  check(ALLOWED_PERMISSIONS.includes(perm),
+    `permissão não prevista: "${perm}" — amplia o acesso da extensão, revise antes de liberar`);
+});
+(manifest.host_permissions || []).forEach((host) => {
+  check(ALLOWED_HOSTS.includes(host),
+    `host_permission não prevista: "${host}" — a extensão só deveria ver o WhatsApp Web`);
+});
+check(!!(manifest.content_security_policy || {}).extension_pages,
+  'manifest sem content_security_policy.extension_pages');
+
+const BANNED = [
+  [/\.innerHTML\s*=/, 'atribuição a innerHTML (use textContent / createElement)'],
+  [/\bdocument\.write\b/, 'document.write'],
+  [/\beval\s*\(/, 'eval()'],
+  [/\bnew\s+Function\s*\(/, 'new Function()'],
+  [/\bfetch\s*\(\s*['"`]https?:/, 'fetch para URL externa'],
+  [/\bXMLHttpRequest\b/, 'XMLHttpRequest'],
+  [/\bnew\s+WebSocket\b/, 'WebSocket'],
+  [/chrome\.storage\.sync\b/, 'chrome.storage.sync (sobe os dados para a conta Google; use .local)']
+];
+
+for (const file of jsFiles) {
+  const src = fs.readFileSync(file, 'utf8');
+  for (const [re, label] of BANNED) {
+    if (re.test(src)) errors.push(`${path.relative(ROOT, file)}: ${label}`);
+  }
+}
+
 /* --------------- content scripts carregam store.js antes de quem o usa */
 
 (manifest.content_scripts || []).forEach((cs, i) => {

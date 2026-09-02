@@ -61,7 +61,7 @@
     return {
       jid: jid || 'name:' + name,
       name: name || '',
-      phone: jid ? root.WACRM.jidToPhone(jid) : '',
+      phone: jid ? root.WhatsWorkStore.jidToPhone(jid) : '',
       isGroup: !!jid && jid.indexOf('@g.us') !== -1,
       resolved: !!jid
     };
@@ -154,7 +154,7 @@
     }, 800);
   }
 
-  root.WADom = {
+  root.WhatsWorkDom = {
     SEL: SEL,
     getActiveChat: getActiveChat,
     getActiveChatJid: getActiveChatJid,

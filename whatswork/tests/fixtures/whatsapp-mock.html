@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>WhatsApp (mock de teste)</title>
+  <style>
+    body { margin: 0; font-family: sans-serif; background: #eae6df; }
+    #app { display: flex; height: 100vh; }
+    #main { flex: 1; display: flex; flex-direction: column; }
+    header { background: #f0f2f5; padding: 12px 16px; border-bottom: 1px solid #d1d7db; }
+    .msgs { flex: 1; overflow: auto; padding: 16px; }
+    .msg { background: #fff; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; max-width: 60%; }
+    footer { display: flex; gap: 8px; padding: 10px 16px; background: #f0f2f5; }
+    [contenteditable] { flex: 1; background: #fff; border-radius: 8px; padding: 10px; min-height: 22px; }
+    footer button { border: 0; background: transparent; cursor: pointer; font-size: 20px; }
+  </style>
+</head>
+<body>
+  <!--
+    Réplica mínima do WhatsApp Web para teste automatizado.
+
+    Só reproduz o que src/content/wa-dom.js observa: o #main, o título no
+    header, as mensagens com data-id (de onde sai o JID), o campo
+    contenteditable e o botão de enviar com data-icon="send". As classes CSS
+    reais são ofuscadas e não importam — se algum seletor da extensão depender
+    delas, ele quebra aqui também, que é justamente o ponto.
+  -->
+  <div id="app">
+    <div id="main">
+      <header>
+        <span dir="auto" title="Contato Teste">Contato Teste</span>
+      </header>
+
+      <div class="msgs">
+        <div data-id="false_5511999998888@c.us_3EB0A1B2C3" class="msg">Oi, tudo bem?</div>
+        <div data-id="true_5511999998888@c.us_3EB0A1B2C4" class="msg">Tudo! Como posso ajudar?</div>
+      </div>
+
+      <footer>
+        <div contenteditable="true" role="textbox" data-tab="10" aria-label="Digite uma mensagem"></div>
+        <button aria-label="Enviar"><span data-icon="send">➤</span></button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // O teste lê window.__sent para conferir o que a extensão mandou enviar.
+    window.__sent = [];
+    var box = document.querySelector('[contenteditable]');
+    document.querySelector('footer button').addEventListener('click', function () {
+      window.__sent.push(box.innerText);
+      box.textContent = '';
+    });
+  </script>
+</body>
+</html>

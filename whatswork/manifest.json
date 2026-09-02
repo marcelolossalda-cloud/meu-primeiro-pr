@@ -1,16 +1,27 @@
 {
   "manifest_version": 3,
-  "name": "WA CRM Lite — CRM para WhatsApp Web",
+  "name": "WhatsWork — CRM para WhatsApp Web",
   "version": "0.1.0",
   "description": "Adiciona um painel de CRM ao WhatsApp Web: notas, etiquetas, modelos de resposta, mensagens agendadas e lembretes de follow-up.",
-  "permissions": ["storage", "alarms", "notifications"],
-  "host_permissions": ["https://web.whatsapp.com/*"],
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'none'"
+  },
   "background": {
     "service_worker": "src/background/service-worker.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://web.whatsapp.com/*"],
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
       "js": [
         "src/lib/store.js",
         "src/content/wa-dom.js",
@@ -22,12 +33,16 @@
   ],
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "WA CRM Lite"
+    "default_title": "WhatsWork"
   },
   "web_accessible_resources": [
     {
-      "resources": ["src/content/sidebar.css"],
-      "matches": ["https://web.whatsapp.com/*"]
+      "resources": [
+        "src/content/sidebar.css"
+      ],
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ]
     }
   ],
   "icons": {

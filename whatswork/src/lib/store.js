@@ -9,11 +9,11 @@
   'use strict';
 
   var K = {
-    CONTACTS: 'crm:contacts',
-    TAGS: 'crm:tags',
-    TEMPLATES: 'crm:templates',
-    SCHEDULED: 'crm:scheduled',
-    REMINDERS: 'crm:reminders'
+    CONTACTS: 'whatswork:contacts',
+    TAGS: 'whatswork:tags',
+    TEMPLATES: 'whatswork:templates',
+    SCHEDULED: 'whatswork:scheduled',
+    REMINDERS: 'whatswork:reminders'
   };
 
   var DEFAULT_TAGS = [
@@ -241,7 +241,7 @@
     return digits ? digits + '@c.us' : '';
   }
 
-  return (root.WACRM = {
+  return (root.WhatsWorkStore = {
     KEYS: K,
     uid: uid,
     get: get,

@@ -5,8 +5,8 @@
 (function (root) {
   'use strict';
 
-  var WACRM = root.WACRM;
-  var WADom = root.WADom;
+  var WhatsWorkStore = root.WhatsWorkStore;
+  var WhatsWorkDom = root.WhatsWorkDom;
 
   var MAX_ATTEMPTS = 3;
   var busy = false;
@@ -32,35 +32,46 @@
     if (busy) return Promise.resolve();
     busy = true;
 
-    return WACRM.listScheduled().then(function (list) {
+    return WhatsWorkStore.listScheduled().then(function (list) {
       var due = list.filter(function (s) { return s.status === 'due'; })
                     .sort(function (a, b) { return a.sendAt - b.sendAt; })[0];
       if (!due) return null;
 
       if ((due.attempts || 0) >= MAX_ATTEMPTS) {
-        return WACRM.updateScheduled(due.id, {
+        return WhatsWorkStore.updateScheduled(due.id, {
           status: 'failed',
           error: 'não foi possível abrir a conversa após ' + MAX_ATTEMPTS + ' tentativas'
         });
       }
 
-      var chat = WADom.getActiveChat();
+      var chat = WhatsWorkDom.getActiveChat();
       if (!chat || !chat.phone || chat.phone !== due.phone) {
-        return WACRM.updateScheduled(due.id, { attempts: (due.attempts || 0) + 1 })
-          .then(function () { WADom.openChatByPhone(due.phone); });
+        return WhatsWorkStore.updateScheduled(due.id, { attempts: (due.attempts || 0) + 1 })
+          .then(function () { WhatsWorkDom.openChatByPhone(due.phone); });
       }
 
-      return WADom.waitForComposer(20000)
-        .then(function () { return WADom.sendText(due.body); })
+      // Nunca sobrescrever o que a pessoa está escrevendo. O envio programado
+      // limpa o campo antes de digitar, então se há rascunho ali o envio
+      // espera — e o motivo aparece no painel, para não sumir em silêncio.
+      var composer = WhatsWorkDom.getComposer();
+      if (composer && composer.innerText.trim()) {
+        return WhatsWorkStore.updateScheduled(due.id, {
+          waitingReason: 'há um rascunho no campo de mensagem'
+        });
+      }
+
+      return WhatsWorkDom.waitForComposer(20000)
+        .then(function () { return WhatsWorkDom.sendText(due.body); })
         .then(function (sent) {
-          return WACRM.updateScheduled(due.id, {
+          return WhatsWorkStore.updateScheduled(due.id, {
             status: sent ? 'sent' : 'failed',
             error: sent ? '' : 'botão de enviar não encontrado',
+            waitingReason: '',
             sentAt: Date.now()
           });
         })
         .catch(function (err) {
-          return WACRM.updateScheduled(due.id, { status: 'failed', error: String(err && err.message || err) });
+          return WhatsWorkStore.updateScheduled(due.id, { status: 'failed', error: String(err && err.message || err) });
         });
     }).then(function () {
       busy = false;
@@ -70,12 +81,12 @@
   }
 
   chrome.runtime.onMessage.addListener(function (msg) {
-    if (msg && msg.type === 'wacrm:process-queue') processQueue();
-    if (msg && msg.type === 'wacrm:open-panel') root.WASidebar.setOpen(true);
+    if (msg && msg.type === 'whatswork:process-queue') processQueue();
+    if (msg && msg.type === 'whatswork:open-panel') root.WhatsWorkPanel.setOpen(true);
   });
 
   waitForApp().then(function () {
-    root.WASidebar.init();
+    root.WhatsWorkPanel.init();
     processQueue();
     setInterval(processQueue, 30000);
   });

@@ -7,9 +7,9 @@
 
   function refreshStats() {
     Promise.all([
-      WACRM.listContacts(),
-      WACRM.listScheduled(),
-      WACRM.listReminders()
+      WhatsWorkStore.listContacts(),
+      WhatsWorkStore.listScheduled(),
+      WhatsWorkStore.listReminders()
     ]).then(function (res) {
       var contacts = Object.keys(res[0]).map(function (k) { return res[0][k]; });
       $('stat-contacts').textContent = contacts.length;
@@ -26,7 +26,7 @@
   /* ------------------------------------------------------------ etiquetas */
 
   function refreshTags() {
-    WACRM.listTags().then(function (tags) {
+    WhatsWorkStore.listTags().then(function (tags) {
       var ul = $('tag-list');
       ul.textContent = '';
       tags.forEach(function (tag) {
@@ -37,7 +37,7 @@
         btn.textContent = '×';
         btn.title = 'Remover etiqueta';
         btn.addEventListener('click', function () {
-          WACRM.removeTag(tag.id).then(refreshTags);
+          WhatsWorkStore.removeTag(tag.id).then(refreshTags);
         });
         li.appendChild(btn);
         ul.appendChild(li);
@@ -48,7 +48,7 @@
   $('tag-add').addEventListener('click', function () {
     var name = $('tag-name').value.trim();
     if (!name) return;
-    WACRM.addTag(name, $('tag-color').value).then(function () {
+    WhatsWorkStore.addTag(name, $('tag-color').value).then(function () {
       $('tag-name').value = '';
       refreshTags();
     });
@@ -91,7 +91,7 @@
   }
 
   $('export').addEventListener('click', function () {
-    Promise.all([WACRM.listContacts(), WACRM.listTags()]).then(function (res) {
+    Promise.all([WhatsWorkStore.listContacts(), WhatsWorkStore.listTags()]).then(function (res) {
       var contacts = res[0];
       var tagsById = {};
       res[1].forEach(function (t) { tagsById[t.id] = t.name; });
@@ -113,7 +113,7 @@
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
-      a.download = 'wa-crm-contatos.csv';
+      a.download = 'whatswork-contatos.csv';
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -142,7 +142,7 @@
         return;
       }
 
-      WACRM.listTags().then(function (tags) {
+      WhatsWorkStore.listTags().then(function (tags) {
         var byName = {};
         tags.forEach(function (t) { byName[t.name.toLowerCase()] = t.id; });
 
@@ -150,7 +150,7 @@
         rows.slice(1).forEach(function (row) {
           var phone = (row[idx.phone] || '').replace(/\D/g, '');
           if (!phone) return;
-          var jid = WACRM.phoneToJid(phone);
+          var jid = WhatsWorkStore.phoneToJid(phone);
           var tagIds = idx.tags === -1 ? [] : (row[idx.tags] || '')
             .split('|')
             .map(function (n) { return byName[n.trim().toLowerCase()]; })
@@ -158,7 +158,7 @@
 
           chain = chain
             .then(function () {
-              return WACRM.upsertContact(jid, {
+              return WhatsWorkStore.upsertContact(jid, {
                 name: idx.name === -1 ? '' : (row[idx.name] || '').trim(),
                 phone: phone,
                 tags: tagIds
@@ -166,7 +166,7 @@
             })
             .then(function () {
               var note = idx.notes === -1 ? '' : (row[idx.notes] || '').trim();
-              return note ? WACRM.addNote(jid, note) : null;
+              return note ? WhatsWorkStore.addNote(jid, note) : null;
             });
         });
 
