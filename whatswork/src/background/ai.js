@@ -21,6 +21,7 @@
   var MAX_TOKENS = 2000;
   var MAX_BUSINESS_CHARS = 4000;
   var MAX_VOICE_CHARS = 2000;
+  var MAX_MODELOS_TESTADOS = 8;
 
   /* ==================================================================
      PROVEDORES
@@ -179,7 +180,8 @@
         } else if (status === 404) {
           texto = 'Esse modelo não existe ou não aceita geração de texto. Escolha outro na lista.';
         } else if (status === 429) {
-          texto = 'Cota do Gemini esgotada. O plano gratuito tem limite por minuto e por dia.';
+          texto = 'Cota esgotada para esse modelo. No nível gratuito a cota é por modelo — ' +
+            'clique em "Procurar um modelo que funcione" para achar um com cota disponível.';
         } else if (status >= 500) {
           texto = 'O modelo está congestionado no Google. Já tentei 4 vezes — espere um minuto e ' +
             'clique de novo, ou escolha outro modelo na lista (um "pro" costuma estar mais livre ' +
@@ -607,10 +609,65 @@
     });
   }
 
+  /**
+   * Procura, entre os modelos do provedor, o primeiro que responde de fato.
+   *
+   * No nível gratuito do Gemini a cota é POR MODELO: o mais novo costuma vir
+   * com cota zero enquanto outros funcionam. Descobrir isso na mão significa
+   * trocar no seletor e clicar em testar, um por um — trabalho que o código
+   * faz em segundos. Para no primeiro sucesso, e cada tentativa custa 16
+   * tokens, então a busca não consome cota de forma perceptível.
+   */
+  function findWorkingModel() {
+    return settingsAndKey().then(function (c) {
+      if (!c.key) return { ok: false, error: 'Cole a chave da API antes de procurar um modelo.' };
+
+      return listModels().then(function (lista) {
+        var modelos = lista.ok
+          ? lista.models.map(function (m) { return m.id; })
+          : [modelFor(c.settings)];
+
+        // O modelo atual primeiro: se ele funcionar, não mexemos em nada.
+        var atual = modelFor(c.settings);
+        modelos = [atual].concat(modelos.filter(function (m) { return m !== atual; }))
+          .slice(0, MAX_MODELOS_TESTADOS);
+
+        var tentados = [];
+        function tentar(i) {
+          if (i >= modelos.length) {
+            return {
+              ok: false,
+              error: 'Nenhum dos ' + tentados.length + ' modelos testados respondeu. ' +
+                'Último motivo: ' + (tentados[tentados.length - 1] || {}).erro
+            };
+          }
+          var modelo = modelos[i];
+          return sendAuth(c.p, c.key, function (auth) {
+            return c.p.request(auth, modelo, 'Responda apenas: OK', 'Responda apenas: OK', 'low', 16);
+          }, 'POST').then(function (res) {
+            if (res.ok && c.p.parse(res.body).ok) {
+              return root.WhatsWorkStore.saveModelFor(c.settings.aiProvider, modelo)
+                .then(function () {
+                  return { ok: true, model: modelo, tested: tentados.length + 1 };
+                });
+            }
+            tentados.push({ modelo: modelo, erro: c.p.error(res.status, res.body) });
+            return tentar(i + 1);
+          }, function (err) {
+            // Falha de rede não é problema do modelo: não adianta testar os outros.
+            return { ok: false, error: networkError(err, c.p.host) };
+          });
+        }
+        return tentar(0);
+      });
+    });
+  }
+
   root.WhatsWorkAI = {
     run: run,
     test: test,
     listModels: listModels,
+    findWorkingModel: findWorkingModel,
     buildTranscript: buildTranscript,
     buildSystem: buildSystem,
     PROVIDERS: PROVIDERS,

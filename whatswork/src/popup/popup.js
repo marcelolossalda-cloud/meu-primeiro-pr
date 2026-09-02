@@ -176,6 +176,28 @@
       WhatsWorkStore.saveSettings(patch).then(function () { flash('Modelo salvo.'); });
     });
 
+    $('model-find').addEventListener('click', function () {
+      var alvo = $('ai-test-result');
+      alvo.className = 'muted';
+      alvo.textContent = 'Procurando um modelo com cota disponível…';
+      WhatsWorkStore.setApiKey(providerAtual, $('set-key').value)
+        .then(function () { return chrome.runtime.sendMessage({ type: 'whatswork:ai-find-model' }); })
+        .then(function (res) {
+          if (!res || !res.ok) {
+            alvo.className = 'notice';
+            alvo.textContent = '✗ ' + ((res && res.error) || 'Sem resposta da extensão.');
+            return;
+          }
+          return WhatsWorkStore.getSettings().then(function (s) {
+            return renderModels(providerAtual, s[modelField(providerAtual)]);
+          }).then(function () {
+            alvo.className = 'muted ok';
+            alvo.textContent = '✓ ' + res.model + ' funciona. Já deixei selecionado' +
+              (res.tested > 1 ? ' (testei ' + res.tested + ').' : '.');
+          });
+        });
+    });
+
     $('model-refresh').addEventListener('click', function () {
       var alvo = $('ai-test-result');
       alvo.className = 'muted';

@@ -590,7 +590,7 @@ async function waitFor(read, ok, timeoutMs, message) {
 
     const res = await sw.evaluate(() => WhatsWorkAI.test());
     assert.strictEqual(res.ok, false);
-    assert.match(res.error, /Cota do Gemini esgotada/);
+    assert.match(res.error, /Cota esgotada para esse modelo/);
     assert.match(res.error, /HTTP 429 — quota exceeded/);
     // A mensagem precisa dizer O QUE foi tentado, não só que falhou.
     assert.match(res.error, /tentei: Gemini \(Google\) \/ /);
@@ -708,6 +708,68 @@ async function waitFor(read, ok, timeoutMs, message) {
     const res = await sw.evaluate(() => WhatsWorkAI.test());
     assert.strictEqual(res.ok, false);
     assert.strictEqual(await sw.evaluate(() => globalThis.__tentativas), 1);
+  });
+
+  await step('acha sozinho um modelo com cota, pulando os que dão 429', async () => {
+    // Caso real: no nível gratuito a cota é por modelo — o mais novo veio com
+    // cota zero enquanto outro funcionava.
+    await sw.evaluate(() => WhatsWorkStore.saveModelFor('gemini', 'gemini-sem-cota'));
+    await sw.evaluate(() => {
+      globalThis.__testados = [];
+      globalThis.fetch = function (url) {
+        var u = String(url);
+        if (u.includes('/models?')) {
+          return Promise.resolve(new Response(JSON.stringify({ models: [
+            { name: 'models/gemini-sem-cota', displayName: 'Sem cota', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/gemini-tambem-sem', displayName: 'Também sem', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/gemini-que-funciona', displayName: 'Funciona', supportedGenerationMethods: ['generateContent'] }
+          ] }), { status: 200, headers: { 'content-type': 'application/json' } }));
+        }
+        globalThis.__testados.push(u.split('/models/')[1].split(':')[0]);
+        if (u.includes('gemini-que-funciona')) {
+          return Promise.resolve(new Response(JSON.stringify({
+            candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }]
+          }), { status: 200, headers: { 'content-type': 'application/json' } }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({ error: { message:
+          'Quota exceeded for metric' } }), { status: 429, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.findWorkingModel());
+    assert.ok(res.ok, 'não achou modelo: ' + res.error);
+    assert.strictEqual(res.model, 'gemini-que-funciona');
+
+    // O modelo atual é testado primeiro, e a busca para no primeiro sucesso.
+    const testados = await sw.evaluate(() => globalThis.__testados);
+    assert.strictEqual(testados[0], 'gemini-sem-cota');
+    assert.strictEqual(testados[testados.length - 1], 'gemini-que-funciona');
+
+    const salvo = await sw.evaluate(() =>
+      WhatsWorkStore.getSettings().then((s) => s.aiModelGemini));
+    assert.strictEqual(salvo, 'gemini-que-funciona', 'a escolha precisa ficar salva');
+  });
+
+  await step('quando nenhum modelo tem cota, explica em vez de insistir', async () => {
+    await sw.evaluate(() => {
+      globalThis.fetch = function (url) {
+        if (String(url).includes('/models?')) {
+          return Promise.resolve(new Response(JSON.stringify({ models: [
+            { name: 'models/a', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/b', supportedGenerationMethods: ['generateContent'] }
+          ] }), { status: 200, headers: { 'content-type': 'application/json' } }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({ error: { message: 'Quota exceeded' } }),
+          { status: 429, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.findWorkingModel());
+    assert.strictEqual(res.ok, false);
+    assert.match(res.error, /Nenhum dos \d+ modelos testados respondeu/);
+    assert.match(res.error, /Cota esgotada/);
+
+    await sw.evaluate(() => WhatsWorkStore.saveModelFor('gemini', 'gemini-3.6-flash'));
   });
 
   await step('cada provedor guarda a sua própria chave', async () => {

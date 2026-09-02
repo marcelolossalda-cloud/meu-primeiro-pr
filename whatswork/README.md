@@ -164,6 +164,13 @@ faria a requisição seguinte morrer com "Failed to fetch", que parece falha de
 rede e manda o diagnóstico para o lado errado. Cota (429) **não** é repetida: insistir só queima o que resta
 do limite gratuito.
 
+**Procurar um modelo que funcione** resolve o problema mais confuso do nível
+gratuito: ali a cota é **por modelo**, e o mais novo costuma vir com cota zero
+enquanto outro funciona. O botão testa os modelos em sequência — o atual
+primeiro, para não mexer no que já está bom — e para no primeiro que responder,
+salvando a escolha. Cada tentativa custa 16 tokens, então a busca não consome
+cota de forma perceptível.
+
 **Testar conexão** faz uma chamada mínima e diz exatamente o que falhou — chave
 ausente, chave inválida, sem créditos, cota esgotada, modelo inexistente ou rede
 bloqueada (nomeando o host a liberar no firewall). Toda mensagem de erro leva
@@ -233,7 +240,7 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 32 verificações cobrem: carga da extensão, injeção do painel, isolamento
+As 34 verificações cobrem: carga da extensão, injeção do painel, isolamento
 entre página e extensão, identificação da conversa, persistência de anotações e
 etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
@@ -247,7 +254,9 @@ formato de corpo próprios, chave "AQ." enviada como chave de API, credencial
 recusada reenviada como Bearer, erro não-autenticação sem segunda tentativa,
 troca automática de modelo aposentado, ausência de laço quando o substituto
 também falha, repetição em 503 até recuperar, desistência após três repetições
-e ausência de repetição em 429,
+ausência de repetição em 429, busca automática de um modelo com cota (parando
+no primeiro que responde e salvando a escolha) e explicação quando nenhum
+responde,
 isolamento das chaves por provedor, ausência de
 requisição externa e ausência de erro de JS.
 
