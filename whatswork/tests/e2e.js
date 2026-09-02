@@ -373,7 +373,17 @@ async function waitFor(read, ok, timeoutMs, message) {
     assert.strictEqual(await popup.locator('#set-key').getAttribute('type'), 'password',
       'o campo da chave precisa nascer mascarado');
     assert.strictEqual(await popup.locator('#set-model').inputValue(), 'claude-opus-5');
+
+    // O botão do tom de voz preenche o campo e persiste o ajuste.
+    await popup.locator('#voice-carnegie').click();
+    await popup.waitForFunction(
+      () => document.getElementById('set-voice').value.includes('Carnegie'),
+      null, { timeout: 5000 });
     await popup.close();
+
+    const voz = await sw.evaluate(() => WhatsWorkStore.getSettings().then((s) => s.voiceStyle));
+    assert.match(voz, /Comece pelo outro, não pelo produto/);
+    assert.match(voz, /nunca crie urgência falsa/);
   });
 
   await step('a extensão não faz nenhuma requisição externa', async () => {

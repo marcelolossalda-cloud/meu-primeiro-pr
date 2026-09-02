@@ -168,6 +168,39 @@
       'Como está sendo o resultado? Se já estiver acabando, eu separo a reposição.' }
   ];
 
+  /*
+   * Tom de voz derivado de "Como Fazer Amigos e Influenciar Pessoas", de Dale
+   * Carnegie. Os princípios do livro viraram regras de ESCRITA — o modelo não
+   * consegue seguir "desperte no outro um forte desejo", mas consegue seguir
+   * "comece a mensagem pelo que a pessoa disse". A leitura aqui é a honesta,
+   * não a manipuladora: interesse de verdade, não bajulação.
+   */
+  var VOZ_CARNEGIE = [
+    'Tom baseado em "Como Fazer Amigos e Influenciar Pessoas", de Dale Carnegie.',
+    '',
+    'Como escrever:',
+    '- Comece pelo outro, não pelo produto. A primeira frase responde ao que ELE disse ou precisa.',
+    '- Use o nome da pessoa uma vez, no começo. Nunca repetido em toda frase.',
+    '- Faça mais perguntas do que afirmações. Termine quase toda mensagem com uma pergunta fácil de responder.',
+    '- Reconheça o ponto do cliente antes de responder: "faz sentido", "entendo", "você tem razão em querer isso".',
+    '- Nunca diga que ele está errado nem corrija de frente. Se houver engano, traga a informação certa como novidade, não como correção.',
+    '- Elogie só o que for verdade e específico (a escolha, o cuidado, a pergunta). Nada de bajulação genérica.',
+    '- Fale do que ELE ganha, não das qualidades do produto: o resultado nele, o tempo que poupa, o quanto rende.',
+    '- Deixe a decisão com ele. Ofereça opções ("prefere A ou B?") em vez de empurrar uma.',
+    '- Se você errou algo, admita rápido e sem rodeio, e diga o que vai fazer a respeito.',
+    '- Nunca discuta, nunca insista depois de um "não", nunca crie urgência falsa.',
+    '',
+    'Forma: frases curtas, no máximo um emoji, sem "prezado", sem jargão de marketing,',
+    'sem CAPS LOCK e sem gatilho de escassez.'
+  ].join('\n');
+
+  $('voice-carnegie').addEventListener('click', function () {
+    $('set-business').focus();   // tira o foco do textarea antes de sobrescrever
+    $('set-voice').value = VOZ_CARNEGIE;
+    WhatsWorkStore.saveSettings({ voiceStyle: VOZ_CARNEGIE })
+      .then(function () { flash('Tom de voz carregado. Edite à vontade.'); });
+  });
+
   var KIT_ETIQUETAS = [
     { name: 'Aguardando pagamento', color: '#7c3aed' },
     { name: 'Recompra', color: '#0891b2' }

@@ -126,7 +126,12 @@ Duas coisas no popup mudam completamente a qualidade das sugestões:
   não estiver ali ela deixa marcado como `[preencher]` em vez de inventar. Essa
   regra está no system prompt e é verificada no teste.
 - **Seu tom de voz** — como você escreve com o cliente. Ele governa forma,
-  ritmo e vocabulário, mas não autoriza inventar dado nenhum.
+  ritmo e vocabulário, mas não autoriza inventar dado nenhum. O botão
+  **Usar tom do livro de Dale Carnegie** preenche o campo com os princípios de
+  *Como Fazer Amigos e Influenciar Pessoas* traduzidos em regras de escrita
+  ("comece pelo que a pessoa disse", "reconheça o ponto antes de responder",
+  "ofereça opções em vez de empurrar uma") — a leitura honesta do livro, não a
+  manipuladora. É um ponto de partida editável.
 
 O botão **Carregar modelos de cosméticos** (seção *Kit de vendas*) adiciona 7
 modelos prontos — abordagem, catálogo, dúvida de produto, objeção de preço,
