@@ -113,17 +113,39 @@ a decisão de enviar continua sua. O teste confirma que nada é enviado.
 **Exportação CSV.** Células que começam com `=`, `+`, `-` ou `@` recebem um
 apóstrofo, para o Excel não interpretar um contato como fórmula.
 
-## Assistente de IA — Claude (opcional, desligado por padrão)
+## Assistente de IA (opcional, desligado por padrão)
 
-A IA usada é o **Claude**, pela API da Anthropic. Um ponto que confunde muita
-gente: a chave vem de **platform.claude.com** (o Console), não do chat em
-**claude.ai** — e uma assinatura Claude Pro ou Max **não** paga o uso da API.
-São cobranças separadas, mesmo sendo a mesma empresa e o mesmo modelo. É
-preciso ter créditos no Console.
+Dois provedores, escolhidos no popup — a extensão fala com **Claude
+(Anthropic)** ou **Gemini (Google)**, e trocar entre eles é um clique. Cada um
+guarda a sua própria chave e o seu próprio modelo, então alternar não apaga a
+configuração do outro.
 
-Seis ações na aba *IA*, divididas em **Responder** (sugerir resposta, melhorar
-meu texto) e **Vender** (contornar objeção, fechar a venda, retomar contato,
-resumir conversa).
+| | Claude | Gemini |
+|---|---|---|
+| Chave vem de | platform.claude.com (Console) | Google AI Studio |
+| Prefixo | `sk-ant-…` | `AIza…` |
+| Plano gratuito | não — precisa de créditos | sim, com limite por minuto e por dia |
+| Padrão | `claude-opus-5` | `gemini-2.5-flash` |
+
+Um ponto que confunde muita gente no Claude: a chave vem do **Console**, não do
+chat em **claude.ai** — e uma assinatura Claude Pro ou Max **não** paga o uso da
+API. São cobranças separadas.
+
+**Atualizar lista de modelos** pergunta ao provedor quais modelos existem hoje e
+preenche o seletor com a resposta. Isso evita o erro de configuração mais chato:
+uma lista fixa no código envelhece e o usuário só descobre com um 404 sem
+explicação. Se o modelo que estava salvo não aparecer mais na resposta, ele é
+trocado pelo primeiro disponível e o popup avisa.
+
+**Testar conexão** faz uma chamada mínima e diz exatamente o que falhou — chave
+ausente, prefixo errado, chave inválida, sem créditos, cota esgotada, modelo
+inexistente ou rede bloqueada (nomeando o host a liberar no firewall).
+
+### Ações
+
+Seis, divididas em **Responder** (sugerir resposta, melhorar meu texto) e
+**Vender** (contornar objeção, fechar a venda, retomar contato, resumir
+conversa).
 
 Duas coisas no popup mudam completamente a qualidade das sugestões:
 
@@ -131,13 +153,12 @@ Duas coisas no popup mudam completamente a qualidade das sugestões:
   pedido mínimo. A IA se apoia **só** nisso para falar de preço e produto; o que
   não estiver ali ela deixa marcado como `[preencher]` em vez de inventar. Essa
   regra está no system prompt e é verificada no teste.
-- **Seu tom de voz** — como você escreve com o cliente. Ele governa forma,
-  ritmo e vocabulário, mas não autoriza inventar dado nenhum. O botão
-  **Usar tom do livro de Dale Carnegie** preenche o campo com os princípios de
-  *Como Fazer Amigos e Influenciar Pessoas* traduzidos em regras de escrita
-  ("comece pelo que a pessoa disse", "reconheça o ponto antes de responder",
-  "ofereça opções em vez de empurrar uma") — a leitura honesta do livro, não a
-  manipuladora. É um ponto de partida editável.
+- **Seu tom de voz** — como você escreve com o cliente. Governa forma, ritmo e
+  vocabulário, mas não autoriza inventar dado nenhum. O botão **Usar tom do
+  livro de Dale Carnegie** preenche o campo com os princípios de *Como Fazer
+  Amigos e Influenciar Pessoas* traduzidos em regras de escrita ("comece pelo
+  que a pessoa disse", "reconheça o ponto antes de responder", "ofereça opções
+  em vez de empurrar uma") — a leitura honesta do livro, não a manipuladora.
 
 O botão **Carregar modelos de cosméticos** (seção *Kit de vendas*) adiciona 7
 modelos prontos — abordagem, catálogo, dúvida de produto, objeção de preço,
@@ -145,19 +166,19 @@ fechamento, pós-venda e recompra — mais as etiquetas *Aguardando pagamento* e
 *Recompra*. Os modelos vêm com `[colchetes]` no lugar do que só você sabe, para
 ninguém sair mandando preço errado por descuido. Clicar duas vezes não duplica.
 
-Para ligar, abra o popup da extensão, cole uma chave da API da Anthropic
-(<https://platform.claude.com/settings/keys>), clique em **Testar conexão** e
-marque *Ativar as ações de IA*. O botão de teste faz uma chamada mínima e diz
-exatamente o que falhou — chave inválida, limite de uso, modelo inexistente ou
-rede bloqueada — em vez de deixar o erro genérico.
-O consumo é cobrado na sua conta. O modelo padrão é `claude-opus-5`; o popup
-também oferece Sonnet 5 e Haiku 4.5, mais baratos.
+### Como está implementado
 
-A chamada é feita com `fetch` em HTTP puro, do service worker, em vez do SDK
-oficial: o pacote não roda sem bundler, a extensão não tem etapa de build, e a
+`src/background/ai.js` tem um objeto `PROVIDERS`: cada provedor sabe montar sua
+requisição, ler sua resposta, traduzir seus erros e listar seus modelos. O resto
+do arquivo não conhece nenhuma particularidade de API — acrescentar um terceiro
+provedor é escrever mais uma entrada ali e liberar o host no manifest e no
+validador.
+
+As chamadas são feitas com `fetch` em HTTP puro, do service worker, em vez dos
+SDKs oficiais: eles não rodam sem bundler, a extensão não tem etapa de build e a
 CSP proíbe código remoto — então tudo que executa está no pacote que você
-inspeciona. As tarefas rodam com `effort` baixo ou médio, porque são pedidos
-curtos e isso mantém custo e latência baixos.
+inspeciona. No Claude as tarefas rodam com `effort` baixo ou médio, porque são
+pedidos curtos e isso mantém custo e latência baixos.
 
 Só o texto das últimas 12 mensagens da conversa aberta é enviado (configurável),
 com tetos de tamanho para não mandar mais do que a tarefa precisa.
@@ -171,7 +192,8 @@ npm test
 ```
 
 - `tools/validate.js` — manifest válido, arquivos referenciados existentes,
-  scripts compilando, e as 10 travas de segurança descritas acima.
+  scripts compilando, as travas de segurança descritas acima e a conferência de
+  que todo elemento usado pelo popup existe no HTML.
 - `tests/e2e.js` — carrega a extensão num Chromium real e exercita o painel
   contra uma réplica do DOM do WhatsApp Web (`tests/fixtures/whatsapp-mock.html`).
 
@@ -181,7 +203,7 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 22 verificações cobrem: carga da extensão, injeção do painel, isolamento
+As 24 verificações cobrem: carga da extensão, injeção do painel, isolamento
 entre página e extensão, identificação da conversa, persistência de anotações e
 etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
@@ -189,8 +211,10 @@ adiamento diante de rascunho, aba de IA bloqueada sem chave, resposta da IA
 inserida sem enviar, formato e cabeçalhos da chamada à API, defesa contra
 injeção de prompt, presença do contexto de negócio e do tom de voz no system
 prompt, existência e conteúdo das ações de venda, chave ausente da página,
-popup, diagnóstico de conexão nos três desfechos (sucesso, chave inválida e
-rede fora), ausência de requisição externa e ausência de erro de JS.
+popup, diagnóstico de conexão nos quatro desfechos (sucesso, sem créditos,
+chave inválida e rede fora), troca para o Gemini com endpoint, cabeçalho e
+formato de corpo próprios, isolamento das chaves por provedor, ausência de
+requisição externa e ausência de erro de JS.
 
 ## Como está organizado
 

@@ -61,7 +61,9 @@
     quietStartHour: 21,          // nada de mensagem automática de madrugada
     quietEndHour: 8,
     aiEnabled: false,            // IA desligada até você colocar a chave
-    aiModel: 'claude-opus-5',
+    aiProvider: 'claude',        // 'claude' ou 'gemini'
+    aiModelClaude: 'claude-opus-5',
+    aiModelGemini: 'gemini-2.5-flash',
     aiContextMessages: 12,       // quantas mensagens vão como contexto para a IA
     businessContext: NEGOCIO,    // o que você vende — a IA se apoia só nisso
     voiceStyle: ''               // como VOCÊ escreve: tom, ritmo, o que nunca diria
@@ -293,9 +295,37 @@
     });
   }
 
-  /* A chave da API fica separada do resto para nunca sair junto num export. */
-  function getApiKey() { return get(K.APIKEY, ''); }
-  function setApiKey(key) { return put(K.APIKEY, String(key || '').trim()); }
+  /* Modelo escolhido para o provedor em uso. */
+  function modelFor(settings, providerName) {
+    return providerName === 'gemini'
+      ? (settings.aiModelGemini || DEFAULT_SETTINGS.aiModelGemini)
+      : (settings.aiModelClaude || DEFAULT_SETTINGS.aiModelClaude);
+  }
+
+  /*
+   * As chaves ficam separadas do resto dos ajustes para nunca saírem junto num
+   * export, e são guardadas por provedor: trocar de provedor não apaga a chave
+   * do outro. Versões antigas guardavam uma string única — daí a migração.
+   */
+  function readKeys() {
+    return get(K.APIKEY, {}).then(function (v) {
+      if (typeof v === 'string') return { claude: v };   // formato antigo
+      return v || {};
+    });
+  }
+
+  function getApiKey(providerName) {
+    return readKeys().then(function (keys) {
+      return keys[providerName || 'claude'] || '';
+    });
+  }
+
+  function setApiKey(providerName, key) {
+    return readKeys().then(function (keys) {
+      keys[providerName || 'claude'] = String(key || '').trim();
+      return put(K.APIKEY, keys);
+    });
+  }
 
   /* ---------------------------------------------- proteção contra bloqueio
 
@@ -400,6 +430,7 @@
     saveSettings: saveSettings,
     getApiKey: getApiKey,
     setApiKey: setApiKey,
+    modelFor: modelFor,
     getSendState: getSendState,
     checkSendAllowance: checkSendAllowance,
     recordSend: recordSend,

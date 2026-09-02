@@ -40,17 +40,103 @@
     'set-quiet-end': 'quietEndHour'
   };
 
+  /* Texto de ajuda por provedor. O aviso do Claude existe porque a confusão
+     entre a assinatura do claude.ai e os créditos do Console é constante. */
+  var PROVIDER_INFO = {
+    claude: {
+      placeholder: 'sk-ant-…',
+      note: 'A chave vem de platform.claude.com (o Console), não do chat em claude.ai. ' +
+        'Uma assinatura Claude Pro ou Max NÃO paga o uso da API — são cobranças separadas.',
+      where: 'Onde pegar: platform.claude.com/settings/keys · créditos em Settings → Billing.',
+      fallback: [
+        { id: 'claude-opus-5', label: 'Claude Opus 5' },
+        { id: 'claude-sonnet-5', label: 'Claude Sonnet 5' },
+        { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' }
+      ]
+    },
+    gemini: {
+      placeholder: 'AIza…',
+      note: 'A chave vem do Google AI Studio e tem um plano gratuito com limite por minuto e por ' +
+        'dia — dá para usar sem cartão de crédito.',
+      where: 'Onde pegar: aistudio.google.com → Get API key.',
+      fallback: [
+        { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+        { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+        { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }
+      ]
+    }
+  };
+
+  var MODELS_KEY = 'whatswork:models';
+  var providerAtual = 'claude';
+
+  function modelField(p) { return p === 'gemini' ? 'aiModelGemini' : 'aiModelClaude'; }
+
+  /**
+   * Preenche o select de modelos com a lista que a API devolveu da última vez,
+   * caindo para a lista embutida quando ainda não houve consulta. O modelo
+   * salvo é acrescentado mesmo se não estiver na lista, para não sumir sozinho.
+   */
+  function renderModels(p, salvo, vindoDaApi) {
+    return WhatsWorkStore.get(MODELS_KEY, {}).then(function (cache) {
+      var lista = (cache && cache[p] && cache[p].length) ? cache[p] : PROVIDER_INFO[p].fallback;
+      var conhecido = lista.some(function (m) { return m.id === salvo; });
+
+      // Antes de consultar a API não dá para saber se o modelo salvo existe —
+      // então ele é mantido na lista. Depois de uma consulta bem-sucedida, um
+      // modelo ausente é um modelo que não existe mais: trocamos pelo primeiro
+      // disponível, senão o usuário ficaria preso num 404 permanente.
+      var trocou = false;
+      if (salvo && !conhecido) {
+        if (vindoDaApi) {
+          salvo = lista[0].id;
+          trocou = true;
+        } else {
+          lista = [{ id: salvo, label: salvo }].concat(lista);
+        }
+      }
+
+      var sel = $('set-model');
+      sel.textContent = '';
+      lista.forEach(function (m) {
+        var opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.label;
+        sel.appendChild(opt);
+      });
+      if (salvo) sel.value = salvo;
+
+      if (!trocou) return { trocou: false, modelo: salvo };
+      var patch = {};
+      patch[modelField(p)] = salvo;
+      return WhatsWorkStore.saveSettings(patch).then(function () {
+        return { trocou: true, modelo: salvo };
+      });
+    });
+  }
+
+  function applyProvider(p, settings) {
+    providerAtual = p;
+    var info = PROVIDER_INFO[p];
+    $('set-key').placeholder = info.placeholder;
+    $('provider-note').textContent = info.note;
+    $('key-where').textContent = info.where;
+    $('ai-test-result').textContent = '';
+    return Promise.all([
+      WhatsWorkStore.getApiKey(p).then(function (k) { $('set-key').value = k || ''; }),
+      renderModels(p, settings[modelField(p)])
+    ]);
+  }
+
   function loadSettings() {
     return WhatsWorkStore.getSettings().then(function (s) {
       $('set-confirm').checked = !!s.requireConfirmation;
       $('set-ai').checked = !!s.aiEnabled;
-      $('set-model').value = s.aiModel;
+      $('set-provider').value = s.aiProvider;
       $('set-business').value = s.businessContext || '';
       $('set-voice').value = s.voiceStyle || '';
       Object.keys(NUMERIC).forEach(function (id) { $(id).value = s[NUMERIC[id]]; });
-      return WhatsWorkStore.getApiKey();
-    }).then(function (key) {
-      $('set-key').value = key || '';
+      return applyProvider(s.aiProvider, s);
     });
   }
 
@@ -72,9 +158,47 @@
         .then(function () { flash('Ajuste salvo.'); });
     });
 
+    $('set-provider').addEventListener('change', function () {
+      var p = this.value;
+      WhatsWorkStore.saveSettings({ aiProvider: p })
+        .then(function () { return WhatsWorkStore.getSettings(); })
+        .then(function (s) { return applyProvider(p, s); })
+        .then(function () {
+          flash('Provedor alterado para ' + (p === 'gemini' ? 'Gemini.' : 'Claude.'));
+        });
+    });
+
     $('set-model').addEventListener('change', function () {
-      WhatsWorkStore.saveSettings({ aiModel: this.value })
-        .then(function () { flash('Modelo salvo.'); });
+      var patch = {};
+      patch[modelField(providerAtual)] = this.value;
+      WhatsWorkStore.saveSettings(patch).then(function () { flash('Modelo salvo.'); });
+    });
+
+    $('model-refresh').addEventListener('click', function () {
+      var alvo = $('ai-test-result');
+      alvo.className = 'muted';
+      alvo.textContent = 'Buscando modelos…';
+      WhatsWorkStore.setApiKey(providerAtual, $('set-key').value)
+        .then(function () { return chrome.runtime.sendMessage({ type: 'whatswork:ai-models' }); })
+        .then(function (res) {
+          if (!res || !res.ok) {
+            alvo.className = 'notice';
+            alvo.textContent = '✗ ' + ((res && res.error) || 'Sem resposta da extensão.');
+            return;
+          }
+          return WhatsWorkStore.get(MODELS_KEY, {}).then(function (cache) {
+            cache[providerAtual] = res.models;
+            return WhatsWorkStore.put(MODELS_KEY, cache);
+          }).then(function () {
+            return WhatsWorkStore.getSettings();
+          }).then(function (s) {
+            return renderModels(providerAtual, s[modelField(providerAtual)], true);
+          }).then(function (r) {
+            alvo.className = 'muted ok';
+            alvo.textContent = '✓ ' + res.models.length + ' modelo(s) disponível(is).' +
+              (r.trocou ? ' O modelo anterior não existe mais; troquei para ' + r.modelo + '.' : '');
+          });
+        });
     });
 
     Object.keys(NUMERIC).forEach(function (id) {
@@ -97,7 +221,7 @@
     });
 
     $('set-key').addEventListener('change', function () {
-      WhatsWorkStore.setApiKey(this.value).then(function () { flash('Chave salva.'); });
+      WhatsWorkStore.setApiKey(providerAtual, this.value).then(function () { flash('Chave salva.'); });
     });
 
     $('ai-test').addEventListener('click', function () {
@@ -105,7 +229,7 @@
       alvo.className = 'muted';
       alvo.textContent = 'Testando…';
       // Salva a chave digitada antes de testar, para não testar a versão antiga.
-      WhatsWorkStore.setApiKey($('set-key').value)
+      WhatsWorkStore.setApiKey(providerAtual, $('set-key').value)
         .then(function () { return chrome.runtime.sendMessage({ type: 'whatswork:ai-test' }); })
         .then(function (res) {
           var ok = res && res.ok;

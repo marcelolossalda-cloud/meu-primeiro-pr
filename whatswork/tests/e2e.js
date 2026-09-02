@@ -285,7 +285,7 @@ async function waitFor(read, ok, timeoutMs, message) {
       };
     });
 
-    await sw.evaluate(() => WhatsWorkStore.setApiKey('sk-ant-chave-de-teste'));
+    await sw.evaluate(() => WhatsWorkStore.setApiKey('claude', 'sk-ant-chave-de-teste'));
     await settings({
       aiEnabled: true,
       businessContext: 'Distribuidora de cosméticos. Sérum facial R$ 89.',
@@ -395,6 +395,7 @@ async function waitFor(read, ok, timeoutMs, message) {
     await popup.waitForFunction(
       () => document.getElementById('set-key').value.startsWith('sk-ant-'),
       null, { timeout: 5000 });
+    assert.strictEqual(await popup.locator('#set-provider').inputValue(), 'claude');
 
     // Sucesso
     await sw.evaluate(() => {
@@ -433,7 +434,7 @@ async function waitFor(read, ok, timeoutMs, message) {
     await popup.waitForFunction(
       () => document.getElementById('ai-test-result').textContent.startsWith('✗'),
       null, { timeout: 10000 });
-    assert.match(await popup.locator('#ai-test-result').textContent(), /Chave da API inválida/);
+    assert.match(await popup.locator('#ai-test-result').textContent(), /Chave do Claude inválida/);
 
     // Rede fora do ar
     await sw.evaluate(() => {
@@ -444,6 +445,82 @@ async function waitFor(read, ok, timeoutMs, message) {
       () => document.getElementById('ai-test-result').textContent.includes('api.anthropic.com'),
       null, { timeout: 10000 });
     await popup.close();
+  });
+
+  await step('trocar para o Gemini muda endpoint, cabeçalho e formato do corpo', async () => {
+    const extId = new URL(sw.url()).host;
+    const popup = await context.newPage();
+    await popup.goto(`chrome-extension://${extId}/src/popup/popup.html`);
+    await popup.waitForFunction(
+      () => document.getElementById('set-key').value.startsWith('sk-ant-'),
+      null, { timeout: 5000 });
+
+    await popup.locator('#set-provider').selectOption('gemini');
+    // O campo de chave troca junto: a do Claude não pode vazar para o Gemini.
+    await popup.waitForFunction(
+      () => document.getElementById('set-key').value === '', null, { timeout: 5000 });
+    assert.match(await popup.locator('#provider-note').textContent(), /Google AI Studio/);
+
+    await popup.locator('#set-key').fill('AIzaChaveDeTeste');
+    await popup.locator('#set-key').blur();
+
+    // A lista de modelos vem da própria API, então um ID novo não quebra nada.
+    await sw.evaluate(() => {
+      globalThis.__apiCalls = [];
+      globalThis.fetch = function (url, init) {
+        globalThis.__apiCalls.push({ url: String(url), method: init.method, headers: init.headers, body: init.body });
+        if (String(url).includes('/models?')) {
+          return Promise.resolve(new Response(JSON.stringify({ models: [
+            { name: 'models/gemini-9.9-flash', displayName: 'Gemini 9.9 Flash', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/text-embedding-004', displayName: 'Embeddings', supportedGenerationMethods: ['embedContent'] }
+          ] }), { status: 200, headers: { 'content-type': 'application/json' } }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }]
+        }), { status: 200, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    await popup.locator('#model-refresh').click();
+    await popup.waitForFunction(
+      () => document.getElementById('ai-test-result').textContent.startsWith('✓'),
+      null, { timeout: 10000 });
+    // O modelo de embeddings não gera texto e não deve aparecer na lista; e o
+    // modelo salvo, que a API não lista mais, é substituído em vez de virar 404.
+    const opcoes = await popup.locator('#set-model option').allTextContents();
+    assert.deepStrictEqual(opcoes, ['Gemini 9.9 Flash']);
+    assert.strictEqual(await popup.locator('#set-model').inputValue(), 'gemini-9.9-flash');
+    assert.match(await popup.locator('#ai-test-result').textContent(), /não existe mais/);
+
+    await popup.locator('#ai-test').click();
+    await popup.waitForFunction(
+      () => document.getElementById('ai-test-result').textContent.includes('Gemini'),
+      null, { timeout: 10000 });
+    assert.match(await popup.locator('#ai-test-result').textContent(), /^✓ Conexão funcionando com Gemini/);
+    await popup.close();
+
+    const chamadas = await sw.evaluate(() => globalThis.__apiCalls);
+    const geracao = chamadas[chamadas.length - 1];
+    assert.match(geracao.url, /^https:\/\/generativelanguage\.googleapis\.com\/v1beta\/models\/gemini-9\.9-flash:generateContent$/);
+    assert.strictEqual(geracao.headers['x-goog-api-key'], 'AIzaChaveDeTeste');
+    assert.strictEqual(geracao.headers['x-api-key'], undefined, 'não pode mandar cabeçalho do Claude');
+    assert.ok(!geracao.url.includes('AIza'), 'a chave não pode ir na URL');
+
+    const corpo = JSON.parse(geracao.body);
+    assert.ok(corpo.contents[0].parts[0].text, 'formato do Gemini: contents[].parts[].text');
+    assert.ok(corpo.systemInstruction.parts[0].text, 'formato do Gemini: systemInstruction');
+    assert.strictEqual(corpo.generationConfig.maxOutputTokens, 16);
+  });
+
+  await step('cada provedor guarda a sua própria chave', async () => {
+    const chaves = await sw.evaluate(() => Promise.all([
+      WhatsWorkStore.getApiKey('claude'),
+      WhatsWorkStore.getApiKey('gemini')
+    ]));
+    assert.deepStrictEqual(chaves, ['sk-ant-chave-de-teste', 'AIzaChaveDeTeste']);
+
+    // Volta ao Claude para não afetar os passos seguintes.
+    await sw.evaluate(() => WhatsWorkStore.saveSettings({ aiProvider: 'claude' }));
   });
 
   await step('a extensão não faz nenhuma requisição externa', async () => {

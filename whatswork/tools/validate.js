@@ -90,7 +90,11 @@ const contentScripts = runtimeJs.filter((f) => f.includes(`${path.sep}content${p
 /* 1. Superfície de permissões ------------------------------------------ */
 
 const ALLOWED_PERMISSIONS = ['storage', 'alarms', 'notifications'];
-const ALLOWED_HOSTS = ['https://web.whatsapp.com/*', 'https://api.anthropic.com/*'];
+const ALLOWED_HOSTS = [
+  'https://web.whatsapp.com/*',
+  'https://api.anthropic.com/*',
+  'https://generativelanguage.googleapis.com/*'
+];
 
 (manifest.permissions || []).forEach((perm) => {
   check(ALLOWED_PERMISSIONS.includes(perm),
@@ -98,7 +102,7 @@ const ALLOWED_HOSTS = ['https://web.whatsapp.com/*', 'https://api.anthropic.com/
 });
 (manifest.host_permissions || []).forEach((host) => {
   check(ALLOWED_HOSTS.includes(host),
-    `host_permission não prevista: "${host}" — a extensão só deveria alcançar o WhatsApp Web e a API da Anthropic`);
+    `host_permission não prevista: "${host}" — a extensão só deveria alcançar o WhatsApp Web e as APIs de IA previstas`);
 });
 
 /* 2. Nenhuma página web pode conversar com a extensão ------------------- */
@@ -114,7 +118,9 @@ check(/script-src\s+'self'/.test(csp), "CSP deve fixar script-src 'self'");
 check(!/unsafe-eval|unsafe-inline/.test(csp), 'CSP não pode liberar unsafe-eval nem unsafe-inline');
 
 const connectSrc = (csp.match(/connect-src([^;]*)/) || [])[1] || '';
-const connectAllowed = new Set(["'self'", "'none'", 'https://api.anthropic.com']);
+const connectAllowed = new Set([
+  "'self'", "'none'", 'https://api.anthropic.com', 'https://generativelanguage.googleapis.com'
+]);
 connectSrc.trim().split(/\s+/).filter(Boolean).forEach((token) => {
   check(connectAllowed.has(token), `CSP connect-src permite destino inesperado: "${token}"`);
 });
@@ -149,7 +155,10 @@ for (const file of runtimeJs) {
 
 /* 6. Nenhum destino de rede fora do previsto ---------------------------- */
 
-const NETWORK_ALLOWLIST = new Set(['api.anthropic.com', 'web.whatsapp.com']);
+const NETWORK_ALLOWLIST = new Set([
+  'api.anthropic.com', 'generativelanguage.googleapis.com', 'web.whatsapp.com',
+  'platform.claude.com'   // só citado em texto de ajuda
+]);
 for (const file of runtimeJs) {
   const hosts = read(file).match(/https?:\/\/[a-z0-9.-]+/gi) || [];
   hosts.forEach((url) => {
@@ -187,7 +196,29 @@ if (fs.existsSync(swPath)) {
     'service worker aceita mensagem de content script sem conferir a origem');
 }
 
-/* 10. Ordem de carregamento dos content scripts ------------------------- */
+/* 10. Todo elemento que o popup manipula precisa existir no HTML ---------
+      Reescrever uma seção do popup e esquecer de recriar um campo quebra o
+      script inteiro na primeira linha que faz addEventListener em null. */
+
+const popupHtmlPath = manifest.action && manifest.action.default_popup
+  ? path.join(ROOT, manifest.action.default_popup) : null;
+
+if (popupHtmlPath && fs.existsSync(popupHtmlPath)) {
+  const html = read(popupHtmlPath);
+  const idsNoHtml = new Set((html.match(/\bid="([^"]+)"/g) || [])
+    .map((m) => m.slice(4, -1)));
+
+  const popupJs = path.join(path.dirname(popupHtmlPath), 'popup.js');
+  if (fs.existsSync(popupJs)) {
+    const usados = new Set((read(popupJs).match(/\$\('([^']+)'\)/g) || [])
+      .map((m) => m.slice(3, -2)));
+    for (const id of usados) {
+      check(idsNoHtml.has(id), `popup.js usa #${id}, que não existe em ${path.basename(popupHtmlPath)}`);
+    }
+  }
+}
+
+/* 11. Ordem de carregamento dos content scripts ------------------------- */
 
 (manifest.content_scripts || []).forEach((cs, i) => {
   check((cs.js || []).indexOf('src/lib/store.js') === 0,
@@ -204,5 +235,5 @@ if (errors.length) {
 
 console.log(
   `OK — manifest v${manifest.manifest_version}, ${referenced.size} arquivos referenciados, ` +
-  `${allJs.length} scripts validados, 10 travas de segurança aprovadas.`
+  `${allJs.length} scripts validados, 11 travas aprovadas.`
 );

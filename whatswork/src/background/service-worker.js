@@ -49,6 +49,9 @@ var HANDLERS = {
   'whatswork:ai-test': function () {
     return WhatsWorkAI.test();
   },
+  'whatswork:ai-models': function () {
+    return WhatsWorkAI.listModels();
+  },
   'whatswork:ai': function (msg) {
     if (typeof msg.task !== 'string') return Promise.resolve({ ok: false, error: 'Tarefa inválida.' });
     var messages = Array.isArray(msg.messages) ? msg.messages.slice(0, 100).map(function (m) {

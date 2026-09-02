@@ -1,20 +1,17 @@
 /*
- * Ponte com a API da Anthropic.
+ * Ponte com os provedores de IA (Claude e Gemini).
  *
- * Roda SOMENTE no service worker, e isso é uma decisão de segurança, não de
+ * Roda SOMENTE no service worker, e isso é decisão de segurança, não de
  * arquitetura: a chave da API nunca é lida pelo content script, então nem uma
  * falha de XSS no WhatsApp Web alcançaria ela. O painel manda um pedido por
  * mensagem interna; quem tem a chave e faz a requisição é este arquivo.
  *
- * Requisição em HTTP puro (fetch) em vez do SDK oficial: o pacote não roda sem
- * bundler, e a extensão não tem etapa de build — a CSP proíbe código remoto,
- * então tudo que existe aqui está no pacote que você inspeciona.
+ * HTTP puro (fetch) em vez dos SDKs oficiais: eles não rodam sem bundler, a
+ * extensão não tem etapa de build e a CSP proíbe código remoto — então tudo
+ * que executa está no pacote que você inspeciona.
  */
 (function (root) {
   'use strict';
-
-  var ENDPOINT = 'https://api.anthropic.com/v1/messages';
-  var API_VERSION = '2023-06-01';
 
   /* Tetos de tamanho: protegem a conta contra um custo inesperado e evitam
      mandar para fora mais texto do que a tarefa precisa. */
@@ -24,6 +21,180 @@
   var MAX_TOKENS = 2000;
   var MAX_BUSINESS_CHARS = 4000;
   var MAX_VOICE_CHARS = 2000;
+
+  /* ==================================================================
+     PROVEDORES
+
+     Cada um sabe montar sua requisição, ler sua resposta, traduzir seus
+     erros e listar seus modelos. O resto do arquivo não conhece nenhuma
+     particularidade de API — é por aqui que se acrescenta um terceiro.
+     ================================================================== */
+
+  var PROVIDERS = {
+    claude: {
+      label: 'Claude (Anthropic)',
+      host: 'api.anthropic.com',
+      keyPrefix: 'sk-ant-',
+      keyHint: 'A chave do Claude começa com "sk-ant-".',
+      defaultModel: 'claude-opus-5',
+      fallbackModels: [
+        { id: 'claude-opus-5', label: 'Claude Opus 5' },
+        { id: 'claude-sonnet-5', label: 'Claude Sonnet 5' },
+        { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' }
+      ],
+
+      request: function (key, model, system, prompt, effort, maxTokens) {
+        return {
+          url: 'https://api.anthropic.com/v1/messages',
+          headers: {
+            'content-type': 'application/json',
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            // Necessário quando o Chrome anexa cabeçalho Origin; ignorado
+            // quando não anexa, então mandá-lo é sempre seguro.
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: {
+            model: model,
+            max_tokens: maxTokens,
+            system: system,
+            output_config: { effort: effort },
+            messages: [{ role: 'user', content: prompt }]
+          }
+        };
+      },
+
+      parse: function (body) {
+        if (body && body.stop_reason === 'refusal') {
+          return { ok: false, error: 'O modelo recusou responder a esse conteúdo.' };
+        }
+        var texto = (body && body.content ? body.content : [])
+          .filter(function (b) { return b.type === 'text'; })
+          .map(function (b) { return b.text; })
+          .join('\n').trim();
+        return texto ? { ok: true, text: texto } : { ok: false, error: 'A API respondeu vazio.' };
+      },
+
+      error: function (status, body) {
+        var detalhe = body && body.error && body.error.message;
+        if (status === 401) return 'Chave do Claude inválida. Confira em Ajustes.';
+        if (status === 403) return 'Essa chave não tem permissão para usar a API.';
+        if (status === 404) return 'Modelo não encontrado. Clique em "Atualizar lista de modelos".';
+        if (status === 429) return 'Limite de uso atingido. Tente daqui a pouco.';
+        if (status === 402 || (detalhe && /credit balance|insufficient/i.test(detalhe))) {
+          return 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing ' +
+            '(a assinatura do claude.ai não cobre a API).';
+        }
+        if (status >= 500) return 'A API da Anthropic está indisponível no momento.';
+        return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
+      },
+
+      listRequest: function (key) {
+        return {
+          url: 'https://api.anthropic.com/v1/models?limit=100',
+          headers: {
+            'x-api-key': key,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          }
+        };
+      },
+
+      parseModels: function (body) {
+        return (body && body.data ? body.data : []).map(function (m) {
+          return { id: m.id, label: m.display_name || m.id };
+        });
+      }
+    },
+
+    gemini: {
+      label: 'Gemini (Google)',
+      host: 'generativelanguage.googleapis.com',
+      keyPrefix: 'AIza',
+      keyHint: 'A chave do Gemini começa com "AIza" e sai do Google AI Studio.',
+      defaultModel: 'gemini-2.5-flash',
+      fallbackModels: [
+        { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+        { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+        { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }
+      ],
+
+      request: function (key, model, system, prompt, effort, maxTokens) {
+        return {
+          // A chave vai no cabeçalho, não na query string: assim ela não entra
+          // em log de proxy nem em histórico de URL.
+          url: 'https://generativelanguage.googleapis.com/v1beta/models/' +
+            encodeURIComponent(model) + ':generateContent',
+          headers: {
+            'content-type': 'application/json',
+            'x-goog-api-key': key
+          },
+          body: {
+            systemInstruction: { parts: [{ text: system }] },
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: maxTokens }
+          }
+        };
+      },
+
+      parse: function (body) {
+        var bloqueio = body && body.promptFeedback && body.promptFeedback.blockReason;
+        if (bloqueio) {
+          return { ok: false, error: 'O Gemini bloqueou o conteúdo (' + bloqueio + ').' };
+        }
+        var cand = (body && body.candidates ? body.candidates : [])[0];
+        if (cand && cand.finishReason === 'SAFETY') {
+          return { ok: false, error: 'O Gemini bloqueou a resposta por filtro de segurança.' };
+        }
+        var texto = (cand && cand.content && cand.content.parts ? cand.content.parts : [])
+          .map(function (p) { return p.text || ''; })
+          .join('').trim();
+        return texto ? { ok: true, text: texto } : { ok: false, error: 'A API respondeu vazio.' };
+      },
+
+      error: function (status, body) {
+        var detalhe = body && body.error && body.error.message;
+        if (status === 400 && detalhe && /API key not valid|API_KEY_INVALID/i.test(detalhe)) {
+          return 'Chave do Gemini inválida. Gere outra no Google AI Studio.';
+        }
+        if (status === 401 || status === 403) {
+          return 'Chave do Gemini recusada. Verifique se a API "Generative Language" ' +
+            'está habilitada para essa chave.';
+        }
+        if (status === 404) return 'Modelo não encontrado. Clique em "Atualizar lista de modelos".';
+        if (status === 429) return 'Cota do Gemini esgotada. O plano gratuito tem limite por minuto e por dia.';
+        if (status >= 500) return 'A API do Gemini está indisponível no momento.';
+        return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
+      },
+
+      listRequest: function (key) {
+        return {
+          url: 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',
+          headers: { 'x-goog-api-key': key }
+        };
+      },
+
+      parseModels: function (body) {
+        return (body && body.models ? body.models : [])
+          .filter(function (m) {
+            var metodos = m.supportedGenerationMethods || m.supportedActions || [];
+            return metodos.indexOf('generateContent') !== -1;
+          })
+          .map(function (m) {
+            return {
+              id: String(m.name || '').replace(/^models\//, ''),
+              label: m.displayName || m.name
+            };
+          });
+      }
+    }
+  };
+
+  function provider(name) {
+    return PROVIDERS[name] || PROVIDERS.claude;
+  }
+
+  /* ================================================================ prompts */
 
   /*
    * O texto das conversas é conteúdo de terceiros: qualquer pessoa pode mandar
@@ -125,87 +296,68 @@
     return linhas.join('\n');
   }
 
-  /**
-   * Faz a requisição e devolve sempre { ok, text } ou { ok:false, error }.
-   *
-   * O header anthropic-dangerous-direct-browser-access existe porque a
-   * requisição parte de um contexto de navegador: quando o Chrome anexa um
-   * cabeçalho Origin, a API recusa a chamada sem ele. Quando não anexa, o
-   * header é simplesmente ignorado — então mandá-lo é sempre seguro.
-   */
-  function call(key, payload) {
-    return fetch(ENDPOINT, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': API_VERSION,
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify(payload)
-    }).then(function (res) {
-      return res.json().catch(function () { return null; }).then(function (body) {
-        if (!res.ok) return { ok: false, error: friendlyError(res.status, body) };
-        if (body && body.stop_reason === 'refusal') {
-          return { ok: false, error: 'O modelo recusou responder a esse conteúdo.' };
-        }
-        var texto = (body && body.content ? body.content : [])
-          .filter(function (b) { return b.type === 'text'; })
-          .map(function (b) { return b.text; })
-          .join('\n')
-          .trim();
-        if (!texto) return { ok: false, error: 'A API respondeu vazio.' };
-        return { ok: true, text: texto };
-      });
-    }).catch(function (err) {
-      // "Failed to fetch" some o motivo real por segurança do navegador; as
-      // três causas possíveis estão listadas para não deixar o usuário no escuro.
-      var msg = String((err && err.message) || err);
-      if (/failed to fetch|networkerror/i.test(msg)) {
-        return { ok: false, error:
-          'Não consegui alcançar a API da Anthropic. Verifique: (1) conexão com a internet, ' +
-          '(2) firewall, proxy ou antivírus bloqueando api.anthropic.com, ' +
-          '(3) a extensão precisa ser recarregada em chrome://extensions após atualizar.' };
-      }
-      return { ok: false, error: 'Falha de rede ao chamar a API: ' + msg };
-    });
-  }
+  function buildSystem(settings) {
+    var system = SYSTEM;
 
-  /** Chamada mínima para diagnosticar a configuração, sem gastar quase nada. */
-  function test() {
-    return Promise.all([
-      root.WhatsWorkStore.getSettings(),
-      root.WhatsWorkStore.getApiKey()
-    ]).then(function (r) {
-      var settings = r[0], key = r[1];
-      if (!key) return { ok: false, error: 'Falta a chave da API. Cole a chave no campo acima.' };
-      if (String(key).indexOf('sk-ant-') !== 0) {
-        return { ok: false, error: 'A chave não parece válida: ela deve começar com "sk-ant-".' };
-      }
-      return call(key, {
-        model: settings.aiModel,
-        max_tokens: 16,
-        messages: [{ role: 'user', content: 'Responda apenas: OK' }]
-      }).then(function (res) {
-        if (!res.ok) return res;
-        return { ok: true, text: 'Conexão funcionando. Modelo: ' + settings.aiModel + '.' };
-      });
-    });
-  }
-
-  function friendlyError(status, body) {
-    if (status === 401) return 'Chave da API inválida. Confira em Ajustes.';
-    if (status === 403) return 'Essa chave não tem permissão para usar a API.';
-    if (status === 404) return 'Modelo não encontrado — verifique o nome em Ajustes.';
-    if (status === 429) return 'Limite de uso atingido. Tente daqui a pouco.';
-    if (status === 402) return 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing (a assinatura do claude.ai não cobre a API).';
-    if (status >= 500) return 'A API da Anthropic está indisponível no momento.';
-    var detalhe = body && body.error && body.error.message;
-    if (detalhe && /credit balance|insufficient/i.test(detalhe)) {
-      return 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing ' +
-        '(a assinatura do claude.ai não cobre a API).';
+    // O que a pessoa vende entra como contexto fixo: é o que evita a IA
+    // inventar preço e o que faz a sugestão sair concreta em vez de genérica.
+    var negocio = String(settings.businessContext || '').slice(0, MAX_BUSINESS_CHARS).trim();
+    if (negocio) {
+      system += '\n\nContexto do negócio de quem está atendendo — apoie-se só nele para preço, ' +
+        'prazo, produto e condição:\n' + wrap('negocio', negocio);
     }
-    return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
+
+    // O tom vem depois porque governa a forma final do texto; ainda assim não
+    // passa por cima das regras de não inventar dado.
+    var voz = String(settings.voiceStyle || '').slice(0, MAX_VOICE_CHARS).trim();
+    if (voz) {
+      system += '\n\nEscreva imitando o jeito de falar descrito abaixo. Ele manda no tom, no ' +
+        'ritmo e no vocabulário — mas nunca autoriza inventar preço, prazo ou promessa:\n' +
+        wrap('voz', voz);
+    }
+    return system;
+  }
+
+  /* ================================================================== rede */
+
+  /**
+   * Erro de rede não diz o motivo real (o navegador esconde por segurança),
+   * então listamos as causas possíveis e nomeamos o host — é o que a pessoa
+   * precisa para liberar no firewall.
+   */
+  function networkError(err, host) {
+    var msg = String((err && err.message) || err);
+    if (/failed to fetch|networkerror/i.test(msg)) {
+      return 'Não consegui alcançar ' + (host || 'a API') + '. Verifique: ' +
+        '(1) conexão com a internet, (2) firewall, proxy ou antivírus bloqueando ' +
+        (host || 'esse endereço') + ', (3) a extensão precisa ser recarregada em ' +
+        'chrome://extensions após atualizar.';
+    }
+    return 'Falha de rede ao chamar a API: ' + msg;
+  }
+
+  function send(req, method) {
+    var init = { method: method || 'GET', headers: req.headers };
+    if (req.body) init.body = JSON.stringify(req.body);
+    return fetch(req.url, init).then(function (res) {
+      return res.json().catch(function () { return null; }).then(function (body) {
+        return { status: res.status, ok: res.ok, body: body };
+      });
+    });
+  }
+
+  /* =============================================================== ações */
+
+  function settingsAndKey() {
+    return root.WhatsWorkStore.getSettings().then(function (settings) {
+      return root.WhatsWorkStore.getApiKey(settings.aiProvider).then(function (key) {
+        return { settings: settings, key: key, p: provider(settings.aiProvider) };
+      });
+    });
+  }
+
+  function modelFor(settings) {
+    return root.WhatsWorkStore.modelFor(settings, settings.aiProvider);
   }
 
   /**
@@ -216,58 +368,79 @@
     var task = TASKS[taskName];
     if (!task) return Promise.resolve({ ok: false, error: 'Tarefa desconhecida.' });
 
-    return Promise.all([
-      root.WhatsWorkStore.getSettings(),
-      root.WhatsWorkStore.getApiKey()
-    ]).then(function (r) {
-      var settings = r[0], key = r[1];
-
-      if (!settings.aiEnabled) return { ok: false, error: 'A IA está desligada. Ative em Ajustes.' };
-      if (!key) return { ok: false, error: 'Falta a chave da API. Configure em Ajustes.' };
+    return settingsAndKey().then(function (c) {
+      if (!c.settings.aiEnabled) return { ok: false, error: 'A IA está desligada. Ative em Ajustes.' };
+      if (!c.key) return { ok: false, error: 'Falta a chave da API. Configure em Ajustes.' };
 
       var prompt = task.build({
         transcript: buildTranscript(ctx && ctx.messages),
         draft: String((ctx && ctx.draft) || '').slice(0, MAX_TOTAL_CHARS)
       });
 
-      // O que a pessoa vende entra como contexto fixo: é o que evita a IA
-      // inventar preço e o que faz a sugestão sair concreta em vez de genérica.
-      var negocio = String(settings.businessContext || '').slice(0, MAX_BUSINESS_CHARS).trim();
-      var voz = String(settings.voiceStyle || '').slice(0, MAX_VOICE_CHARS).trim();
+      var req = c.p.request(c.key, modelFor(c.settings), buildSystem(c.settings),
+        prompt, task.effort, MAX_TOKENS);
 
-      var system = SYSTEM;
-      if (negocio) {
-        system += '\n\nContexto do negócio de quem está atendendo — apoie-se só nele para preço, ' +
-          'prazo, produto e condição:\n' + wrap('negocio', negocio);
-      }
-      if (voz) {
-        // O tom vem depois do resto porque ele governa a forma final do texto;
-        // ainda assim não pode passar por cima das regras de não inventar dado.
-        system += '\n\nEscreva imitando o jeito de falar descrito abaixo. Ele manda no tom, no ' +
-          'ritmo e no vocabulário — mas nunca autoriza inventar preço, prazo ou promessa:\n' +
-          wrap('voz', voz);
-      }
-
-      return call(key, {
-        model: settings.aiModel,
-        max_tokens: MAX_TOKENS,
-        system: system,
-        output_config: { effort: task.effort },
-        messages: [{ role: 'user', content: prompt }]
+      return send(req, 'POST').then(function (res) {
+        return res.ok ? c.p.parse(res.body) : { ok: false, error: c.p.error(res.status, res.body) };
+      }, function (err) {
+        return { ok: false, error: networkError(err, c.p.host) };
       });
+    }).catch(function (err) {
+      return { ok: false, error: networkError(err) };
+    });
+  }
+
+  /** Chamada mínima para diagnosticar a configuração, sem gastar quase nada. */
+  function test() {
+    return settingsAndKey().then(function (c) {
+      if (!c.key) return { ok: false, error: 'Falta a chave da API. Cole a chave no campo acima.' };
+      if (String(c.key).indexOf(c.p.keyPrefix) !== 0) {
+        return { ok: false, error: 'A chave não parece válida. ' + c.p.keyHint };
+      }
+      var modelo = modelFor(c.settings);
+      var req = c.p.request(c.key, modelo, 'Responda apenas: OK', 'Responda apenas: OK', 'low', 16);
+      return send(req, 'POST').then(function (res) {
+        if (!res.ok) return { ok: false, error: c.p.error(res.status, res.body) };
+        var parsed = c.p.parse(res.body);
+        if (!parsed.ok) return parsed;
+        return { ok: true, text: 'Conexão funcionando com ' + c.p.label + '. Modelo: ' + modelo + '.' };
+      }, function (err) {
+        return { ok: false, error: networkError(err, c.p.host) };
+      });
+    }).catch(function (err) {
+      return { ok: false, error: networkError(err) };
+    });
+  }
+
+  /**
+   * Pergunta ao provedor quais modelos existem hoje.
+   *
+   * Evita o erro mais chato de configuração: uma lista fixa no código envelhece
+   * e o usuário só descobre com um 404 sem explicação.
+   */
+  function listModels() {
+    return settingsAndKey().then(function (c) {
+      if (!c.key) return { ok: false, error: 'Cole a chave da API antes de buscar os modelos.' };
+      return send(c.p.listRequest(c.key), 'GET').then(function (res) {
+        if (!res.ok) return { ok: false, error: c.p.error(res.status, res.body) };
+        var modelos = c.p.parseModels(res.body);
+        if (!modelos.length) return { ok: false, error: 'A API não retornou nenhum modelo.' };
+        return { ok: true, models: modelos };
+      }, function (err) {
+        return { ok: false, error: networkError(err, c.p.host) };
+      });
+    }).catch(function (err) {
+      return { ok: false, error: networkError(err) };
     });
   }
 
   root.WhatsWorkAI = {
     run: run,
     test: test,
+    listModels: listModels,
     buildTranscript: buildTranscript,
-    TASKS: TASKS,
-    LIMITS: {
-      maxMessages: MAX_MESSAGES,
-      maxCharsPerMessage: MAX_CHARS_PER_MESSAGE,
-      maxTotalChars: MAX_TOTAL_CHARS,
-      maxTokens: MAX_TOKENS
-    }
+    buildSystem: buildSystem,
+    PROVIDERS: PROVIDERS,
+    TASKS: TASKS
   };
 })(typeof globalThis !== 'undefined' ? globalThis : self);
