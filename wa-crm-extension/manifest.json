@@ -3,7 +3,6 @@
   "name": "WA CRM Lite — CRM para WhatsApp Web",
   "version": "0.1.0",
   "description": "Adiciona um painel de CRM ao WhatsApp Web: notas, etiquetas, modelos de resposta, mensagens agendadas e lembretes de follow-up.",
-  "default_locale": "pt_BR",
   "permissions": ["storage", "alarms", "notifications"],
   "host_permissions": ["https://web.whatsapp.com/*"],
   "background": {
