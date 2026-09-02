@@ -173,3 +173,5 @@ textarea:focus { outline: 2px solid var(--ww-brand-ring); outline-offset: -1px; 
 
 #ai-test-result { min-height: 14px; }
 #ai-test-result.ok { color: #15803d; }
+
+#version { margin: 4px 0 0; font-size: 11px; opacity: .55; }

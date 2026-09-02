@@ -374,6 +374,7 @@ async function waitFor(read, ok, timeoutMs, message) {
     assert.strictEqual(await popup.locator('#set-key').getAttribute('type'), 'password',
       'o campo da chave precisa nascer mascarado');
     assert.strictEqual(await popup.locator('#set-model').inputValue(), 'claude-opus-5');
+    assert.match(await popup.locator('#version').textContent(), /^versão \d+\.\d+\.\d+$/);
 
     // O botão do tom de voz preenche o campo e persiste o ajuste.
     await popup.locator('#voice-carnegie').click();
@@ -587,6 +588,8 @@ async function waitFor(read, ok, timeoutMs, message) {
     assert.strictEqual(res.ok, false);
     assert.match(res.error, /Cota do Gemini esgotada/);
     assert.match(res.error, /HTTP 429 — quota exceeded/);
+    // A mensagem precisa dizer O QUE foi tentado, não só que falhou.
+    assert.match(res.error, /tentei: Gemini \(Google\) \/ /);
     assert.strictEqual((await sw.evaluate(() => globalThis.__apiCalls)).length, 1);
 
     await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AIzaChaveDeTeste'));

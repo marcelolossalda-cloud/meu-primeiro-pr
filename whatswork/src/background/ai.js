@@ -245,6 +245,15 @@
     return texto + ' [' + tecnico + ']';
   }
 
+  /*
+   * Acrescenta o que foi tentado. Sem isso, "modelo não encontrado" não diz
+   * QUAL modelo — e o usuário não tem como saber se o seletor guardou o que
+   * ele escolheu.
+   */
+  function withAttempt(erro, provedor, modelo) {
+    return erro + ' [tentei: ' + provedor + ' / ' + modelo + ']';
+  }
+
   /* ================================================================ prompts */
 
   /*
@@ -453,7 +462,8 @@
       return sendAuth(c.p, c.key, function (auth) {
         return c.p.request(auth, modelo, system, prompt, task.effort, MAX_TOKENS);
       }, 'POST').then(function (res) {
-        return res.ok ? c.p.parse(res.body) : { ok: false, error: c.p.error(res.status, res.body) };
+        if (res.ok) return c.p.parse(res.body);
+        return { ok: false, error: withAttempt(c.p.error(res.status, res.body), c.p.label, modelo) };
       }, function (err) {
         return { ok: false, error: networkError(err, c.p.host) };
       });
@@ -475,7 +485,9 @@
       return sendAuth(c.p, c.key, function (auth) {
         return c.p.request(auth, modelo, 'Responda apenas: OK', 'Responda apenas: OK', 'low', 16);
       }, 'POST').then(function (res) {
-        if (!res.ok) return { ok: false, error: c.p.error(res.status, res.body) + aviso };
+        if (!res.ok) {
+          return { ok: false, error: withAttempt(c.p.error(res.status, res.body), c.p.label, modelo) + aviso };
+        }
         var parsed = c.p.parse(res.body);
         if (!parsed.ok) return parsed;
         return { ok: true, text: 'Conexão funcionando com ' + c.p.label + '. Modelo: ' + modelo + '.' };

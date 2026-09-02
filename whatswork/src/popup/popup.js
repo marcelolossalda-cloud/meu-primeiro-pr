@@ -498,6 +498,9 @@
     });
   });
 
+  // Versão à mostra: sem isso não dá para saber se o build instalado é o novo.
+  $('version').textContent = 'versão ' + chrome.runtime.getManifest().version;
+
   wireSettings();
   loadSettings();
   refreshStats();
