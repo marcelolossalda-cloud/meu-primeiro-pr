@@ -43,17 +43,20 @@
         { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' }
       ],
 
-      request: function (key, model, system, prompt, effort, maxTokens) {
+      authVariants: function (key) {
+        return [{
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          // Necessário quando o Chrome anexa cabeçalho Origin; ignorado
+          // quando não anexa, então mandá-lo é sempre seguro.
+          'anthropic-dangerous-direct-browser-access': 'true'
+        }];
+      },
+
+      request: function (auth, model, system, prompt, effort, maxTokens) {
         return {
           url: 'https://api.anthropic.com/v1/messages',
-          headers: {
-            'content-type': 'application/json',
-            'x-api-key': key,
-            'anthropic-version': '2023-06-01',
-            // Necessário quando o Chrome anexa cabeçalho Origin; ignorado
-            // quando não anexa, então mandá-lo é sempre seguro.
-            'anthropic-dangerous-direct-browser-access': 'true'
-          },
+          headers: Object.assign({ 'content-type': 'application/json' }, auth),
           body: {
             model: model,
             max_tokens: maxTokens,
@@ -89,15 +92,8 @@
         return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
       },
 
-      listRequest: function (key) {
-        return {
-          url: 'https://api.anthropic.com/v1/models?limit=100',
-          headers: {
-            'x-api-key': key,
-            'anthropic-version': '2023-06-01',
-            'anthropic-dangerous-direct-browser-access': 'true'
-          }
-        };
+      listRequest: function (auth) {
+        return { url: 'https://api.anthropic.com/v1/models?limit=100', headers: auth };
       },
 
       parseModels: function (body) {
@@ -110,9 +106,10 @@
     gemini: {
       label: 'Gemini (Google)',
       host: 'generativelanguage.googleapis.com',
-      keyPrefix: 'AIza',
-      keyHint: 'A chave de API do Gemini começa com "AIza" (Google AI Studio → Create API key). ' +
-        'Um token OAuth também é aceito, mas expira em cerca de 1 hora.',
+      // Sem checagem de prefixo: o AI Studio já emitiu chaves com "AIza" e com
+      // "AQ.", e amanhã pode emitir com outro. Quem decide é a API.
+      keyPrefix: '',
+      keyHint: 'Pegue em aistudio.google.com → Chaves de API → Criar chave de API.',
       defaultModel: 'gemini-2.5-flash',
       fallbackModels: [
         { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
@@ -120,16 +117,24 @@
         { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }
       ],
 
-      request: function (key, model, system, prompt, effort, maxTokens) {
+      /*
+       * O Google aceita duas credenciais na mesma API: chave de API no
+       * cabeçalho x-goog-api-key e token OAuth em Authorization: Bearer. As
+       * chaves emitidas hoje pelo AI Studio começam com "AQ." (as antigas,
+       * com "AIza") — as duas são chave de API e vão no primeiro cabeçalho.
+       * O Bearer fica como segunda tentativa, para quem colar um token OAuth.
+       */
+      authVariants: function (key) {
+        return [{ 'x-goog-api-key': key }, { authorization: 'Bearer ' + key }];
+      },
+
+      request: function (auth, model, system, prompt, effort, maxTokens) {
         return {
           // A credencial vai no cabeçalho, não na query string: assim ela não
           // entra em log de proxy nem em histórico de URL.
           url: 'https://generativelanguage.googleapis.com/v1beta/models/' +
             encodeURIComponent(model) + ':generateContent',
-          headers: Object.assign(
-            { 'content-type': 'application/json' },
-            geminiAuth(key)
-          ),
+          headers: Object.assign({ 'content-type': 'application/json' }, auth),
           body: {
             systemInstruction: { parts: [{ text: system }] },
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -168,10 +173,10 @@
         return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
       },
 
-      listRequest: function (key) {
+      listRequest: function (auth) {
         return {
           url: 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',
-          headers: geminiAuth(key)
+          headers: auth
         };
       },
 
@@ -190,18 +195,6 @@
       }
     }
   };
-
-  /*
-   * O Google aceita duas credenciais diferentes na mesma API: chave de API
-   * (cabeçalho x-goog-api-key) e token OAuth (Authorization: Bearer). Em vez de
-   * adivinhar pelo formato e recusar o que não reconheço, escolho o cabeçalho
-   * pelo prefixo e deixo o próprio Google decidir se a credencial vale.
-   */
-  function geminiAuth(key) {
-    return String(key).indexOf('AIza') === 0
-      ? { 'x-goog-api-key': key }
-      : { authorization: 'Bearer ' + key };
-  }
 
   function provider(name) {
     return PROVIDERS[name] || PROVIDERS.claude;
@@ -359,6 +352,25 @@
     });
   }
 
+  /**
+   * Tenta cada forma de autenticação do provedor até uma não ser recusada.
+   *
+   * Existe porque o mesmo endpoint aceita credenciais de tipos diferentes e o
+   * formato delas muda com o tempo — adivinhar pelo prefixo já me fez recusar
+   * uma chave válida. Só 401 e 403 disparam a próxima tentativa: qualquer
+   * outro erro é problema real e deve chegar ao usuário como veio.
+   */
+  function sendAuth(p, key, make, method) {
+    var variantes = p.authVariants(key);
+    function tentar(i) {
+      return send(make(variantes[i]), method).then(function (res) {
+        var recusou = res.status === 401 || res.status === 403;
+        return (recusou && i + 1 < variantes.length) ? tentar(i + 1) : res;
+      });
+    }
+    return tentar(0);
+  }
+
   /* =============================================================== ações */
 
   function settingsAndKey() {
@@ -390,10 +402,12 @@
         draft: String((ctx && ctx.draft) || '').slice(0, MAX_TOTAL_CHARS)
       });
 
-      var req = c.p.request(c.key, modelFor(c.settings), buildSystem(c.settings),
-        prompt, task.effort, MAX_TOKENS);
+      var modelo = modelFor(c.settings);
+      var system = buildSystem(c.settings);
 
-      return send(req, 'POST').then(function (res) {
+      return sendAuth(c.p, c.key, function (auth) {
+        return c.p.request(auth, modelo, system, prompt, task.effort, MAX_TOKENS);
+      }, 'POST').then(function (res) {
         return res.ok ? c.p.parse(res.body) : { ok: false, error: c.p.error(res.status, res.body) };
       }, function (err) {
         return { ok: false, error: networkError(err, c.p.host) };
@@ -413,8 +427,9 @@
       // erro do próprio provedor é mais confiável que o meu palpite.
       var aviso = String(c.key).indexOf(c.p.keyPrefix) !== 0 ? ' (' + c.p.keyHint + ')' : '';
       var modelo = modelFor(c.settings);
-      var req = c.p.request(c.key, modelo, 'Responda apenas: OK', 'Responda apenas: OK', 'low', 16);
-      return send(req, 'POST').then(function (res) {
+      return sendAuth(c.p, c.key, function (auth) {
+        return c.p.request(auth, modelo, 'Responda apenas: OK', 'Responda apenas: OK', 'low', 16);
+      }, 'POST').then(function (res) {
         if (!res.ok) return { ok: false, error: c.p.error(res.status, res.body) + aviso };
         var parsed = c.p.parse(res.body);
         if (!parsed.ok) return parsed;
@@ -436,7 +451,9 @@
   function listModels() {
     return settingsAndKey().then(function (c) {
       if (!c.key) return { ok: false, error: 'Cole a chave da API antes de buscar os modelos.' };
-      return send(c.p.listRequest(c.key), 'GET').then(function (res) {
+      return sendAuth(c.p, c.key, function (auth) {
+        return c.p.listRequest(auth);
+      }, 'GET').then(function (res) {
         if (!res.ok) return { ok: false, error: c.p.error(res.status, res.body) };
         var modelos = c.p.parseModels(res.body);
         if (!modelos.length) return { ok: false, error: 'A API não retornou nenhum modelo.' };

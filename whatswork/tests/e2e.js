@@ -512,9 +512,9 @@ async function waitFor(read, ok, timeoutMs, message) {
     assert.strictEqual(corpo.generationConfig.maxOutputTokens, 16);
   });
 
-  await step('token OAuth do Google vai como Bearer, não como chave de API', async () => {
-    // O Google aceita as duas credenciais na mesma API; em vez de recusar pelo
-    // formato, a extensão escolhe o cabeçalho e deixa o Google decidir.
+  await step('chave "AQ." do AI Studio vai como chave de API, não como Bearer', async () => {
+    // As chaves emitidas hoje pelo AI Studio começam com "AQ." e continuam
+    // sendo chave de API. Adivinhar pelo prefixo já me fez recusar uma válida.
     await sw.evaluate(() => {
       globalThis.__apiCalls = [];
       globalThis.fetch = function (url, init) {
@@ -524,17 +524,59 @@ async function waitFor(read, ok, timeoutMs, message) {
         }), { status: 200, headers: { 'content-type': 'application/json' } }));
       };
     });
-    await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AQ.Ab8ExemploDeTokenOAuth'));
+    await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AQ.Ab8ExemploDeChaveNova'));
 
     const res = await sw.evaluate(() => WhatsWorkAI.test());
-    assert.ok(res.ok, 'o token não deveria ser barrado antes de tentar: ' + res.error);
+    assert.ok(res.ok, 'a chave não deveria ser barrada pelo formato: ' + res.error);
 
-    const call = (await sw.evaluate(() => globalThis.__apiCalls))[0];
-    assert.strictEqual(call.headers.authorization, 'Bearer AQ.Ab8ExemploDeTokenOAuth');
-    assert.strictEqual(call.headers['x-goog-api-key'], undefined);
-    assert.ok(!call.url.includes('AQ.Ab8'), 'a credencial não pode ir na URL');
+    const calls = await sw.evaluate(() => globalThis.__apiCalls);
+    assert.strictEqual(calls.length, 1, 'uma chave aceita não deve gerar segunda tentativa');
+    assert.strictEqual(calls[0].headers['x-goog-api-key'], 'AQ.Ab8ExemploDeChaveNova');
+    assert.strictEqual(calls[0].headers.authorization, undefined);
+    assert.ok(!calls[0].url.includes('AQ.Ab8'), 'a credencial não pode ir na URL');
+  });
 
-    // Devolve a chave de API para os passos seguintes.
+  await step('credencial recusada como chave é reenviada como Bearer', async () => {
+    // Quem colar um token OAuth ainda funciona: o 401 dispara a segunda forma.
+    await sw.evaluate(() => {
+      globalThis.__apiCalls = [];
+      globalThis.fetch = function (url, init) {
+        globalThis.__apiCalls.push({ headers: init.headers });
+        if (init.headers['x-goog-api-key']) {
+          return Promise.resolve(new Response(
+            JSON.stringify({ error: { message: 'API key not valid' } }),
+            { status: 401, headers: { 'content-type': 'application/json' } }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }]
+        }), { status: 200, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.ok(res.ok, 'a segunda forma de autenticação não foi tentada: ' + res.error);
+
+    const calls = await sw.evaluate(() => globalThis.__apiCalls);
+    assert.strictEqual(calls.length, 2);
+    assert.strictEqual(calls[1].headers.authorization, 'Bearer AQ.Ab8ExemploDeChaveNova');
+  });
+
+  await step('erro que não é de autenticação não vira segunda tentativa', async () => {
+    await sw.evaluate(() => {
+      globalThis.__apiCalls = [];
+      globalThis.fetch = function (url, init) {
+        globalThis.__apiCalls.push({ headers: init.headers });
+        return Promise.resolve(new Response(
+          JSON.stringify({ error: { message: 'quota exceeded' } }),
+          { status: 429, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.strictEqual(res.ok, false);
+    assert.match(res.error, /Cota do Gemini esgotada/);
+    assert.strictEqual((await sw.evaluate(() => globalThis.__apiCalls)).length, 1);
+
     await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AIzaChaveDeTeste'));
   });
 

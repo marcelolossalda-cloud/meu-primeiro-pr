@@ -55,10 +55,11 @@
       ]
     },
     gemini: {
-      placeholder: 'AIza…',
-      note: 'A chave vem do Google AI Studio e tem um plano gratuito com limite por minuto e por ' +
+      placeholder: 'Chave de API do Gemini',
+      note: 'A chave vem do Google AI Studio e tem nível gratuito, com limite por minuto e por ' +
         'dia — dá para usar sem cartão de crédito.',
-      where: 'Onde pegar: aistudio.google.com → Get API key.',
+      where: 'Onde pegar: aistudio.google.com → Chaves de API → Criar chave de API. ' +
+        'O formato varia (já houve "AIza…", hoje há "AQ.…") — cole o que o Google mostrar.',
       fallback: [
         { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
         { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
