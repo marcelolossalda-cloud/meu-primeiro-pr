@@ -434,7 +434,10 @@ async function waitFor(read, ok, timeoutMs, message) {
     await popup.waitForFunction(
       () => document.getElementById('ai-test-result').textContent.startsWith('✗'),
       null, { timeout: 10000 });
-    assert.match(await popup.locator('#ai-test-result').textContent(), /Chave do Claude inválida/);
+    const txt = await popup.locator('#ai-test-result').textContent();
+    assert.match(txt, /Chave do Claude inválida/);
+    // A mensagem crua do provedor tem de sobreviver ao texto amigável.
+    assert.match(txt, /HTTP 401 — invalid x-api-key/);
 
     // Rede fora do ar
     await sw.evaluate(() => {
@@ -471,7 +474,10 @@ async function waitFor(read, ok, timeoutMs, message) {
         globalThis.__apiCalls.push({ url: String(url), method: init.method, headers: init.headers, body: init.body });
         if (String(url).includes('/models?')) {
           return Promise.resolve(new Response(JSON.stringify({ models: [
+            { name: 'models/gemini-8.0-pro', displayName: 'Gemini 8.0 Pro', supportedGenerationMethods: ['generateContent'] },
             { name: 'models/gemini-9.9-flash', displayName: 'Gemini 9.9 Flash', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/gemini-9.9-pro-preview', displayName: 'Gemini 9.9 Pro Preview', supportedGenerationMethods: ['generateContent'] },
+            { name: 'models/imagen-4.0-generate', displayName: 'Imagen', supportedGenerationMethods: ['generateContent'] },
             { name: 'models/text-embedding-004', displayName: 'Embeddings', supportedGenerationMethods: ['embedContent'] }
           ] }), { status: 200, headers: { 'content-type': 'application/json' } }));
         }
@@ -485,10 +491,15 @@ async function waitFor(read, ok, timeoutMs, message) {
     await popup.waitForFunction(
       () => document.getElementById('ai-test-result').textContent.startsWith('✓'),
       null, { timeout: 10000 });
-    // O modelo de embeddings não gera texto e não deve aparecer na lista; e o
-    // modelo salvo, que a API não lista mais, é substituído em vez de virar 404.
+    // Embeddings e geração de imagem saem da lista; estáveis vêm antes de
+    // preview e mais novos antes de mais antigos; e o modelo salvo, que a API
+    // não lista mais, é substituído em vez de virar 404.
     const opcoes = await popup.locator('#set-model option').allTextContents();
-    assert.deepStrictEqual(opcoes, ['Gemini 9.9 Flash']);
+    assert.deepStrictEqual(opcoes, [
+      'Gemini 9.9 Flash — rápido e barato',
+      'Gemini 8.0 Pro — mais capaz',
+      'Gemini 9.9 Pro Preview — mais capaz'
+    ]);
     assert.strictEqual(await popup.locator('#set-model').inputValue(), 'gemini-9.9-flash');
     assert.match(await popup.locator('#ai-test-result').textContent(), /não existe mais/);
 
@@ -575,6 +586,7 @@ async function waitFor(read, ok, timeoutMs, message) {
     const res = await sw.evaluate(() => WhatsWorkAI.test());
     assert.strictEqual(res.ok, false);
     assert.match(res.error, /Cota do Gemini esgotada/);
+    assert.match(res.error, /HTTP 429 — quota exceeded/);
     assert.strictEqual((await sw.evaluate(() => globalThis.__apiCalls)).length, 1);
 
     await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AIzaChaveDeTeste'));

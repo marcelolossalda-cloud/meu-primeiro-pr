@@ -79,17 +79,18 @@
       },
 
       error: function (status, body) {
-        var detalhe = body && body.error && body.error.message;
-        if (status === 401) return 'Chave do Claude inválida. Confira em Ajustes.';
-        if (status === 403) return 'Essa chave não tem permissão para usar a API.';
-        if (status === 404) return 'Modelo não encontrado. Clique em "Atualizar lista de modelos".';
-        if (status === 429) return 'Limite de uso atingido. Tente daqui a pouco.';
-        if (status === 402 || (detalhe && /credit balance|insufficient/i.test(detalhe))) {
-          return 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing ' +
+        var detalhe = apiDetail(body);
+        var texto;
+        if (status === 401) texto = 'Chave do Claude inválida. Confira em Ajustes.';
+        else if (status === 403) texto = 'Essa chave não tem permissão para usar a API.';
+        else if (status === 404) texto = 'Modelo não encontrado. Clique em "Atualizar lista de modelos".';
+        else if (status === 429) texto = 'Limite de uso atingido. Tente daqui a pouco.';
+        else if (status === 402 || /credit balance|insufficient/i.test(detalhe)) {
+          texto = 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing ' +
             '(a assinatura do claude.ai não cobre a API).';
-        }
-        if (status >= 500) return 'A API da Anthropic está indisponível no momento.';
-        return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
+        } else if (status >= 500) texto = 'A API da Anthropic está indisponível no momento.';
+        else texto = 'Erro da API.';
+        return withDetail(texto, status, detalhe);
       },
 
       listRequest: function (auth) {
@@ -159,18 +160,24 @@
       },
 
       error: function (status, body) {
-        var detalhe = body && body.error && body.error.message;
-        if (status === 400 && detalhe && /API key not valid|API_KEY_INVALID/i.test(detalhe)) {
-          return 'Chave do Gemini inválida. Gere outra no Google AI Studio.';
-        }
-        if (status === 401 || status === 403) {
-          return 'Chave do Gemini recusada. Verifique se a API "Generative Language" ' +
+        var detalhe = apiDetail(body);
+        var texto;
+        if (status === 400 && /API key not valid|API_KEY_INVALID/i.test(detalhe)) {
+          texto = 'Chave do Gemini inválida. Gere outra no Google AI Studio.';
+        } else if (status === 400 && /system_?instruction/i.test(detalhe)) {
+          texto = 'Esse modelo não aceita instrução de sistema. Escolha outro na lista.';
+        } else if (status === 400) {
+          texto = 'O Gemini recusou a requisição.';
+        } else if (status === 401 || status === 403) {
+          texto = 'Chave do Gemini recusada. Verifique se a API "Generative Language" ' +
             'está habilitada para essa chave.';
-        }
-        if (status === 404) return 'Modelo não encontrado. Clique em "Atualizar lista de modelos".';
-        if (status === 429) return 'Cota do Gemini esgotada. O plano gratuito tem limite por minuto e por dia.';
-        if (status >= 500) return 'A API do Gemini está indisponível no momento.';
-        return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
+        } else if (status === 404) {
+          texto = 'Esse modelo não existe ou não aceita geração de texto. Escolha outro na lista.';
+        } else if (status === 429) {
+          texto = 'Cota do Gemini esgotada. O plano gratuito tem limite por minuto e por dia.';
+        } else if (status >= 500) texto = 'A API do Gemini está indisponível no momento.';
+        else texto = 'Erro da API.';
+        return withDetail(texto, status, detalhe);
       },
 
       listRequest: function (auth) {
@@ -180,24 +187,62 @@
         };
       },
 
+      /*
+       * A lista crua traz dezenas de entradas, e a maioria não serve para
+       * conversa: embeddings, geração de imagem e vídeo, leitura de voz, além
+       * de versões antigas. Filtramos o que não gera texto e ordenamos do mais
+       * novo para o mais antigo, para o primeiro item da lista já ser uma
+       * escolha razoável.
+       */
       parseModels: function (body) {
+        var NAO_SERVE = /embedding|aqa|imagen|veo|tts|image-generation|native-audio|live-/i;
+
         return (body && body.models ? body.models : [])
           .filter(function (m) {
             var metodos = m.supportedGenerationMethods || m.supportedActions || [];
-            return metodos.indexOf('generateContent') !== -1;
+            if (metodos.indexOf('generateContent') === -1) return false;
+            return !NAO_SERVE.test(String(m.name || ''));
           })
           .map(function (m) {
-            return {
-              id: String(m.name || '').replace(/^models\//, ''),
-              label: m.displayName || m.name
-            };
-          });
+            var id = String(m.name || '').replace(/^models\//, '');
+            var versao = parseFloat((id.match(/(\d+\.\d+)/) || [])[1] || '0');
+            var rotulo = m.displayName || id;
+            // "flash" é rápido e barato; "pro", mais capaz. Dizer isso na
+            // própria lista evita ter que explicar fora da tela.
+            if (/flash/i.test(id)) rotulo += ' — rápido e barato';
+            else if (/pro/i.test(id)) rotulo += ' — mais capaz';
+            return { id: id, label: rotulo, versao: versao, preview: /preview|exp|beta/i.test(id) };
+          })
+          .sort(function (a, b) {
+            // Estáveis antes de preview, e mais novos antes de mais antigos.
+            if (a.preview !== b.preview) return a.preview ? 1 : -1;
+            if (b.versao !== a.versao) return b.versao - a.versao;
+            return a.id.localeCompare(b.id);
+          })
+          .map(function (m) { return { id: m.id, label: m.label }; });
       }
     }
   };
 
   function provider(name) {
     return PROVIDERS[name] || PROVIDERS.claude;
+  }
+
+  /** Mensagem que o próprio provedor mandou, quando existir. */
+  function apiDetail(body) {
+    var e = body && body.error;
+    if (!e) return '';
+    return String(e.message || e.type || '');
+  }
+
+  /*
+   * O texto amigável ajuda, mas engolir a mensagem do provedor atrapalha o
+   * diagnóstico: é ela que diz qual campo o servidor recusou. Então os dois vão
+   * juntos — explicação primeiro, evidência depois.
+   */
+  function withDetail(texto, status, detalhe) {
+    var tecnico = 'HTTP ' + status + (detalhe ? ' — ' + detalhe.slice(0, 300) : '');
+    return texto + ' [' + tecnico + ']';
   }
 
   /* ================================================================ prompts */

@@ -132,7 +132,11 @@ chat em **claude.ai** — e uma assinatura Claude Pro ou Max **não** paga o uso
 API. São cobranças separadas.
 
 **Atualizar lista de modelos** pergunta ao provedor quais modelos existem hoje e
-preenche o seletor com a resposta. Isso evita o erro de configuração mais chato:
+preenche o seletor com a resposta. No Gemini a lista crua traz dezenas de
+entradas e a maioria não serve para conversa — embeddings, geração de imagem e
+vídeo, leitura de voz —, então ela é filtrada e ordenada: estáveis antes de
+preview, mais novos antes de mais antigos, com `flash` marcado como *rápido e
+barato* e `pro` como *mais capaz*. Isso evita o erro de configuração mais chato:
 uma lista fixa no código envelhece e o usuário só descobre com um 404 sem
 explicação. Se o modelo que estava salvo não aparecer mais na resposta, ele é
 trocado pelo primeiro disponível e o popup avisa.
@@ -146,8 +150,11 @@ a extensão tenta as duas formas: se a primeira volta 401 ou 403, ela reenvia co
 a outra. Qualquer outro erro chega ao usuário como veio, sem segunda tentativa.
 
 **Testar conexão** faz uma chamada mínima e diz exatamente o que falhou — chave
-ausente, prefixo errado, chave inválida, sem créditos, cota esgotada, modelo
-inexistente ou rede bloqueada (nomeando o host a liberar no firewall).
+ausente, chave inválida, sem créditos, cota esgotada, modelo inexistente ou rede
+bloqueada (nomeando o host a liberar no firewall). Toda mensagem de erro leva
+junto, entre colchetes, o status HTTP e o texto que o provedor devolveu: o texto
+amigável ajuda, mas é a mensagem crua que diz qual campo o servidor recusou, e
+engoli-la só transfere o trabalho de diagnóstico para outra rodada.
 
 ### Ações
 
