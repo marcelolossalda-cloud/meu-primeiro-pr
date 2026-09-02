@@ -157,8 +157,11 @@ virar laço.
 
 **Sobrecarga temporária é repetida sozinha.** Um 502/503/504 vem com "try again
 later" — uma instrução que o código consegue seguir. A extensão repete até três
-vezes, com esperas crescentes (0,8s, 2,5s, 6s) para não piorar o congestionamento
-que causou o erro. Cota (429) **não** é repetida: insistir só queima o que resta
+vezes, com esperas crescentes (0,6s, 1,5s, 3s) — crescentes para não piorar o
+congestionamento que causou o erro, e curtas porque o service worker de uma
+extensão MV3 é encerrado quando fica ocioso: uma pausa longa entre tentativas
+faria a requisição seguinte morrer com "Failed to fetch", que parece falha de
+rede e manda o diagnóstico para o lado errado. Cota (429) **não** é repetida: insistir só queima o que resta
 do limite gratuito.
 
 **Testar conexão** faz uma chamada mínima e diz exatamente o que falhou — chave

@@ -410,10 +410,11 @@
   function networkError(err, host) {
     var msg = String((err && err.message) || err);
     if (/failed to fetch|networkerror/i.test(msg)) {
-      return 'Não consegui alcançar ' + (host || 'a API') + '. Verifique: ' +
-        '(1) conexão com a internet, (2) firewall, proxy ou antivírus bloqueando ' +
-        (host || 'esse endereço') + ', (3) a extensão precisa ser recarregada em ' +
-        'chrome://extensions após atualizar.';
+      return 'Não consegui alcançar ' + (host || 'a API') + '. Para separar as causas, ' +
+        'abra https://' + (host || '') + '/v1beta/models numa aba do Chrome: se aparecer um ' +
+        'texto JSON falando de credencial, a rede está boa e o problema é na extensão — ' +
+        'recarregue-a em chrome://extensions. Se a página não abrir, algo está bloqueando ' +
+        'o endereço: antivírus, VPN, DNS do provedor ou rede da empresa.';
     }
     return 'Falha de rede ao chamar a API: ' + msg;
   }
@@ -431,7 +432,13 @@
   /* Estados em que a própria API diz que o problema é passageiro. Só estes
      são repetidos: 429 é cota, e insistir nela só queima o que resta. */
   var TRANSITORIO = [502, 503, 504];
-  var ESPERAS_MS = [800, 2500, 6000];
+  /*
+   * Esperas curtas de propósito. O service worker de uma extensão MV3 é
+   * encerrado quando fica ocioso, e uma pausa longa entre tentativas é
+   * exatamente ociosidade: a requisição seguinte morreria com "Failed to
+   * fetch", que parece falha de rede e manda o diagnóstico para o lado errado.
+   */
+  var ESPERAS_MS = [600, 1500, 3000];
 
   function esperar(ms) {
     return new Promise(function (r) { setTimeout(r, ms); });

@@ -448,6 +448,10 @@ async function waitFor(read, ok, timeoutMs, message) {
     await popup.waitForFunction(
       () => document.getElementById('ai-test-result').textContent.includes('api.anthropic.com'),
       null, { timeout: 10000 });
+    // A mensagem precisa dar um teste que separa "rede bloqueada" de
+    // "extensão desatualizada" — senão o usuário fica adivinhando.
+    assert.match(await popup.locator('#ai-test-result').textContent(),
+      /abra https:\/\/api\.anthropic\.com\/v1beta\/models numa aba/);
     await popup.close();
   });
 
