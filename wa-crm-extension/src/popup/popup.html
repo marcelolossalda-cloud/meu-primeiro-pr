@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>WA CRM Lite</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>WA CRM Lite</h1>
+    <p id="hint">Abra o WhatsApp Web e clique na aba <strong>CRM</strong> na lateral direita.</p>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><span id="stat-contacts">0</span><small>contatos</small></div>
+    <div class="stat"><span id="stat-notes">0</span><small>anotações</small></div>
+    <div class="stat"><span id="stat-scheduled">0</span><small>agendadas</small></div>
+    <div class="stat"><span id="stat-reminders">0</span><small>follow-ups</small></div>
+  </section>
+
+  <section>
+    <h2>Etiquetas</h2>
+    <ul id="tag-list" class="tags"></ul>
+    <div class="row">
+      <input id="tag-name" placeholder="Nova etiqueta">
+      <input id="tag-color" type="color" value="#6b7280">
+      <button id="tag-add">Criar</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Dados</h2>
+    <div class="row">
+      <button id="export">Exportar CSV</button>
+      <button id="import-btn">Importar CSV</button>
+      <input id="import" type="file" accept=".csv,text/csv" hidden>
+    </div>
+    <p class="muted">O CSV usa as colunas <code>telefone,nome,etiquetas,anotacoes</code>.</p>
+  </section>
+
+  <script src="../lib/store.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

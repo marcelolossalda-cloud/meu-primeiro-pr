@@ -14,3 +14,9 @@ Projeto de exemplo para praticar meu primeiro Pull Request no GitHub.
 ```bash
 python -m unittest test_calculator.py
 ```
+
+## Outros projetos neste repositório
+
+- [`wa-crm-extension/`](wa-crm-extension/) — extensão Chrome (Manifest V3) que
+  adiciona um painel de CRM ao WhatsApp Web: anotações, etiquetas, modelos de
+  resposta, mensagens agendadas e lembretes.
