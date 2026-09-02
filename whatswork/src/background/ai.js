@@ -125,6 +125,74 @@
     return linhas.join('\n');
   }
 
+  /**
+   * Faz a requisição e devolve sempre { ok, text } ou { ok:false, error }.
+   *
+   * O header anthropic-dangerous-direct-browser-access existe porque a
+   * requisição parte de um contexto de navegador: quando o Chrome anexa um
+   * cabeçalho Origin, a API recusa a chamada sem ele. Quando não anexa, o
+   * header é simplesmente ignorado — então mandá-lo é sempre seguro.
+   */
+  function call(key, payload) {
+    return fetch(ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': API_VERSION,
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      return res.json().catch(function () { return null; }).then(function (body) {
+        if (!res.ok) return { ok: false, error: friendlyError(res.status, body) };
+        if (body && body.stop_reason === 'refusal') {
+          return { ok: false, error: 'O modelo recusou responder a esse conteúdo.' };
+        }
+        var texto = (body && body.content ? body.content : [])
+          .filter(function (b) { return b.type === 'text'; })
+          .map(function (b) { return b.text; })
+          .join('\n')
+          .trim();
+        if (!texto) return { ok: false, error: 'A API respondeu vazio.' };
+        return { ok: true, text: texto };
+      });
+    }).catch(function (err) {
+      // "Failed to fetch" some o motivo real por segurança do navegador; as
+      // três causas possíveis estão listadas para não deixar o usuário no escuro.
+      var msg = String((err && err.message) || err);
+      if (/failed to fetch|networkerror/i.test(msg)) {
+        return { ok: false, error:
+          'Não consegui alcançar a API da Anthropic. Verifique: (1) conexão com a internet, ' +
+          '(2) firewall, proxy ou antivírus bloqueando api.anthropic.com, ' +
+          '(3) a extensão precisa ser recarregada em chrome://extensions após atualizar.' };
+      }
+      return { ok: false, error: 'Falha de rede ao chamar a API: ' + msg };
+    });
+  }
+
+  /** Chamada mínima para diagnosticar a configuração, sem gastar quase nada. */
+  function test() {
+    return Promise.all([
+      root.WhatsWorkStore.getSettings(),
+      root.WhatsWorkStore.getApiKey()
+    ]).then(function (r) {
+      var settings = r[0], key = r[1];
+      if (!key) return { ok: false, error: 'Falta a chave da API. Cole a chave no campo acima.' };
+      if (String(key).indexOf('sk-ant-') !== 0) {
+        return { ok: false, error: 'A chave não parece válida: ela deve começar com "sk-ant-".' };
+      }
+      return call(key, {
+        model: settings.aiModel,
+        max_tokens: 16,
+        messages: [{ role: 'user', content: 'Responda apenas: OK' }]
+      }).then(function (res) {
+        if (!res.ok) return res;
+        return { ok: true, text: 'Conexão funcionando. Modelo: ' + settings.aiModel + '.' };
+      });
+    });
+  }
+
   function friendlyError(status, body) {
     if (status === 401) return 'Chave da API inválida. Confira em Ajustes.';
     if (status === 403) return 'Essa chave não tem permissão para usar a API.';
@@ -175,42 +243,19 @@
           wrap('voz', voz);
       }
 
-      return fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          'x-api-key': key,
-          'anthropic-version': API_VERSION
-        },
-        body: JSON.stringify({
-          model: settings.aiModel,
-          max_tokens: MAX_TOKENS,
-          system: system,
-          output_config: { effort: task.effort },
-          messages: [{ role: 'user', content: prompt }]
-        })
-      }).then(function (res) {
-        return res.json().catch(function () { return null; }).then(function (body) {
-          if (!res.ok) return { ok: false, error: friendlyError(res.status, body) };
-          if (body && body.stop_reason === 'refusal') {
-            return { ok: false, error: 'O modelo recusou responder a esse conteúdo.' };
-          }
-          var texto = (body && body.content ? body.content : [])
-            .filter(function (b) { return b.type === 'text'; })
-            .map(function (b) { return b.text; })
-            .join('\n')
-            .trim();
-          if (!texto) return { ok: false, error: 'A API respondeu vazio.' };
-          return { ok: true, text: texto };
-        });
-      }).catch(function (err) {
-        return { ok: false, error: 'Falha de rede ao chamar a API: ' + (err && err.message || err) };
+      return call(key, {
+        model: settings.aiModel,
+        max_tokens: MAX_TOKENS,
+        system: system,
+        output_config: { effort: task.effort },
+        messages: [{ role: 'user', content: prompt }]
       });
     });
   }
 
   root.WhatsWorkAI = {
     run: run,
+    test: test,
     buildTranscript: buildTranscript,
     TASKS: TASKS,
     LIMITS: {

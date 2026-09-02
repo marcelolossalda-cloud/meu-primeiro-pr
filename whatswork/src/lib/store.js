@@ -20,6 +20,35 @@
   };
 
   /*
+   * Contexto do negócio que a IA usa para não falar genérico.
+   *
+   * O que não está aqui, o modelo é instruído a marcar como [preencher] em vez
+   * de inventar — por isso preço fica em aberto até que o dono preencha. Tudo
+   * é editável no popup da extensão.
+   */
+  var NEGOCIO = [
+    'Distribuidora de cosméticos profissionais.',
+    '',
+    'Marcas trabalhadas: Southliss, Ghoodess, Aella.',
+    '',
+    'São DOIS públicos, com condições diferentes — a conversa diz qual é:',
+    '',
+    '1) SALÃO DE BELEZA (atacado): revenda e uso profissional.',
+    '   Regiões atendidas: São Borja/RS, Itaqui/RS, São Luiz Gonzaga/RS e Santiago/RS.',
+    '   Pedido mínimo: R$ 500,00.',
+    '',
+    '2) CONSUMIDOR FINAL (home care): linha de cuidado em casa, das mesmas marcas.',
+    '   Sem pedido mínimo.',
+    '',
+    'Se não estiver claro de qual público a pessoa é, PERGUNTE antes de falar de preço',
+    'ou de pedido mínimo — as condições não são as mesmas.',
+    '',
+    'Pagamento: dinheiro, Pix, cartão de crédito, cartão de débito e boleto.',
+    'Entrega: nas cidades listadas acima. Prazo: [preencher].',
+    'Preços: [preencher] — nunca cite valor que não esteja escrito aqui.'
+  ].join('\n');
+
+  /*
    * Padrões pensados para proteger o número, não para produtividade máxima.
    * Quem quiser afrouxar faz isso conscientemente, no popup.
    */
@@ -34,7 +63,7 @@
     aiEnabled: false,            // IA desligada até você colocar a chave
     aiModel: 'claude-opus-5',
     aiContextMessages: 12,       // quantas mensagens vão como contexto para a IA
-    businessContext: '',         // o que você vende, preços, prazos — a IA se apoia nisso
+    businessContext: NEGOCIO,    // o que você vende — a IA se apoia só nisso
     voiceStyle: ''               // como VOCÊ escreve: tom, ritmo, o que nunca diria
   };
 

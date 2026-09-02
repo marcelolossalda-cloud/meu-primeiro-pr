@@ -100,6 +100,23 @@
       WhatsWorkStore.setApiKey(this.value).then(function () { flash('Chave salva.'); });
     });
 
+    $('ai-test').addEventListener('click', function () {
+      var alvo = $('ai-test-result');
+      alvo.className = 'muted';
+      alvo.textContent = 'Testando…';
+      // Salva a chave digitada antes de testar, para não testar a versão antiga.
+      WhatsWorkStore.setApiKey($('set-key').value)
+        .then(function () { return chrome.runtime.sendMessage({ type: 'whatswork:ai-test' }); })
+        .then(function (res) {
+          var ok = res && res.ok;
+          alvo.className = ok ? 'muted ok' : 'notice';
+          alvo.textContent = ok ? '✓ ' + res.text : '✗ ' + ((res && res.error) || 'Sem resposta da extensão.');
+        }, function (err) {
+          alvo.className = 'notice';
+          alvo.textContent = '✗ ' + String((err && err.message) || err);
+        });
+    });
+
     $('key-toggle').addEventListener('click', function () {
       var input = $('set-key');
       input.type = input.type === 'password' ? 'text' : 'password';

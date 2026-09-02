@@ -140,7 +140,10 @@ fechamento, pós-venda e recompra — mais as etiquetas *Aguardando pagamento* e
 ninguém sair mandando preço errado por descuido. Clicar duas vezes não duplica.
 
 Para ligar, abra o popup da extensão, cole uma chave da API da Anthropic
-(<https://platform.claude.com/settings/keys>) e marque *Ativar as ações de IA*.
+(<https://platform.claude.com/settings/keys>), clique em **Testar conexão** e
+marque *Ativar as ações de IA*. O botão de teste faz uma chamada mínima e diz
+exatamente o que falhou — chave inválida, limite de uso, modelo inexistente ou
+rede bloqueada — em vez de deixar o erro genérico.
 O consumo é cobrado na sua conta. O modelo padrão é `claude-opus-5`; o popup
 também oferece Sonnet 5 e Haiku 4.5, mais baratos.
 
@@ -172,7 +175,7 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 21 verificações cobrem: carga da extensão, injeção do painel, isolamento
+As 22 verificações cobrem: carga da extensão, injeção do painel, isolamento
 entre página e extensão, identificação da conversa, persistência de anotações e
 etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
@@ -180,7 +183,8 @@ adiamento diante de rascunho, aba de IA bloqueada sem chave, resposta da IA
 inserida sem enviar, formato e cabeçalhos da chamada à API, defesa contra
 injeção de prompt, presença do contexto de negócio e do tom de voz no system
 prompt, existência e conteúdo das ações de venda, chave ausente da página,
-popup, ausência de requisição externa e ausência de erro de JS.
+popup, diagnóstico de conexão nos três desfechos (sucesso, chave inválida e
+rede fora), ausência de requisição externa e ausência de erro de JS.
 
 ## Como está organizado
 

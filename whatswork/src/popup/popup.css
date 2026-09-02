@@ -170,3 +170,6 @@ textarea {
   margin-bottom: 8px;
 }
 textarea:focus { outline: 2px solid var(--ww-brand-ring); outline-offset: -1px; }
+
+#ai-test-result { min-height: 14px; }
+#ai-test-result.ok { color: #15803d; }

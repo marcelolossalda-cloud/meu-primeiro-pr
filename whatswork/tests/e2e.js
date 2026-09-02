@@ -317,6 +317,7 @@ async function waitFor(read, ok, timeoutMs, message) {
     assert.strictEqual(call.url, 'https://api.anthropic.com/v1/messages');
     assert.strictEqual(call.headers['x-api-key'], 'sk-ant-chave-de-teste');
     assert.strictEqual(call.headers['anthropic-version'], '2023-06-01');
+    assert.strictEqual(call.headers['anthropic-dangerous-direct-browser-access'], 'true');
 
     const body = JSON.parse(call.body);
     assert.strictEqual(body.model, 'claude-opus-5');
@@ -384,6 +385,52 @@ async function waitFor(read, ok, timeoutMs, message) {
     const voz = await sw.evaluate(() => WhatsWorkStore.getSettings().then((s) => s.voiceStyle));
     assert.match(voz, /Comece pelo outro, não pelo produto/);
     assert.match(voz, /nunca crie urgência falsa/);
+  });
+
+  await step('o "Testar conexão" reporta sucesso e erro corretamente', async () => {
+    const extId = new URL(sw.url()).host;
+    const popup = await context.newPage();
+    await popup.goto(`chrome-extension://${extId}/src/popup/popup.html`);
+    // A chave é carregada de forma assíncrona; clicar antes disso testaria vazio.
+    await popup.waitForFunction(
+      () => document.getElementById('set-key').value.startsWith('sk-ant-'),
+      null, { timeout: 5000 });
+
+    // Sucesso
+    await sw.evaluate(() => {
+      globalThis.fetch = () => Promise.resolve(new Response(
+        JSON.stringify({ content: [{ type: 'text', text: 'OK' }] }),
+        { status: 200, headers: { 'content-type': 'application/json' } }));
+    });
+    await popup.locator('#ai-test').click();
+    await popup.waitForFunction(
+      () => /^[✓✗]/.test(document.getElementById('ai-test-result').textContent),
+      null, { timeout: 10000 });
+    assert.ok((await popup.locator('#ai-test-result').textContent()).startsWith('✓'),
+      'esperava sucesso, veio: ' + await popup.locator('#ai-test-result').textContent());
+    assert.match(await popup.locator('#ai-test-result').textContent(), /Conexão funcionando/);
+
+    // Chave inválida
+    await sw.evaluate(() => {
+      globalThis.fetch = () => Promise.resolve(new Response(
+        JSON.stringify({ error: { message: 'invalid x-api-key' } }),
+        { status: 401, headers: { 'content-type': 'application/json' } }));
+    });
+    await popup.locator('#ai-test').click();
+    await popup.waitForFunction(
+      () => document.getElementById('ai-test-result').textContent.startsWith('✗'),
+      null, { timeout: 10000 });
+    assert.match(await popup.locator('#ai-test-result').textContent(), /Chave da API inválida/);
+
+    // Rede fora do ar
+    await sw.evaluate(() => {
+      globalThis.fetch = () => Promise.reject(new TypeError('Failed to fetch'));
+    });
+    await popup.locator('#ai-test').click();
+    await popup.waitForFunction(
+      () => document.getElementById('ai-test-result').textContent.includes('api.anthropic.com'),
+      null, { timeout: 10000 });
+    await popup.close();
   });
 
   await step('a extensão não faz nenhuma requisição externa', async () => {

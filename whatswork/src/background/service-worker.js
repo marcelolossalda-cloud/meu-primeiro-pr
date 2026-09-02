@@ -31,18 +31,23 @@ chrome.alarms.onAlarm.addListener(function (alarm) {
 
 function senderIsTrusted(sender) {
   if (!sender || sender.id !== chrome.runtime.id) return false;
-  if (sender.tab) {
-    // veio de um content script: só aceitamos o do WhatsApp Web
-    return typeof sender.url === 'string' && sender.url.indexOf(WHATSAPP_ORIGIN) === 0;
-  }
-  // veio do popup ou de outra página da própria extensão
-  return typeof sender.url === 'string' &&
-    sender.url.indexOf(chrome.runtime.getURL('')) === 0;
+  var url = typeof sender.url === 'string' ? sender.url : '';
+
+  // A decisão é pela URL, não pela presença de sender.tab: uma página da
+  // própria extensão pode estar numa aba (popup aberto em aba, página de
+  // opções), e checar sender.tab primeiro a classificava como página web.
+  if (url.indexOf(chrome.runtime.getURL('')) === 0) return true;
+
+  // Content script: só o do WhatsApp Web.
+  return url.indexOf(WHATSAPP_ORIGIN) === 0;
 }
 
 var HANDLERS = {
   'whatswork:reschedule': function () {
     return tick().then(function () { return { ok: true }; });
+  },
+  'whatswork:ai-test': function () {
+    return WhatsWorkAI.test();
   },
   'whatswork:ai': function (msg) {
     if (typeof msg.task !== 'string') return Promise.resolve({ ok: false, error: 'Tarefa inválida.' });
