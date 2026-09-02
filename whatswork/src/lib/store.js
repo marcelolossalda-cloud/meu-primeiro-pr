@@ -33,7 +33,9 @@
     quietEndHour: 8,
     aiEnabled: false,            // IA desligada até você colocar a chave
     aiModel: 'claude-opus-5',
-    aiContextMessages: 12        // quantas mensagens vão como contexto para a IA
+    aiContextMessages: 12,       // quantas mensagens vão como contexto para a IA
+    businessContext: '',         // o que você vende, preços, prazos — a IA se apoia nisso
+    voiceStyle: ''               // como VOCÊ escreve: tom, ritmo, o que nunca diria
   };
 
   var DEFAULT_TAGS = [

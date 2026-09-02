@@ -153,3 +153,20 @@ select {
   color: var(--ww-text);
 }
 #key-toggle { flex: none; padding: 6px 10px; }
+
+.field-block { display: block; margin-bottom: 6px; }
+.field-block small { display: block; color: var(--ww-text-muted); font-size: 11px; margin-top: 2px; font-weight: normal; }
+textarea {
+  width: 100%;
+  border: 1px solid var(--ww-border);
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  font-family: inherit;
+  line-height: 1.4;
+  resize: vertical;
+  background: var(--ww-surface);
+  color: var(--ww-text);
+  margin-bottom: 8px;
+}
+textarea:focus { outline: 2px solid var(--ww-brand-ring); outline-offset: -1px; }

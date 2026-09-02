@@ -28,7 +28,7 @@ Não é preciso instalar Node nem rodar nada — isso só é necessário para os
 | Modelos de resposta com variáveis `{{nome}}` e `{{primeiro_nome}}` | painel → aba *Modelos* |
 | Mensagens agendadas, com confirmação humana | painel → aba *Agenda* |
 | Lembretes de follow-up com notificação do sistema | painel → aba *Lembretes* |
-| Resumir conversa, sugerir resposta, melhorar texto (IA) | painel → aba *IA* |
+| Sugerir resposta, melhorar texto, contornar objeção, fechar a venda, retomar contato, resumir conversa | painel → aba *IA* |
 | Limites anti-bloqueio, chave da API, etiquetas, CSV | popup da extensão |
 
 ## Proteção do seu número
@@ -115,8 +115,24 @@ apóstrofo, para o Excel não interpretar um contato como fórmula.
 
 ## Assistente de IA (opcional, desligado por padrão)
 
-Três ações na aba *IA*: **resumir a conversa**, **sugerir 3 respostas** e
-**melhorar o texto** que você já escreveu.
+Seis ações na aba *IA*, divididas em **Responder** (sugerir resposta, melhorar
+meu texto) e **Vender** (contornar objeção, fechar a venda, retomar contato,
+resumir conversa).
+
+Duas coisas no popup mudam completamente a qualidade das sugestões:
+
+- **O que você vende** — produtos, marcas, faixas de preço, pagamento, entrega,
+  pedido mínimo. A IA se apoia **só** nisso para falar de preço e produto; o que
+  não estiver ali ela deixa marcado como `[preencher]` em vez de inventar. Essa
+  regra está no system prompt e é verificada no teste.
+- **Seu tom de voz** — como você escreve com o cliente. Ele governa forma,
+  ritmo e vocabulário, mas não autoriza inventar dado nenhum.
+
+O botão **Carregar modelos de cosméticos** (seção *Kit de vendas*) adiciona 7
+modelos prontos — abordagem, catálogo, dúvida de produto, objeção de preço,
+fechamento, pós-venda e recompra — mais as etiquetas *Aguardando pagamento* e
+*Recompra*. Os modelos vêm com `[colchetes]` no lugar do que só você sabe, para
+ninguém sair mandando preço errado por descuido. Clicar duas vezes não duplica.
 
 Para ligar, abra o popup da extensão, cole uma chave da API da Anthropic
 (<https://platform.claude.com/settings/keys>) e marque *Ativar as ações de IA*.
@@ -151,14 +167,15 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 20 verificações cobrem: carga da extensão, injeção do painel, isolamento
+As 21 verificações cobrem: carga da extensão, injeção do painel, isolamento
 entre página e extensão, identificação da conversa, persistência de anotações e
 etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
 adiamento diante de rascunho, aba de IA bloqueada sem chave, resposta da IA
 inserida sem enviar, formato e cabeçalhos da chamada à API, defesa contra
-injeção de prompt, chave ausente da página, popup, ausência de requisição
-externa e ausência de erro de JS.
+injeção de prompt, presença do contexto de negócio e do tom de voz no system
+prompt, existência e conteúdo das ações de venda, chave ausente da página,
+popup, ausência de requisição externa e ausência de erro de JS.
 
 ## Como está organizado
 

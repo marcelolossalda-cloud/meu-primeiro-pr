@@ -392,12 +392,21 @@
       return;
     }
 
-    var acoes = h('div', { class: 'ww-card-actions' }, [
-      aiButton('resumir', 'Resumir conversa'),
-      aiButton('sugerir', 'Sugerir resposta'),
-      aiButton('melhorar', 'Melhorar meu texto')
-    ]);
-    ui.body.appendChild(section('Ações', [acoes]));
+    ui.body.appendChild(section('Responder', [
+      h('div', { class: 'ww-actions-grid' }, [
+        aiButton('sugerir', 'Sugerir resposta'),
+        aiButton('melhorar', 'Melhorar meu texto')
+      ])
+    ]));
+
+    ui.body.appendChild(section('Vender', [
+      h('div', { class: 'ww-actions-grid' }, [
+        aiButton('objecao', 'Contornar objeção'),
+        aiButton('fechar', 'Fechar a venda'),
+        aiButton('followup', 'Retomar contato'),
+        aiButton('resumir', 'Resumir conversa')
+      ])
+    ]));
 
     if (state.ai.loading) {
       ui.body.appendChild(emptyState('Consultando a IA…'));
@@ -424,6 +433,12 @@
         h('p', { class: 'ww-empty', text:
           'O texto é apenas inserido no campo de mensagem. Revise antes de enviar.' })
       ]));
+    }
+
+    if (!String(s.businessContext || '').trim()) {
+      ui.body.appendChild(h('p', { class: 'ww-warn', text:
+        'Você ainda não descreveu o que vende. Sem isso a IA não cita preço nem produto — ela deixa ' +
+        '[preencher] no lugar. Abra o popup da extensão e preencha "O que você vende".' }));
     }
 
     ui.body.appendChild(h('p', { class: 'ww-warn', text:

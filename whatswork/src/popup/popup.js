@@ -45,6 +45,8 @@
       $('set-confirm').checked = !!s.requireConfirmation;
       $('set-ai').checked = !!s.aiEnabled;
       $('set-model').value = s.aiModel;
+      $('set-business').value = s.businessContext || '';
+      $('set-voice').value = s.voiceStyle || '';
       Object.keys(NUMERIC).forEach(function (id) { $(id).value = s[NUMERIC[id]]; });
       return WhatsWorkStore.getApiKey();
     }).then(function (key) {
@@ -82,6 +84,16 @@
         this.value = patch[NUMERIC[id]];
         WhatsWorkStore.saveSettings(patch).then(function () { flash('Ajuste salvo.'); });
       });
+    });
+
+    $('set-business').addEventListener('change', function () {
+      WhatsWorkStore.saveSettings({ businessContext: this.value })
+        .then(function () { flash('Contexto do negócio salvo.'); });
+    });
+
+    $('set-voice').addEventListener('change', function () {
+      WhatsWorkStore.saveSettings({ voiceStyle: this.value })
+        .then(function () { flash('Tom de voz salvo.'); });
     });
 
     $('set-key').addEventListener('change', function () {
@@ -122,6 +134,69 @@
     WhatsWorkStore.addTag(name, $('tag-color').value).then(function () {
       $('tag-name').value = '';
       refreshTags();
+    });
+  });
+
+  /* ------------------------------------------------------- kit de vendas */
+
+  /*
+   * Ponto de partida para quem vende cosméticos no WhatsApp. Cada modelo é um
+   * esqueleto com [colchetes] no lugar do que só o dono do negócio sabe —
+   * assim ninguém sai mandando mensagem com preço errado por descuido.
+   */
+  var KIT_COSMETICOS = [
+    { title: 'Abordagem — primeiro contato', body:
+      'Oi {{primeiro_nome}}! Aqui é a [seu nome], da [sua loja] 💄\n' +
+      'Vi que você se interessou por [produto]. Posso te mandar as opções e os valores?' },
+    { title: 'Catálogo', body:
+      'Te mando o catálogo completo aqui, {{primeiro_nome}}: [link]\n' +
+      'Se preferir, me diz o que você procura (pele, cabelo, maquiagem) que eu já separo o que combina.' },
+    { title: 'Dúvida — qual produto escolher', body:
+      'Pra eu te indicar certo: seu [cabelo/pele] é mais [oleoso/seco/misto]?\n' +
+      'Com isso eu já te falo qual da linha [marca] funciona melhor pra você.' },
+    { title: 'Objeção — está caro', body:
+      'Entendo, {{primeiro_nome}}. Esse é o [produto] de [tamanho], que rende cerca de [duração].\n' +
+      'Se preferir começar com algo mais em conta, tenho o [alternativa] por [valor]. Quer ver?' },
+    { title: 'Fechamento', body:
+      'Perfeito! Então fecho [produto] por [valor].\n' +
+      'Você prefere pagar por Pix ou cartão?' },
+    { title: 'Pós-venda', body:
+      'Oi {{primeiro_nome}}! Seu pedido saiu hoje 📦\n' +
+      'Uma dica de uso: [dica]. Qualquer dúvida me chama, tá?' },
+    { title: 'Recompra (30 dias)', body:
+      'Oi {{primeiro_nome}}, tudo bem? Faz mais ou menos um mês que você levou o [produto].\n' +
+      'Como está sendo o resultado? Se já estiver acabando, eu separo a reposição.' }
+  ];
+
+  var KIT_ETIQUETAS = [
+    { name: 'Aguardando pagamento', color: '#7c3aed' },
+    { name: 'Recompra', color: '#0891b2' }
+  ];
+
+  $('seed-kit').addEventListener('click', function () {
+    WhatsWorkStore.listTemplates().then(function (existentes) {
+      var titulos = existentes.map(function (t) { return t.title; });
+      // Idempotente: clicar duas vezes não duplica nada.
+      var novos = KIT_COSMETICOS.filter(function (t) { return titulos.indexOf(t.title) === -1; });
+      var chain = Promise.resolve();
+      novos.forEach(function (tpl) {
+        chain = chain.then(function () { return WhatsWorkStore.saveTemplate({ title: tpl.title, body: tpl.body }); });
+      });
+      return chain.then(function () { return novos.length; });
+    }).then(function (quantos) {
+      return WhatsWorkStore.listTags().then(function (tags) {
+        var nomes = tags.map(function (t) { return t.name; });
+        var chain = Promise.resolve();
+        KIT_ETIQUETAS.forEach(function (tag) {
+          if (nomes.indexOf(tag.name) === -1) {
+            chain = chain.then(function () { return WhatsWorkStore.addTag(tag.name, tag.color); });
+          }
+        });
+        return chain.then(function () { return quantos; });
+      });
+    }).then(function (quantos) {
+      refreshTags();
+      flash(quantos ? quantos + ' modelo(s) adicionado(s).' : 'Os modelos já estavam carregados.');
     });
   });
 

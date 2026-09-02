@@ -52,6 +52,16 @@
       <button id="key-toggle" type="button" title="Mostrar ou esconder">👁</button>
     </div>
 
+    <label class="field-block" for="set-business">O que você vende
+      <small>Produtos, marcas, faixas de preço, formas de pagamento, prazo de entrega, mínimo de pedido. A IA se apoia só nisto — o que não estiver aqui ela deixa como [preencher] em vez de inventar.</small>
+    </label>
+    <textarea id="set-business" rows="7" spellcheck="false" placeholder="Ex.: Distribuidora de cosméticos…&#10;Marcas: …&#10;Faixa de preço: …&#10;Pagamento: …&#10;Entrega: …&#10;Pedido mínimo: …"></textarea>
+
+    <label class="field-block" for="set-voice">Seu tom de voz
+      <small>Como você fala com o cliente: formal ou próximo, curto ou detalhado, com ou sem emoji, o que você nunca diria. Pode colar um exemplo de mensagem sua.</small>
+    </label>
+    <textarea id="set-voice" rows="5" spellcheck="false" placeholder="Ex.: Falo próximo, chamo pelo nome, uso no máximo um emoji. Nada de 'prezado' nem de gatilho de urgência. Frases curtas."></textarea>
+
     <div class="field">
       <label for="set-model">Modelo</label>
       <select id="set-model">
@@ -72,6 +82,14 @@
       <input id="tag-color" type="color" value="#16264a">
       <button id="tag-add" type="button">Criar</button>
     </div>
+  </section>
+
+  <section>
+    <h2>Kit de vendas</h2>
+    <div class="row">
+      <button id="seed-kit" type="button">Carregar modelos de cosméticos</button>
+    </div>
+    <p class="muted">Adiciona 7 modelos de mensagem prontos (abordagem, catálogo, objeção de preço, fechamento, pós-venda, recompra) e as etiquetas <em>Aguardando pagamento</em> e <em>Recompra</em>. Você edita tudo depois.</p>
   </section>
 
   <section>
