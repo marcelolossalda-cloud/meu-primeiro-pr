@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "WhatsWork — CRM para WhatsApp Web",
+  "version": "0.4.0",
+  "description": "Painel de CRM no WhatsApp Web: anotações, etiquetas, modelos, mensagens agendadas, alerta de clientes sem contato e assistente de IA.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*",
+    "https://api.anthropic.com/*",
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; connect-src 'self' https://api.anthropic.com https://generativelanguage.googleapis.com"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "js": [
+        "src/lib/store.js",
+        "src/content/wa-dom.js",
+        "src/content/sidebar.js",
+        "src/content/index.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "WhatsWork"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content/sidebar.css"
+      ],
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "use_dynamic_url": true
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>WhatsWork</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>WhatsWork</h1>
+    <p id="hint">Abra o WhatsApp Web e clique na aba <strong>WHATSWORK</strong> na lateral direita.</p>
+    <p id="version"></p>
+  </header>
+
+  <section class="stats">
+    <div class="stat"><span id="stat-contacts">0</span><small>contatos</small></div>
+    <div class="stat"><span id="stat-notes">0</span><small>anotações</small></div>
+    <div class="stat"><span id="stat-scheduled">0</span><small>agendadas</small></div>
+    <div class="stat"><span id="stat-stale">0</span><small>esquecidos</small></div>
+  </section>
+
+  <section>
+    <h2>Proteção do número</h2>
+
+    <label class="field-check">
+      <input type="checkbox" id="set-confirm">
+      <span>Confirmar antes de cada envio
+        <small>Recomendado. Nada é enviado sozinho: a mensagem agendada espera você clicar em “Enviar agora” no painel.</small>
+      </span>
+    </label>
+
+    <div class="field"><label for="set-hour">Máximo de envios por hora</label><input type="number" id="set-hour" min="1" max="60"></div>
+    <div class="field"><label for="set-day">Máximo de envios por dia</label><input type="number" id="set-day" min="1" max="500"></div>
+    <div class="field"><label for="set-interval">Intervalo mínimo (segundos)</label><input type="number" id="set-interval" min="0" max="3600"></div>
+    <div class="field"><label for="set-quiet-start">Silêncio a partir das</label><input type="number" id="set-quiet-start" min="0" max="23"></div>
+    <div class="field"><label for="set-quiet-end">Voltar a enviar às</label><input type="number" id="set-quiet-end" min="0" max="23"></div>
+    <div class="field"><label for="set-stale">Avisar se ficar sem contato (dias)</label><input type="number" id="set-stale" min="1" max="365"></div>
+
+    <p class="notice">Estes limites reduzem o padrão de comportamento que leva a bloqueios, mas nenhum ajuste garante que um número não seja banido. O que mais pesa é mandar mensagem para quem não espera — isso vira denúncia.</p>
+  </section>
+
+  <section>
+    <h2>Assistente de IA</h2>
+
+    <label class="field-check">
+      <input type="checkbox" id="set-ai">
+      <span>Ativar as ações de IA
+        <small>Quando você clica numa ação, o texto das últimas mensagens da conversa é enviado para a IA escolhida, com a sua chave.</small>
+      </span>
+    </label>
+
+    <div class="field">
+      <label for="set-provider">Provedor</label>
+      <select id="set-provider">
+        <option value="claude">Claude (Anthropic)</option>
+        <option value="gemini">Gemini (Google)</option>
+      </select>
+    </div>
+
+    <p class="notice" id="provider-note"></p>
+
+    <div class="row">
+      <input type="password" id="set-key" placeholder="Chave da API" autocomplete="off" spellcheck="false">
+      <button id="key-toggle" type="button" title="Mostrar ou esconder">👁</button>
+    </div>
+
+    <div class="field">
+      <label for="set-model">Modelo</label>
+      <select id="set-model"></select>
+    </div>
+
+    <div class="row">
+      <button id="model-refresh" type="button">Atualizar lista</button>
+      <button id="ai-test" type="button">Testar conexão</button>
+    </div>
+    <div class="row">
+      <button id="model-find" type="button">Procurar um modelo que funcione</button>
+    </div>
+    <p id="ai-test-result" class="muted" role="status"></p>
+
+    <label class="field-block" for="set-business">O que você vende
+      <small>Produtos, marcas, faixas de preço, formas de pagamento, prazo de entrega, mínimo de pedido. A IA se apoia só nisto — o que não estiver aqui ela deixa como [preencher] em vez de inventar.</small>
+    </label>
+    <textarea id="set-business" rows="7" spellcheck="false" placeholder="Ex.: Distribuidora de cosméticos…&#10;Marcas: …&#10;Faixa de preço: …&#10;Pagamento: …&#10;Entrega: …&#10;Pedido mínimo: …"></textarea>
+
+    <label class="field-block" for="set-voice">Seu tom de voz
+      <small>Como você fala com o cliente: formal ou próximo, curto ou detalhado, com ou sem emoji, o que você nunca diria. Pode colar um exemplo de mensagem sua.</small>
+    </label>
+    <textarea id="set-voice" rows="5" spellcheck="false" placeholder="Ex.: Falo próximo, chamo pelo nome, uso no máximo um emoji. Nada de 'prezado' nem de gatilho de urgência. Frases curtas."></textarea>
+    <div class="row">
+      <button id="voice-carnegie" type="button">Usar tom do livro de Dale Carnegie</button>
+    </div>
+    <p class="muted">Preenche o campo acima com os princípios de <em>Como Fazer Amigos e Influenciar Pessoas</em> traduzidos em regras de escrita. Você edita depois.</p>
+
+    <p class="muted" id="key-where"></p>
+    <p class="muted">A chave fica só no seu computador e é lida apenas pelo service worker da extensão — nunca pela página do WhatsApp. Ela não entra no export de CSV.</p>
+  </section>
+
+  <section>
+    <h2>Etiquetas</h2>
+    <ul id="tag-list" class="tags"></ul>
+    <div class="row">
+      <input id="tag-name" placeholder="Nova etiqueta">
+      <input id="tag-color" type="color" value="#16264a">
+      <button id="tag-add" type="button">Criar</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>Kit de vendas</h2>
+    <div class="row">
+      <button id="seed-kit" type="button">Carregar modelos de cosméticos</button>
+    </div>
+    <p class="muted">Adiciona 7 modelos de mensagem prontos (abordagem, catálogo, objeção de preço, fechamento, pós-venda, recompra) e as etiquetas <em>Aguardando pagamento</em> e <em>Recompra</em>. Você edita tudo depois.</p>
+  </section>
+
+  <section>
+    <h2>Dados</h2>
+    <div class="row">
+      <button id="export" type="button">Exportar CSV</button>
+      <button id="import-btn" type="button">Importar CSV</button>
+      <input id="import" type="file" accept=".csv,text/csv" hidden>
+    </div>
+    <p class="muted">O CSV usa as colunas <code>telefone,nome,etiquetas,anotacoes</code>.</p>
+  </section>
+
+  <p id="saved" role="status"></p>
+
+  <script src="../lib/store.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
