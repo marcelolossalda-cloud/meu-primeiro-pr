@@ -2,6 +2,13 @@
   'use strict';
 
   var $ = function (id) { return document.getElementById(id); };
+  var savedTimer = null;
+
+  function flash(msg) {
+    $('saved').textContent = msg;
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(function () { $('saved').textContent = ''; }, 2000);
+  }
 
   /* --------------------------------------------------------------- stats */
 
@@ -20,6 +27,70 @@
         return s.status === 'pending' || s.status === 'due';
       }).length;
       $('stat-reminders').textContent = res[2].filter(function (r) { return !r.done; }).length;
+    });
+  }
+
+  /* -------------------------------------------------------------- ajustes */
+
+  var NUMERIC = {
+    'set-hour': 'maxPerHour',
+    'set-day': 'maxPerDay',
+    'set-interval': 'minIntervalSeconds',
+    'set-quiet-start': 'quietStartHour',
+    'set-quiet-end': 'quietEndHour'
+  };
+
+  function loadSettings() {
+    return WhatsWorkStore.getSettings().then(function (s) {
+      $('set-confirm').checked = !!s.requireConfirmation;
+      $('set-ai').checked = !!s.aiEnabled;
+      $('set-model').value = s.aiModel;
+      Object.keys(NUMERIC).forEach(function (id) { $(id).value = s[NUMERIC[id]]; });
+      return WhatsWorkStore.getApiKey();
+    }).then(function (key) {
+      $('set-key').value = key || '';
+    });
+  }
+
+  /** Lê um campo numérico respeitando os limites declarados no HTML. */
+  function readNumber(el, fallback) {
+    var n = parseInt(el.value, 10);
+    if (isNaN(n)) return fallback;
+    return Math.min(Math.max(n, Number(el.min)), Number(el.max));
+  }
+
+  function wireSettings() {
+    $('set-confirm').addEventListener('change', function () {
+      WhatsWorkStore.saveSettings({ requireConfirmation: this.checked })
+        .then(function () { flash('Ajuste salvo.'); });
+    });
+
+    $('set-ai').addEventListener('change', function () {
+      WhatsWorkStore.saveSettings({ aiEnabled: this.checked })
+        .then(function () { flash('Ajuste salvo.'); });
+    });
+
+    $('set-model').addEventListener('change', function () {
+      WhatsWorkStore.saveSettings({ aiModel: this.value })
+        .then(function () { flash('Modelo salvo.'); });
+    });
+
+    Object.keys(NUMERIC).forEach(function (id) {
+      $(id).addEventListener('change', function () {
+        var patch = {};
+        patch[NUMERIC[id]] = readNumber(this, WhatsWorkStore.DEFAULT_SETTINGS[NUMERIC[id]]);
+        this.value = patch[NUMERIC[id]];
+        WhatsWorkStore.saveSettings(patch).then(function () { flash('Ajuste salvo.'); });
+      });
+    });
+
+    $('set-key').addEventListener('change', function () {
+      WhatsWorkStore.setApiKey(this.value).then(function () { flash('Chave salva.'); });
+    });
+
+    $('key-toggle').addEventListener('click', function () {
+      var input = $('set-key');
+      input.type = input.type === 'password' ? 'text' : 'password';
     });
   }
 
@@ -96,6 +167,7 @@
       var tagsById = {};
       res[1].forEach(function (t) { tagsById[t.id] = t.name; });
 
+      // Só contatos: a chave da API e os ajustes ficam de fora do arquivo.
       var lines = ['telefone,nome,etiquetas,anotacoes'];
       Object.keys(contacts).forEach(function (jid) {
         var c = contacts[jid];
@@ -108,8 +180,6 @@
       });
 
       var blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
-      // Baixado via <a download> em vez de chrome.downloads: evita pedir a
-      // permissão "downloads" só para salvar um CSV que o usuário já pediu.
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
@@ -138,7 +208,7 @@
         notes: header.indexOf('anotacoes')
       };
       if (idx.phone === -1) {
-        alert('O CSV precisa de uma coluna "telefone".');
+        flash('O CSV precisa de uma coluna "telefone".');
         return;
       }
 
@@ -172,12 +242,14 @@
 
         chain.then(function () {
           refreshStats();
-          alert('Importação concluída.');
+          flash('Importação concluída.');
         });
       });
     });
   });
 
+  wireSettings();
+  loadSettings();
   refreshStats();
   refreshTags();
 })();

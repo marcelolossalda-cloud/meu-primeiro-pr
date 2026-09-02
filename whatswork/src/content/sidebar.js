@@ -12,8 +12,10 @@
     chat: null,
     contact: null,
     tags: [],
+    settings: null,
     tab: 'contato',
-    open: false
+    open: false,
+    ai: { loading: false, error: '', text: '' }
   };
 
   var ui = {};
@@ -68,12 +70,19 @@
 
   /* ------------------------------------------------------------- montagem */
 
-  function mount() {
+  function mount(openShadow) {
     var host = document.createElement('div');
     host.id = 'whatswork-host';
     document.body.appendChild(host);
 
-    var shadow = host.attachShadow({ mode: 'open' });
+    /*
+     * Shadow root FECHADO: com 'open', qualquer script rodando na página do
+     * WhatsApp poderia fazer host.shadowRoot e ler as suas anotações ou clicar
+     * nos botões do painel. Fechado, o painel fica inalcançável pela página.
+     * O modo aberto só é ligado por uma chave de storage usada no teste
+     * automatizado, que precisa enxergar o painel de fora.
+     */
+    var shadow = host.attachShadow({ mode: openShadow ? 'open' : 'closed' });
     fetch(chrome.runtime.getURL('src/content/sidebar.css'))
       .then(function (r) { return r.text(); })
       .then(function (css) { shadow.appendChild(h('style', { text: css })); });
@@ -88,7 +97,8 @@
       tabButton('contato', 'Contato'),
       tabButton('modelos', 'Modelos'),
       tabButton('agenda', 'Agenda'),
-      tabButton('lembretes', 'Lembretes')
+      tabButton('lembretes', 'Lembretes'),
+      tabButton('ia', 'IA')
     ]);
 
     ui.body = h('div', { class: 'ww-body' });
@@ -140,7 +150,8 @@
     if (state.tab === 'contato') renderContato();
     else if (state.tab === 'modelos') renderModelos();
     else if (state.tab === 'agenda') renderAgenda();
-    else renderLembretes();
+    else if (state.tab === 'lembretes') renderLembretes();
+    else renderIA();
   }
 
   function emptyState(msg) {
@@ -295,6 +306,18 @@
           item.waitingReason ? h('div', { class: 'ww-warn', text: 'Adiado: ' + item.waitingReason }) : null,
           h('div', { class: 'ww-card-actions' }, [
             h('span', { class: 'ww-status ww-status-' + item.status, text: statusLabel(item.status) }),
+            item.status === 'due' ? h('button', {
+              class: 'ww-btn ww-btn-primary',
+              onclick: function () {
+                // Confirmação humana: libera este envio das travas automáticas.
+                WhatsWorkStore.updateScheduled(item.id, { confirmed: true, waitingReason: '' })
+                  .then(function () {
+                    chrome.runtime.sendMessage({ type: 'whatswork:reschedule' });
+                    return processNow();
+                  })
+                  .then(render);
+              }
+            }, ['Enviar agora']) : null,
             h('button', {
               class: 'ww-link',
               onclick: function () { WhatsWorkStore.removeScheduled(item.id).then(render); }
@@ -357,6 +380,90 @@
     });
   }
 
+  /* ------------------------------------------------------------------ IA */
+
+  function renderIA() {
+    var s = state.settings || {};
+
+    if (!s.aiEnabled) {
+      ui.body.appendChild(emptyState(
+        'A IA está desligada. Abra o ícone da extensão na barra do Chrome, ' +
+        'cole sua chave da API da Anthropic em Ajustes e ligue a opção.'));
+      return;
+    }
+
+    var acoes = h('div', { class: 'ww-card-actions' }, [
+      aiButton('resumir', 'Resumir conversa'),
+      aiButton('sugerir', 'Sugerir resposta'),
+      aiButton('melhorar', 'Melhorar meu texto')
+    ]);
+    ui.body.appendChild(section('Ações', [acoes]));
+
+    if (state.ai.loading) {
+      ui.body.appendChild(emptyState('Consultando a IA…'));
+      return;
+    }
+    if (state.ai.error) {
+      ui.body.appendChild(h('div', { class: 'ww-warn', text: state.ai.error }));
+      return;
+    }
+    if (state.ai.text) {
+      ui.body.appendChild(section('Resultado', [
+        h('div', { class: 'ww-ai-output', text: state.ai.text }),
+        h('div', { class: 'ww-card-actions' }, [
+          h('button', {
+            class: 'ww-btn',
+            onclick: function () { WhatsWorkDom.setComposerText(state.ai.text); }
+          }, ['Inserir no campo']),
+          h('button', {
+            class: 'ww-link',
+            onclick: function () { state.ai.text = ''; render(); }
+          }, ['limpar'])
+        ]),
+        // A IA nunca envia: ela escreve no campo e a decisão continua sua.
+        h('p', { class: 'ww-empty', text:
+          'O texto é apenas inserido no campo de mensagem. Revise antes de enviar.' })
+      ]));
+    }
+
+    ui.body.appendChild(h('p', { class: 'ww-warn', text:
+      'Ao usar estas ações, o texto das últimas ' + (s.aiContextMessages || 12) +
+      ' mensagens desta conversa é enviado para a API da Anthropic com a sua chave. ' +
+      'Nenhuma outra parte da extensão manda dados para fora.' }));
+  }
+
+  function aiButton(task, label) {
+    return h('button', {
+      class: 'ww-btn',
+      onclick: function () {
+        state.ai = { loading: true, error: '', text: '' };
+        render();
+        var s = state.settings || {};
+        chrome.runtime.sendMessage({
+          type: 'whatswork:ai',
+          task: task,
+          messages: WhatsWorkDom.getRecentMessages(s.aiContextMessages || 12),
+          draft: task === 'melhorar' ? WhatsWorkDom.getComposerText() : ''
+        }).then(function (res) {
+          state.ai = res && res.ok
+            ? { loading: false, error: '', text: res.text }
+            : { loading: false, error: (res && res.error) || 'Falha ao falar com a extensão.', text: '' };
+          render();
+        }, function (err) {
+          state.ai = { loading: false, error: String((err && err.message) || err), text: '' };
+          render();
+        });
+      }
+    }, [label]);
+  }
+
+  /** Pede ao content script que processe a fila agora (definido em index.js). */
+  function processNow() {
+    return root.WhatsWorkQueue && root.WhatsWorkQueue.process
+      ? root.WhatsWorkQueue.process()
+      : Promise.resolve();
+  }
+
   function section(title, children) {
     return h('section', { class: 'ww-section' },
       [h('h3', { class: 'ww-section-title', text: title })].concat(children));
@@ -383,10 +490,25 @@
   }
 
   function init() {
-    mount();
-    WhatsWorkStore.listTags().then(function (tags) { state.tags = tags; render(); });
-    WhatsWorkDom.onChatChange(setChat);
-    setChat(WhatsWorkDom.getActiveChat());
+    return Promise.all([
+      WhatsWorkStore.get('whatswork:openShadowForTests', false),
+      WhatsWorkStore.getSettings(),
+      WhatsWorkStore.listTags()
+    ]).then(function (r) {
+      state.settings = r[1];
+      state.tags = r[2];
+      mount(r[0] === true);
+      render();
+      WhatsWorkDom.onChatChange(setChat);
+      setChat(WhatsWorkDom.getActiveChat());
+
+      // Ajustes mudam no popup; o painel acompanha sem precisar recarregar.
+      chrome.storage.onChanged.addListener(function (changes, area) {
+        if (area === 'local' && changes[WhatsWorkStore.KEYS.SETTINGS]) {
+          WhatsWorkStore.getSettings().then(function (s) { state.settings = s; render(); });
+        }
+      });
+    });
   }
 
   root.WhatsWorkPanel = { init: init, render: render, setOpen: setOpen, renderTemplate: renderTemplate };

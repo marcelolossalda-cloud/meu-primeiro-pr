@@ -71,6 +71,31 @@
     return document.querySelector(SEL.composer);
   }
 
+  function getComposerText() {
+    var box = getComposer();
+    return box ? (box.innerText || '').trim() : '';
+  }
+
+  /**
+   * Texto das últimas mensagens da conversa aberta, para as ações de IA.
+   *
+   * Só é chamada quando a pessoa clica num botão da aba IA — a extensão não
+   * lê conteúdo de mensagem em nenhum outro momento. O remetente sai do
+   * data-id ("true_<jid>_<id>" quando a mensagem é minha).
+   */
+  function getRecentMessages(limit) {
+    var rows = document.querySelectorAll(SEL.messageRow);
+    var out = [];
+    for (var i = 0; i < rows.length; i++) {
+      var raw = rows[i].getAttribute('data-id') || '';
+      var bolha = rows[i].querySelector('[data-pre-plain-text]') || rows[i];
+      var texto = (bolha.innerText || '').replace(/\s+$/, '').trim();
+      if (!texto) continue;
+      out.push({ fromMe: raw.indexOf('true_') === 0, text: texto });
+    }
+    return limit ? out.slice(-limit) : out;
+  }
+
   /**
    * Substitui o conteúdo do campo de mensagem pelo texto dado.
    *
@@ -160,6 +185,8 @@
     getActiveChatJid: getActiveChatJid,
     getActiveChatName: getActiveChatName,
     getComposer: getComposer,
+    getComposerText: getComposerText,
+    getRecentMessages: getRecentMessages,
     setComposerText: setComposerText,
     clickSend: clickSend,
     sendText: sendText,

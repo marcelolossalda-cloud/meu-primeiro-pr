@@ -13,7 +13,27 @@
     TAGS: 'whatswork:tags',
     TEMPLATES: 'whatswork:templates',
     SCHEDULED: 'whatswork:scheduled',
-    REMINDERS: 'whatswork:reminders'
+    REMINDERS: 'whatswork:reminders',
+    SETTINGS: 'whatswork:settings',
+    SENDSTATE: 'whatswork:sendstate',
+    APIKEY: 'whatswork:apikey'
+  };
+
+  /*
+   * Padrões pensados para proteger o número, não para produtividade máxima.
+   * Quem quiser afrouxar faz isso conscientemente, no popup.
+   */
+  var DEFAULT_SETTINGS = {
+    requireConfirmation: true,   // nada sai sozinho: você clica em "Enviar agora"
+    minIntervalSeconds: 90,      // respiro mínimo entre dois envios automáticos
+    jitterSeconds: 60,           // atraso aleatório extra, para não virar metrônomo
+    maxPerHour: 6,
+    maxPerDay: 30,
+    quietStartHour: 21,          // nada de mensagem automática de madrugada
+    quietEndHour: 8,
+    aiEnabled: false,            // IA desligada até você colocar a chave
+    aiModel: 'claude-opus-5',
+    aiContextMessages: 12        // quantas mensagens vão como contexto para a IA
   };
 
   var DEFAULT_TAGS = [
@@ -228,6 +248,84 @@
     });
   }
 
+  /* ------------------------------------------------------------- ajustes */
+
+  function getSettings() {
+    return get(K.SETTINGS, {}).then(function (saved) {
+      return Object.assign({}, DEFAULT_SETTINGS, saved || {});
+    });
+  }
+
+  function saveSettings(patch) {
+    return getSettings().then(function (current) {
+      return put(K.SETTINGS, Object.assign({}, current, patch || {}));
+    });
+  }
+
+  /* A chave da API fica separada do resto para nunca sair junto num export. */
+  function getApiKey() { return get(K.APIKEY, ''); }
+  function setApiKey(key) { return put(K.APIKEY, String(key || '').trim()); }
+
+  /* ---------------------------------------------- proteção contra bloqueio
+
+     O que faz o WhatsApp bloquear um número é padrão de comportamento:
+     volume, cadência robótica, mensagem para quem não esperava e, sobretudo,
+     denúncia de quem recebeu. Nada aqui é garantia — mas estes limites tiram
+     do caminho tudo que é ritmo de robô. */
+
+  function getSendState() {
+    return get(K.SENDSTATE, { log: [], nextAllowedAt: 0 });
+  }
+
+  function inQuietHours(hour, s) {
+    if (s.quietStartHour === s.quietEndHour) return false;   // janela desligada
+    if (s.quietStartHour > s.quietEndHour) {                 // atravessa a meia-noite
+      return hour >= s.quietStartHour || hour < s.quietEndHour;
+    }
+    return hour >= s.quietStartHour && hour < s.quietEndHour;
+  }
+
+  /**
+   * Diz se um envio AUTOMÁTICO pode acontecer agora.
+   * Envio que a pessoa confirmou no painel não passa por aqui — clicar é uma
+   * decisão humana, e não é isso que caracteriza comportamento de robô.
+   */
+  function checkSendAllowance(now) {
+    now = now || Date.now();
+    return Promise.all([getSettings(), getSendState()]).then(function (r) {
+      var s = r[0], state = r[1];
+      var log = (state.log || []).filter(function (t) { return now - t < 86400000; });
+
+      if (inQuietHours(new Date(now).getHours(), s)) {
+        return { allowed: false, reason: 'fora do horário de envio (' + s.quietEndHour + 'h às ' + s.quietStartHour + 'h)' };
+      }
+      if (now < (state.nextAllowedAt || 0)) {
+        var faltam = Math.ceil((state.nextAllowedAt - now) / 1000);
+        return { allowed: false, reason: 'intervalo mínimo entre envios (faltam ' + faltam + 's)' };
+      }
+      var naHora = log.filter(function (t) { return now - t < 3600000; });
+      if (naHora.length >= s.maxPerHour) {
+        return { allowed: false, reason: 'limite de ' + s.maxPerHour + ' envios por hora atingido' };
+      }
+      if (log.length >= s.maxPerDay) {
+        return { allowed: false, reason: 'limite de ' + s.maxPerDay + ' envios por dia atingido' };
+      }
+      return { allowed: true, reason: '' };
+    });
+  }
+
+  /** Registra um envio (automático ou confirmado) e agenda o próximo respiro. */
+  function recordSend(now) {
+    now = now || Date.now();
+    return Promise.all([getSettings(), getSendState()]).then(function (r) {
+      var s = r[0], state = r[1];
+      var log = (state.log || []).filter(function (t) { return now - t < 86400000; });
+      log.push(now);
+      var espera = (s.minIntervalSeconds * 1000) + Math.floor(Math.random() * (s.jitterSeconds * 1000));
+      return put(K.SENDSTATE, { log: log, nextAllowedAt: now + espera });
+    });
+  }
+
   /* --------------------------------------------------------------- utils */
 
   /** "5511999998888@c.us" -> "5511999998888" */
@@ -266,6 +364,14 @@
     addReminder: addReminder,
     updateReminder: updateReminder,
     removeReminder: removeReminder,
+    DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+    getSettings: getSettings,
+    saveSettings: saveSettings,
+    getApiKey: getApiKey,
+    setApiKey: setApiKey,
+    getSendState: getSendState,
+    checkSendAllowance: checkSendAllowance,
+    recordSend: recordSend,
     jidToPhone: jidToPhone,
     phoneToJid: phoneToJid
   });
