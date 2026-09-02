@@ -88,7 +88,10 @@
         else if (status === 402 || /credit balance|insufficient/i.test(detalhe)) {
           texto = 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing ' +
             '(a assinatura do claude.ai não cobre a API).';
-        } else if (status >= 500) texto = 'A API da Anthropic está indisponível no momento.';
+        } else if (status >= 500) {
+          texto = 'A API da Anthropic está sobrecarregada. Já tentei 4 vezes — espere um minuto ' +
+            'e clique de novo.';
+        }
         else texto = 'Erro da API.';
         return withDetail(texto, status, detalhe);
       },
@@ -177,7 +180,11 @@
           texto = 'Esse modelo não existe ou não aceita geração de texto. Escolha outro na lista.';
         } else if (status === 429) {
           texto = 'Cota do Gemini esgotada. O plano gratuito tem limite por minuto e por dia.';
-        } else if (status >= 500) texto = 'A API do Gemini está indisponível no momento.';
+        } else if (status >= 500) {
+          texto = 'O modelo está congestionado no Google. Já tentei 4 vezes — espere um minuto e ' +
+            'clique de novo, ou escolha outro modelo na lista (um "pro" costuma estar mais livre ' +
+            'que um "flash", e vice-versa).';
+        }
         else texto = 'Erro da API.';
         return withDetail(texto, status, detalhe);
       },
@@ -421,6 +428,32 @@
     });
   }
 
+  /* Estados em que a própria API diz que o problema é passageiro. Só estes
+     são repetidos: 429 é cota, e insistir nela só queima o que resta. */
+  var TRANSITORIO = [502, 503, 504];
+  var ESPERAS_MS = [800, 2500, 6000];
+
+  function esperar(ms) {
+    return new Promise(function (r) { setTimeout(r, ms); });
+  }
+
+  /**
+   * Repete a chamada enquanto a resposta for de sobrecarga temporária.
+   *
+   * "Please try again later" é uma instrução que o código consegue seguir
+   * sozinho; repassá-la ao usuário é transferir para ele um trabalho mecânico.
+   * As esperas crescem para não piorar o congestionamento que causou o erro.
+   */
+  function withRetry(fazer) {
+    function tentar(i) {
+      return fazer().then(function (res) {
+        if (TRANSITORIO.indexOf(res.status) === -1 || i >= ESPERAS_MS.length) return res;
+        return esperar(ESPERAS_MS[i]).then(function () { return tentar(i + 1); });
+      });
+    }
+    return tentar(0);
+  }
+
   /**
    * Tenta cada forma de autenticação do provedor até uma não ser recusada.
    *
@@ -460,7 +493,9 @@
    * substituto também falhar, o erro vai para o usuário em vez de virar laço.
    */
   function callModel(c, modelo, make) {
-    return sendAuth(c.p, c.key, function (auth) { return make(auth, modelo); }, 'POST')
+    return withRetry(function () {
+      return sendAuth(c.p, c.key, function (auth) { return make(auth, modelo); }, 'POST');
+    })
       .then(function (res) {
         if (res.ok) return { res: res, modelo: modelo };
 
@@ -469,7 +504,9 @@
 
         return root.WhatsWorkStore.saveModelFor(c.settings.aiProvider, sugerido)
           .then(function () {
-            return sendAuth(c.p, c.key, function (auth) { return make(auth, sugerido); }, 'POST');
+            return withRetry(function () {
+              return sendAuth(c.p, c.key, function (auth) { return make(auth, sugerido); }, 'POST');
+            });
           })
           .then(function (res2) {
             return { res: res2, modelo: sugerido, trocado: modelo };

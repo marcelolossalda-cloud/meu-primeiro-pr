@@ -651,6 +651,61 @@ async function waitFor(read, ok, timeoutMs, message) {
     await sw.evaluate(() => WhatsWorkStore.saveModelFor('gemini', 'gemini-3.6-flash'));
   });
 
+  await step('sobrecarga temporária (503) é repetida até passar', async () => {
+    // Caso real: "This model is currently experiencing high demand… try again
+    // later." É uma instrução que o código segue sozinho.
+    await sw.evaluate(() => {
+      globalThis.__tentativas = 0;
+      globalThis.fetch = function () {
+        globalThis.__tentativas++;
+        if (globalThis.__tentativas < 3) {
+          return Promise.resolve(new Response(JSON.stringify({ error: { message:
+            'This model is currently experiencing high demand.' } }),
+            { status: 503, headers: { 'content-type': 'application/json' } }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }]
+        }), { status: 200, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.ok(res.ok, 'a repetição não recuperou: ' + res.error);
+    assert.strictEqual(await sw.evaluate(() => globalThis.__tentativas), 3);
+  });
+
+  await step('sobrecarga que não passa desiste e explica', async () => {
+    await sw.evaluate(() => {
+      globalThis.__tentativas = 0;
+      globalThis.fetch = function () {
+        globalThis.__tentativas++;
+        return Promise.resolve(new Response(JSON.stringify({ error: { message:
+          'high demand' } }), { status: 503, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.strictEqual(res.ok, false);
+    assert.match(res.error, /congestionado/);
+    // 1 chamada + 3 repetições, e para por aí.
+    assert.strictEqual(await sw.evaluate(() => globalThis.__tentativas), 4);
+  });
+
+  await step('cota (429) não é repetida, para não queimar o que resta', async () => {
+    await sw.evaluate(() => {
+      globalThis.__tentativas = 0;
+      globalThis.fetch = function () {
+        globalThis.__tentativas++;
+        return Promise.resolve(new Response(JSON.stringify({ error: { message: 'quota' } }),
+          { status: 429, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.strictEqual(res.ok, false);
+    assert.strictEqual(await sw.evaluate(() => globalThis.__tentativas), 1);
+  });
+
   await step('cada provedor guarda a sua própria chave', async () => {
     const chaves = await sw.evaluate(() => Promise.all([
       WhatsWorkStore.getApiKey('claude'),

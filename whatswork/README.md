@@ -155,6 +155,12 @@ models/…"). A extensão lê essa indicação, salva a troca e repete a chamada
 única vez; se o substituto também falhar, o erro vai para o usuário em vez de
 virar laço.
 
+**Sobrecarga temporária é repetida sozinha.** Um 502/503/504 vem com "try again
+later" — uma instrução que o código consegue seguir. A extensão repete até três
+vezes, com esperas crescentes (0,8s, 2,5s, 6s) para não piorar o congestionamento
+que causou o erro. Cota (429) **não** é repetida: insistir só queima o que resta
+do limite gratuito.
+
 **Testar conexão** faz uma chamada mínima e diz exatamente o que falhou — chave
 ausente, chave inválida, sem créditos, cota esgotada, modelo inexistente ou rede
 bloqueada (nomeando o host a liberar no firewall). Toda mensagem de erro leva
@@ -224,7 +230,7 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 29 verificações cobrem: carga da extensão, injeção do painel, isolamento
+As 32 verificações cobrem: carga da extensão, injeção do painel, isolamento
 entre página e extensão, identificação da conversa, persistência de anotações e
 etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
@@ -236,8 +242,9 @@ popup, diagnóstico de conexão nos quatro desfechos (sucesso, sem créditos,
 chave inválida e rede fora), troca para o Gemini com endpoint, cabeçalho e
 formato de corpo próprios, chave "AQ." enviada como chave de API, credencial
 recusada reenviada como Bearer, erro não-autenticação sem segunda tentativa,
-troca automática de modelo aposentado e ausência de laço quando o substituto
-também falha,
+troca automática de modelo aposentado, ausência de laço quando o substituto
+também falha, repetição em 503 até recuperar, desistência após três repetições
+e ausência de repetição em 429,
 isolamento das chaves por provedor, ausência de
 requisição externa e ausência de erro de JS.
 
