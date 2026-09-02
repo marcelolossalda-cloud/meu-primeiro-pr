@@ -97,7 +97,7 @@
       tabButton('contato', 'Contato'),
       tabButton('modelos', 'Modelos'),
       tabButton('agenda', 'Agenda'),
-      tabButton('lembretes', 'Lembretes'),
+      tabButton('lembretes', 'Follow-up'),
       tabButton('ia', 'IA')
     ]);
 
@@ -205,6 +205,17 @@
         ])
       ]);
     });
+
+    var dias = WhatsWorkStore.diasSem(c, Date.now());
+    if (dias !== null) {
+      var limite = (state.settings && state.settings.staleDays) || 60;
+      ui.body.appendChild(h('p', {
+        class: dias >= limite ? 'ww-warn' : 'ww-empty',
+        text: dias === 0 ? 'Último contato: hoje.' :
+          'Último contato há ' + dias + ' dia' + (dias > 1 ? 's' : '') + '.' +
+          (dias >= limite ? ' Passou do seu limite de ' + limite + ' dias.' : '')
+      }));
+    }
 
     ui.body.appendChild(section('Etiquetas', [chips]));
     ui.body.appendChild(section('Anotações', [
@@ -333,6 +344,32 @@
   }
 
   function renderLembretes() {
+    var limite = (state.settings && state.settings.staleDays) || 60;
+    var wrapParados = h('div');
+    ui.body.appendChild(section('Sem contato há mais de ' + limite + ' dias', [wrapParados]));
+
+    WhatsWorkStore.listStaleContacts(Date.now(), limite).then(function (lista) {
+      if (!lista.length) {
+        wrapParados.appendChild(emptyState('Nenhum cliente esquecido. 👍'));
+        return;
+      }
+      lista.slice(0, 30).forEach(function (c) {
+        wrapParados.appendChild(h('div', { class: 'ww-card' }, [
+          h('div', { class: 'ww-card-title', text: c.name || c.phone }),
+          h('div', { class: 'ww-card-body', text: 'Último contato há ' + c.dias + ' dias.' }),
+          h('div', { class: 'ww-card-actions' }, [
+            h('button', {
+              class: 'ww-btn ww-btn-primary',
+              onclick: function () { WhatsWorkDom.openChatByPhone(c.phone); }
+            }, ['Abrir conversa'])
+          ])
+        ]));
+      });
+      if (lista.length > 30) {
+        wrapParados.appendChild(emptyState('… e mais ' + (lista.length - 30) + '.'));
+      }
+    });
+
     var text = h('input', { class: 'ww-input', placeholder: 'Do que preciso lembrar?' });
     var when = h('input', { class: 'ww-input', type: 'datetime-local', value: tsToLocalInput(Date.now() + 86400000) });
     var add = h('button', {
@@ -497,11 +534,18 @@
   function setChat(chat) {
     state.chat = chat;
     if (!chat) { state.contact = null; render(); return; }
-    WhatsWorkStore.upsertContact(chat.jid, { name: chat.name, phone: chat.phone, isGroup: chat.isGroup })
-      .then(function (c) {
-        state.contact = c;
-        render();
-      });
+
+    var patch = { name: chat.name, phone: chat.phone, isGroup: chat.isGroup };
+
+    // A data da última mensagem é lida do próprio WhatsApp, então o "sem
+    // contato há X dias" vale também para conversas anteriores à extensão.
+    var ultima = WhatsWorkDom.getLastMessageTime();
+    if (ultima) patch.lastContactAt = ultima;
+
+    WhatsWorkStore.upsertContact(chat.jid, patch).then(function (c) {
+      state.contact = c;
+      render();
+    });
   }
 
   function init() {

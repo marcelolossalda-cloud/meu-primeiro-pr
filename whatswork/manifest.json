@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "WhatsWork — CRM para WhatsApp Web",
-  "version": "0.3.0",
-  "description": "Adiciona um painel de CRM ao WhatsApp Web: notas, etiquetas, modelos de resposta, mensagens agendadas e lembretes de follow-up.",
+  "version": "0.4.0",
+  "description": "Painel de CRM no WhatsApp Web: anotações, etiquetas, modelos, mensagens agendadas, alerta de clientes sem contato e assistente de IA.",
   "permissions": [
     "storage",
     "alarms",

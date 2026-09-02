@@ -16,7 +16,7 @@
     Promise.all([
       WhatsWorkStore.listContacts(),
       WhatsWorkStore.listScheduled(),
-      WhatsWorkStore.listReminders()
+      WhatsWorkStore.listStaleContacts()
     ]).then(function (res) {
       var contacts = Object.keys(res[0]).map(function (k) { return res[0][k]; });
       $('stat-contacts').textContent = contacts.length;
@@ -26,7 +26,7 @@
       $('stat-scheduled').textContent = res[1].filter(function (s) {
         return s.status === 'pending' || s.status === 'due';
       }).length;
-      $('stat-reminders').textContent = res[2].filter(function (r) { return !r.done; }).length;
+      $('stat-stale').textContent = res[2].length;
     });
   }
 
@@ -37,7 +37,8 @@
     'set-day': 'maxPerDay',
     'set-interval': 'minIntervalSeconds',
     'set-quiet-start': 'quietStartHour',
-    'set-quiet-end': 'quietEndHour'
+    'set-quiet-end': 'quietEndHour',
+    'set-stale': 'staleDays'
   };
 
   /* Texto de ajuda por provedor. O aviso do Claude existe porque a confusão

@@ -36,6 +36,39 @@
     return null;
   }
 
+  /**
+   * Data e hora da última mensagem da conversa, em epoch ms.
+   *
+   * Sai do atributo data-pre-plain-text das bolhas, que o WhatsApp preenche
+   * com "[09:10, 02/09/2026] Fulano: ". É a fonte mais confiável de "quando
+   * falamos pela última vez" — melhor que registrar quando a conversa foi
+   * aberta, porque abrir não é falar.
+   */
+  function getLastMessageTime() {
+    var rows = document.querySelectorAll(SEL.messageRow);
+    for (var i = rows.length - 1; i >= 0; i--) {
+      var bolha = rows[i].querySelector('[data-pre-plain-text]');
+      if (!bolha) continue;
+      var t = parsePrePlainText(bolha.getAttribute('data-pre-plain-text'));
+      if (t) return t;
+    }
+    return 0;
+  }
+
+  /** "[09:10, 02/09/2026] Fulano: " -> epoch ms. Aceita ano de 2 ou 4 dígitos. */
+  function parsePrePlainText(texto) {
+    var m = String(texto || '').match(/\[(\d{1,2}):(\d{2}),\s*(\d{1,2})\/(\d{1,2})\/(\d{2,4})\]/);
+    if (!m) return 0;
+    var ano = parseInt(m[5], 10);
+    if (ano < 100) ano += 2000;
+    var d = new Date(ano, parseInt(m[4], 10) - 1, parseInt(m[3], 10),
+      parseInt(m[1], 10), parseInt(m[2], 10));
+    var t = d.getTime();
+    // Data futura significa formato diferente do esperado; melhor ignorar do
+    // que gravar um "último contato" que nunca vai vencer.
+    return (isNaN(t) || t > Date.now() + 86400000) ? 0 : t;
+  }
+
   /** Nome exibido no cabeçalho do chat aberto. */
   function getActiveChatName() {
     var header = document.querySelector(SEL.header);
@@ -186,6 +219,8 @@
     getActiveChatName: getActiveChatName,
     getComposer: getComposer,
     getComposerText: getComposerText,
+    getLastMessageTime: getLastMessageTime,
+    parsePrePlainText: parsePrePlainText,
     getRecentMessages: getRecentMessages,
     setComposerText: setComposerText,
     clickSend: clickSend,

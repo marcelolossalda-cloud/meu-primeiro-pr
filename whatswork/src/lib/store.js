@@ -60,6 +60,7 @@
     maxPerDay: 30,
     quietStartHour: 21,          // nada de mensagem automática de madrugada
     quietEndHour: 8,
+    staleDays: 60,               // acima disso o cliente entra na lista de reativação
     aiEnabled: false,            // IA desligada até você colocar a chave
     aiProvider: 'claude',        // 'claude' ou 'gemini'
     aiModelClaude: 'claude-opus-5',
@@ -92,6 +93,40 @@
     return chrome.storage.local.set(patch).then(function () { return value; });
   }
 
+  /* ------------------------------------------------- escrita serializada
+
+     Toda alteração aqui é ler-alterar-gravar sobre uma única chave. Duas
+     dessas em paralelo se atropelam: a segunda lê o estado anterior à
+     primeira e grava por cima, e a alteração do meio desaparece sem erro
+     nenhum. Num CRM isso é anotação de cliente sumindo em silêncio.
+
+     A fila abaixo garante que uma alteração só comece depois que a anterior
+     terminou. As leituras continuam livres — só a escrita é serializada. */
+
+  var fila = Promise.resolve();
+
+  function naFila(fn) {
+    var proximo = fila.then(fn, fn);
+    // A fila não pode travar por causa de uma falha isolada.
+    fila = proximo.then(function () {}, function () {});
+    return proximo;
+  }
+
+  /**
+   * Lê `chave`, deixa `fn` alterar o valor no lugar e grava de volta,
+   * tudo dentro da fila. `fn` devolve o que a chamada deve resolver.
+   */
+  function atualizar(chave, padrao, fn) {
+    return naFila(function () {
+      return get(chave, padrao).then(function (dados) {
+        var retorno = fn(dados);
+        return put(chave, dados).then(function () {
+          return retorno === undefined ? dados : retorno;
+        });
+      });
+    });
+  }
+
   /* ---------------------------------------------------------------- tags */
 
   function listTags() {
@@ -102,23 +137,25 @@
   }
 
   function addTag(name, color) {
-    return listTags().then(function (tags) {
-      var tag = { id: uid('tag'), name: name, color: color || '#6b7280' };
-      tags.push(tag);
-      return put(K.TAGS, tags).then(function () { return tag; });
+    return listTags().then(function () {
+      return atualizar(K.TAGS, DEFAULT_TAGS.slice(), function (tags) {
+        var tag = { id: uid('tag'), name: name, color: color || '#6b7280' };
+        tags.push(tag);
+        return tag;
+      });
     });
   }
 
   function removeTag(tagId) {
-    return listTags().then(function (tags) {
-      return put(K.TAGS, tags.filter(function (t) { return t.id !== tagId; }));
+    return atualizar(K.TAGS, DEFAULT_TAGS.slice(), function (tags) {
+      var i = tags.findIndex(function (t) { return t.id === tagId; });
+      if (i !== -1) tags.splice(i, 1);
     }).then(function () {
-      return get(K.CONTACTS, {});
-    }).then(function (contacts) {
-      Object.keys(contacts).forEach(function (jid) {
-        contacts[jid].tags = (contacts[jid].tags || []).filter(function (id) { return id !== tagId; });
+      return atualizar(K.CONTACTS, {}, function (contacts) {
+        Object.keys(contacts).forEach(function (jid) {
+          contacts[jid].tags = (contacts[jid].tags || []).filter(function (id) { return id !== tagId; });
+        });
       });
-      return put(K.CONTACTS, contacts);
     });
   }
 
@@ -137,7 +174,7 @@
   /** Cria o contato se ainda não existir e aplica `patch` por cima. */
   function upsertContact(jid, patch) {
     if (!jid) return Promise.resolve(null);
-    return listContacts().then(function (all) {
+    return atualizar(K.CONTACTS, {}, function (all) {
       var now = Date.now();
       var current = all[jid] || {
         jid: jid,
@@ -147,36 +184,42 @@
         notes: [],
         createdAt: now
       };
-      var next = Object.assign({}, current, patch || {}, { jid: jid, updatedAt: now });
-      all[jid] = next;
-      return put(K.CONTACTS, all).then(function () { return next; });
+      all[jid] = Object.assign({}, current, patch || {}, { jid: jid, updatedAt: now });
+      return all[jid];
     });
   }
 
   function addNote(jid, text) {
     if (!text || !text.trim()) return Promise.resolve(null);
-    return getContact(jid).then(function (c) {
-      var notes = (c && c.notes ? c.notes.slice() : []);
-      notes.unshift({ id: uid('note'), text: text.trim(), ts: Date.now() });
-      return upsertContact(jid, { notes: notes });
+    return atualizar(K.CONTACTS, {}, function (all) {
+      var c = all[jid];
+      if (!c) return null;
+      c.notes = c.notes || [];
+      c.notes.unshift({ id: uid('note'), text: text.trim(), ts: Date.now() });
+      c.updatedAt = Date.now();
+      return c;
     });
   }
 
   function removeNote(jid, noteId) {
-    return getContact(jid).then(function (c) {
+    return atualizar(K.CONTACTS, {}, function (all) {
+      var c = all[jid];
       if (!c) return null;
-      return upsertContact(jid, {
-        notes: (c.notes || []).filter(function (n) { return n.id !== noteId; })
-      });
+      c.notes = (c.notes || []).filter(function (n) { return n.id !== noteId; });
+      c.updatedAt = Date.now();
+      return c;
     });
   }
 
   function toggleTag(jid, tagId) {
-    return getContact(jid).then(function (c) {
-      var tags = (c && c.tags ? c.tags.slice() : []);
-      var i = tags.indexOf(tagId);
-      if (i === -1) tags.push(tagId); else tags.splice(i, 1);
-      return upsertContact(jid, { tags: tags });
+    return atualizar(K.CONTACTS, {}, function (all) {
+      var c = all[jid];
+      if (!c) return null;
+      c.tags = c.tags || [];
+      var i = c.tags.indexOf(tagId);
+      if (i === -1) c.tags.push(tagId); else c.tags.splice(i, 1);
+      c.updatedAt = Date.now();
+      return c;
     });
   }
 
@@ -187,7 +230,7 @@
   }
 
   function saveTemplate(tpl) {
-    return listTemplates().then(function (list) {
+    return atualizar(K.TEMPLATES, [], function (list) {
       if (tpl.id) {
         var i = list.findIndex(function (t) { return t.id === tpl.id; });
         if (i !== -1) list[i] = Object.assign({}, list[i], tpl);
@@ -195,13 +238,14 @@
         tpl.id = uid('tpl');
         list.push(tpl);
       }
-      return put(K.TEMPLATES, list).then(function () { return tpl; });
+      return tpl;
     });
   }
 
   function removeTemplate(id) {
-    return listTemplates().then(function (list) {
-      return put(K.TEMPLATES, list.filter(function (t) { return t.id !== id; }));
+    return atualizar(K.TEMPLATES, [], function (list) {
+      var i = list.findIndex(function (t) { return t.id === id; });
+      if (i !== -1) list.splice(i, 1);
     });
   }
 
@@ -213,7 +257,7 @@
   }
 
   function addScheduled(item) {
-    return listScheduled().then(function (list) {
+    return atualizar(K.SCHEDULED, [], function (list) {
       var record = {
         id: uid('sch'),
         jid: item.jid || '',
@@ -225,22 +269,23 @@
         createdAt: Date.now()
       };
       list.push(record);
-      return put(K.SCHEDULED, list).then(function () { return record; });
+      return record;
     });
   }
 
   function updateScheduled(id, patch) {
-    return listScheduled().then(function (list) {
+    return atualizar(K.SCHEDULED, [], function (list) {
       var i = list.findIndex(function (s) { return s.id === id; });
       if (i === -1) return null;
       list[i] = Object.assign({}, list[i], patch);
-      return put(K.SCHEDULED, list).then(function () { return list[i]; });
+      return list[i];
     });
   }
 
   function removeScheduled(id) {
-    return listScheduled().then(function (list) {
-      return put(K.SCHEDULED, list.filter(function (s) { return s.id !== id; }));
+    return atualizar(K.SCHEDULED, [], function (list) {
+      var i = list.findIndex(function (s) { return s.id === id; });
+      if (i !== -1) list.splice(i, 1);
     });
   }
 
@@ -251,7 +296,7 @@
   }
 
   function addReminder(item) {
-    return listReminders().then(function (list) {
+    return atualizar(K.REMINDERS, [], function (list) {
       var record = {
         id: uid('rem'),
         jid: item.jid || '',
@@ -262,22 +307,23 @@
         createdAt: Date.now()
       };
       list.push(record);
-      return put(K.REMINDERS, list).then(function () { return record; });
+      return record;
     });
   }
 
   function updateReminder(id, patch) {
-    return listReminders().then(function (list) {
+    return atualizar(K.REMINDERS, [], function (list) {
       var i = list.findIndex(function (r) { return r.id === id; });
       if (i === -1) return null;
       list[i] = Object.assign({}, list[i], patch);
-      return put(K.REMINDERS, list).then(function () { return list[i]; });
+      return list[i];
     });
   }
 
   function removeReminder(id) {
-    return listReminders().then(function (list) {
-      return put(K.REMINDERS, list.filter(function (r) { return r.id !== id; }));
+    return atualizar(K.REMINDERS, [], function (list) {
+      var i = list.findIndex(function (r) { return r.id === id; });
+      if (i !== -1) list.splice(i, 1);
     });
   }
 
@@ -290,8 +336,8 @@
   }
 
   function saveSettings(patch) {
-    return getSettings().then(function (current) {
-      return put(K.SETTINGS, Object.assign({}, current, patch || {}));
+    return atualizar(K.SETTINGS, {}, function (saved) {
+      Object.assign(saved, patch || {});
     });
   }
 
@@ -327,9 +373,11 @@
   }
 
   function setApiKey(providerName, key) {
-    return readKeys().then(function (keys) {
-      keys[providerName || 'claude'] = String(key || '').trim();
-      return put(K.APIKEY, keys);
+    return naFila(function () {
+      return readKeys().then(function (keys) {
+        keys[providerName || 'claude'] = String(key || '').trim();
+        return put(K.APIKEY, keys);
+      });
     });
   }
 
@@ -384,12 +432,48 @@
   /** Registra um envio (automático ou confirmado) e agenda o próximo respiro. */
   function recordSend(now) {
     now = now || Date.now();
-    return Promise.all([getSettings(), getSendState()]).then(function (r) {
-      var s = r[0], state = r[1];
-      var log = (state.log || []).filter(function (t) { return now - t < 86400000; });
-      log.push(now);
-      var espera = (s.minIntervalSeconds * 1000) + Math.floor(Math.random() * (s.jitterSeconds * 1000));
-      return put(K.SENDSTATE, { log: log, nextAllowedAt: now + espera });
+    return getSettings().then(function (s) {
+      return atualizar(K.SENDSTATE, { log: [], nextAllowedAt: 0 }, function (state) {
+        state.log = (state.log || []).filter(function (t) { return now - t < 86400000; });
+        state.log.push(now);
+        var espera = (s.minIntervalSeconds * 1000) +
+          Math.floor(Math.random() * (s.jitterSeconds * 1000));
+        state.nextAllowedAt = now + espera;
+      });
+    });
+  }
+
+  /* ------------------------------------------------- clientes parados ---
+
+     A régua é simples: quantos dias desde a última mensagem trocada. O dado
+     vem do próprio WhatsApp (a data da última bolha da conversa), então vale
+     mesmo para conversas que aconteceram antes de a extensão existir. */
+
+  function diasSem(contato, agora) {
+    if (!contato || !contato.lastContactAt) return null;
+    return Math.floor((agora - contato.lastContactAt) / 86400000);
+  }
+
+  /** Contatos individuais parados há mais de `dias`, do mais esquecido para o menos. */
+  function listStaleContacts(agora, dias) {
+    agora = agora || Date.now();
+    return Promise.all([listContacts(), getSettings()]).then(function (r) {
+      var todos = r[0];
+      var limite = dias || r[1].staleDays;
+      return Object.keys(todos)
+        .map(function (jid) { return todos[jid]; })
+        .filter(function (c) {
+          if (c.isGroup || !c.phone) return false;   // grupo não é cliente
+          var d = diasSem(c, agora);
+          return d !== null && d >= limite;
+        })
+        .map(function (c) {
+          return {
+            jid: c.jid, name: c.name, phone: c.phone,
+            tags: c.tags || [], dias: diasSem(c, agora)
+          };
+        })
+        .sort(function (a, b) { return b.dias - a.dias; });
     });
   }
 
@@ -437,6 +521,8 @@
     getApiKey: getApiKey,
     setApiKey: setApiKey,
     modelFor: modelFor,
+    diasSem: diasSem,
+    listStaleContacts: listStaleContacts,
     saveModelFor: saveModelFor,
     getSendState: getSendState,
     checkSendAllowance: checkSendAllowance,

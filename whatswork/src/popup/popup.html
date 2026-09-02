@@ -16,7 +16,7 @@
     <div class="stat"><span id="stat-contacts">0</span><small>contatos</small></div>
     <div class="stat"><span id="stat-notes">0</span><small>anotações</small></div>
     <div class="stat"><span id="stat-scheduled">0</span><small>agendadas</small></div>
-    <div class="stat"><span id="stat-reminders">0</span><small>follow-ups</small></div>
+    <div class="stat"><span id="stat-stale">0</span><small>esquecidos</small></div>
   </section>
 
   <section>
@@ -34,6 +34,7 @@
     <div class="field"><label for="set-interval">Intervalo mínimo (segundos)</label><input type="number" id="set-interval" min="0" max="3600"></div>
     <div class="field"><label for="set-quiet-start">Silêncio a partir das</label><input type="number" id="set-quiet-start" min="0" max="23"></div>
     <div class="field"><label for="set-quiet-end">Voltar a enviar às</label><input type="number" id="set-quiet-end" min="0" max="23"></div>
+    <div class="field"><label for="set-stale">Avisar se ficar sem contato (dias)</label><input type="number" id="set-stale" min="1" max="365"></div>
 
     <p class="notice">Estes limites reduzem o padrão de comportamento que leva a bloqueios, mas nenhum ajuste garante que um número não seja banido. O que mais pesa é mandar mensagem para quem não espera — isso vira denúncia.</p>
   </section>

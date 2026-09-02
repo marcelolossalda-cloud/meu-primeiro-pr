@@ -27,9 +27,29 @@ Não é preciso instalar Node nem rodar nada — isso só é necessário para os
 | Etiquetas coloridas (Lead, Negociando, Cliente, Perdido + suas próprias) | painel → aba *Contato*; gerenciar no popup |
 | Modelos de resposta com variáveis `{{nome}}` e `{{primeiro_nome}}` | painel → aba *Modelos* |
 | Mensagens agendadas, com confirmação humana | painel → aba *Agenda* |
-| Lembretes de follow-up com notificação do sistema | painel → aba *Lembretes* |
+| Alerta de clientes sem contato há mais de 60 dias | painel → aba *Follow-up* |
+| Lembretes de follow-up com notificação do sistema | painel → aba *Follow-up* |
 | Sugerir resposta, melhorar texto, contornar objeção, fechar a venda, retomar contato, resumir conversa | painel → aba *IA* |
 | Limites anti-bloqueio, chave da API, etiquetas, CSV | popup da extensão |
+
+## Clientes esquecidos
+
+A aba *Follow-up* lista quem está sem contato há mais de 60 dias (o limite é
+seu, no popup), do mais esquecido para o menos, com um botão que abre a
+conversa. A aba *Contato* mostra a mesma informação para quem está aberto na
+tela, destacada quando passa do limite.
+
+A conta usa a **data da última mensagem trocada**, lida do próprio WhatsApp
+(o atributo `data-pre-plain-text` das bolhas). Isso importa por dois motivos:
+vale para conversas anteriores à instalação da extensão, e mede conversa de
+verdade — abrir o chat sem falar nada não zera o contador.
+
+Uma vez por dia o service worker avisa por notificação quantos clientes
+passaram do limite. Uma vez ao dia de propósito: avisar a cada minuto viraria
+ruído e a pessoa desligaria as notificações da extensão, perdendo também as que
+importam na hora.
+
+Grupos ficam de fora — grupo não é cliente.
 
 ## Proteção do seu número
 
@@ -240,9 +260,11 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 34 verificações cobrem: carga da extensão, injeção do painel, isolamento
-entre página e extensão, identificação da conversa, persistência de anotações e
-etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
+As 39 verificações cobrem: carga da extensão, injeção do painel, isolamento
+entre página e extensão, identificação da conversa, persistência de anotações e etiquetas, leitura da
+data da última mensagem, entrada e saída da lista de clientes esquecidos
+(incluindo a exclusão de grupos), integridade dos dados sob escritas
+simultâneas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
 adiamento diante de rascunho, aba de IA bloqueada sem chave, resposta da IA
 inserida sem enviar, formato e cabeçalhos da chamada à API, defesa contra

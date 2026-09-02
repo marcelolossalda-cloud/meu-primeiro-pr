@@ -80,7 +80,38 @@ chrome.runtime.onMessage.addListener(function (msg, sender, sendResponse) {
 /* ------------------------------------------------------------- relógio */
 
 function tick() {
-  return Promise.all([markDueMessages(), fireDueReminders()]);
+  return Promise.all([markDueMessages(), fireDueReminders(), avisarClientesParados()]);
+}
+
+/*
+ * Um aviso por dia sobre clientes esquecidos.
+ *
+ * Uma vez ao dia de propósito: notificar a cada minuto viraria ruído e a
+ * pessoa desligaria as notificações da extensão — perdendo também os avisos
+ * que importam na hora, como o de mensagem agendada pronta.
+ */
+var CHAVE_AVISO = 'whatswork:ultimoAvisoParados';
+
+function avisarClientesParados() {
+  var agora = Date.now();
+  return Promise.all([
+    WhatsWorkStore.get(CHAVE_AVISO, 0),
+    WhatsWorkStore.getSettings()
+  ]).then(function (r) {
+    var ultimo = r[0], settings = r[1];
+    if (agora - ultimo < 86400000) return null;
+
+    return WhatsWorkStore.listStaleContacts(agora, settings.staleDays).then(function (lista) {
+      return WhatsWorkStore.put(CHAVE_AVISO, agora).then(function () {
+        if (!lista.length) return null;
+        var quem = lista.slice(0, 3).map(function (c) { return c.name || c.phone; }).join(', ');
+        return notify('whatswork:parados',
+          lista.length + ' cliente(s) sem contato há mais de ' + settings.staleDays + ' dias',
+          quem + (lista.length > 3 ? ' e mais ' + (lista.length - 3) + '.' : '.') +
+          ' Abra o painel na aba Follow-up.');
+      });
+    });
+  });
 }
 
 /** Promove agendamentos vencidos para "due" e acorda o content script. */

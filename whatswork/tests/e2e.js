@@ -159,6 +159,76 @@ async function waitFor(read, ok, timeoutMs, message) {
     await page.locator('.ww-chip.is-active', { hasText: 'Cliente' }).waitFor({ timeout: 5000 });
   });
 
+  await step('a data da última mensagem é lida do WhatsApp', async () => {
+    // O fixture tem mensagens de 01/05/2026; o "último contato" tem de sair
+    // daí, e não da hora em que a conversa foi aberta.
+    const contato = await sw.evaluate((jid) => WhatsWorkStore.getContact(jid), CHAT_PHONE + '@c.us');
+    assert.ok(contato.lastContactAt > 0, 'não gravou a data da última mensagem');
+    const d = new Date(contato.lastContactAt);
+    assert.strictEqual(d.getDate(), 1);
+    assert.strictEqual(d.getMonth(), 4);      // maio
+    assert.strictEqual(d.getFullYear(), 2026);
+  });
+
+  await step('cliente sem contato há mais de 60 dias entra na lista', async () => {
+    const parados = await sw.evaluate(() => WhatsWorkStore.listStaleContacts());
+    assert.strictEqual(parados.length, 1);
+    assert.strictEqual(parados[0].phone, '5511999998888');
+    assert.ok(parados[0].dias >= 60, 'dias calculados: ' + parados[0].dias);
+
+    await openPanel('lembretes');
+    const texto = await page.locator('.ww-card-body').first().textContent();
+    assert.match(texto, /Último contato há \d+ dias/);
+    assert.strictEqual(await page.getByText('Abrir conversa').count(), 1);
+  });
+
+  await step('quem falou hoje não aparece como esquecido', async () => {
+    const vazio = await sw.evaluate(() =>
+      WhatsWorkStore.upsertContact('5511777776666@c.us',
+        { name: 'Recente', phone: '5511777776666', lastContactAt: Date.now() })
+        .then(() => WhatsWorkStore.listStaleContacts()));
+    assert.strictEqual(vazio.length, 1, 'o contato de hoje não devia entrar');
+    assert.strictEqual(vazio[0].phone, '5511999998888');
+  });
+
+  await step('escritas simultâneas não se atropelam', async () => {
+    // Antes da fila, três upserts em paralelo liam o mesmo estado e gravavam
+    // por cima uns dos outros: dois contatos sumiam sem erro nenhum.
+    const total = await sw.evaluate(() => Promise.all([
+      WhatsWorkStore.upsertContact('5511000000001@c.us', { name: 'A', phone: '5511000000001' }),
+      WhatsWorkStore.upsertContact('5511000000002@c.us', { name: 'B', phone: '5511000000002' }),
+      WhatsWorkStore.upsertContact('5511000000003@c.us', { name: 'C', phone: '5511000000003' })
+    ]).then(() => WhatsWorkStore.listContacts()).then((c) =>
+      ['5511000000001@c.us', '5511000000002@c.us', '5511000000003@c.us']
+        .filter((jid) => !!c[jid]).length));
+    assert.strictEqual(total, 3, 'contatos perdidos em escrita simultânea');
+
+    // O mesmo vale para anotações no mesmo contato.
+    const notas = await sw.evaluate(() =>
+      WhatsWorkStore.upsertContact('5511000000009@c.us', { name: 'Notas', phone: '5511000000009' })
+        .then(() => Promise.all([
+          WhatsWorkStore.addNote('5511000000009@c.us', 'primeira'),
+          WhatsWorkStore.addNote('5511000000009@c.us', 'segunda'),
+          WhatsWorkStore.addNote('5511000000009@c.us', 'terceira')
+        ]))
+        .then(() => WhatsWorkStore.getContact('5511000000009@c.us'))
+        .then((c) => c.notes.length));
+    assert.strictEqual(notas, 3, 'anotações perdidas em escrita simultânea');
+
+    // Limpa o que este passo criou: os contadores do popup são conferidos
+    // depois, e um teste não deve mudar o resultado do outro.
+    await sw.evaluate(() =>
+      WhatsWorkStore.upsertContact('5511000000009@c.us', { notes: [] }));
+  });
+
+  await step('grupo nunca entra na lista de reativação', async () => {
+    const lista = await sw.evaluate(() =>
+      WhatsWorkStore.upsertContact('123456@g.us',
+        { name: 'Grupo Antigo', isGroup: true, lastContactAt: 0 })
+        .then(() => WhatsWorkStore.listStaleContacts()));
+    assert.ok(!lista.some((c) => c.jid.includes('@g.us')), 'grupo entrou na lista');
+  });
+
   await step('um modelo com {{primeiro_nome}} é inserido já preenchido', async () => {
     await openPanel('modelos');
     await page.locator('.ww-input').first().fill('Boas-vindas');
@@ -375,6 +445,8 @@ async function waitFor(read, ok, timeoutMs, message) {
       'o campo da chave precisa nascer mascarado');
     assert.strictEqual(await popup.locator('#set-model').inputValue(), 'claude-opus-5');
     assert.match(await popup.locator('#version').textContent(), /^versão \d+\.\d+\.\d+$/);
+    assert.strictEqual(await popup.locator('#stat-stale').textContent(), '1');
+    assert.strictEqual(await popup.locator('#set-stale').inputValue(), '60');
 
     // O botão do tom de voz preenche o campo e persiste o ajuste.
     await popup.locator('#voice-carnegie').click();
