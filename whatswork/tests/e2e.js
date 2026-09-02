@@ -595,6 +595,62 @@ async function waitFor(read, ok, timeoutMs, message) {
     await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AIzaChaveDeTeste'));
   });
 
+  await step('modelo aposentado é trocado sozinho pelo que a API indica', async () => {
+    // Caso real: o Google respondeu 404 dizendo "use models/gemini-3.6-flash".
+    // Em vez de exigir que o usuário traduza a mensagem, a extensão obedece.
+    await sw.evaluate(() => WhatsWorkStore.saveModelFor('gemini', 'gemini-2.5-flash'));
+    await sw.evaluate(() => {
+      globalThis.__apiCalls = [];
+      globalThis.fetch = function (url, init) {
+        globalThis.__apiCalls.push({ url: String(url) });
+        if (String(url).includes('gemini-2.5-flash')) {
+          return Promise.resolve(new Response(JSON.stringify({ error: { message:
+            'This model models/gemini-2.5-flash is no longer available to new users. ' +
+            'Please update your code to use models/gemini-3.6-flash for the latest features.' } }),
+            { status: 404, headers: { 'content-type': 'application/json' } }));
+        }
+        return Promise.resolve(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }]
+        }), { status: 200, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.ok(res.ok, 'a troca automática não aconteceu: ' + res.error);
+    assert.match(res.text, /gemini-3\.6-flash/);
+    assert.match(res.text, /foi aposentado; troquei para você/);
+
+    const calls = await sw.evaluate(() => globalThis.__apiCalls);
+    assert.strictEqual(calls.length, 2, 'devia ter tentado o antigo e depois o novo');
+    assert.ok(calls[1].url.includes('gemini-3.6-flash'));
+
+    // A troca precisa ficar salva, senão o erro volta na próxima chamada.
+    const salvo = await sw.evaluate(() =>
+      WhatsWorkStore.getSettings().then((s) => s.aiModelGemini));
+    assert.strictEqual(salvo, 'gemini-3.6-flash');
+  });
+
+  await step('substituto que também falha não vira laço', async () => {
+    await sw.evaluate(() => WhatsWorkStore.saveModelFor('gemini', 'gemini-antigo'));
+    await sw.evaluate(() => {
+      globalThis.__apiCalls = [];
+      globalThis.fetch = function (url, init) {
+        globalThis.__apiCalls.push({ url: String(url) });
+        return Promise.resolve(new Response(JSON.stringify({ error: { message:
+          'model retired, please use models/outro-modelo' } }),
+          { status: 404, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.strictEqual(res.ok, false);
+    assert.strictEqual((await sw.evaluate(() => globalThis.__apiCalls)).length, 2,
+      'uma tentativa de recuperação, não mais');
+    assert.match(res.error, /tentei: Gemini \(Google\) \/ outro-modelo/);
+
+    await sw.evaluate(() => WhatsWorkStore.saveModelFor('gemini', 'gemini-3.6-flash'));
+  });
+
   await step('cada provedor guarda a sua própria chave', async () => {
     const chaves = await sw.evaluate(() => Promise.all([
       WhatsWorkStore.getApiKey('claude'),

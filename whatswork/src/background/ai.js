@@ -97,6 +97,8 @@
         return { url: 'https://api.anthropic.com/v1/models?limit=100', headers: auth };
       },
 
+      suggestedModel: suggestedFromMessage,
+
       parseModels: function (body) {
         return (body && body.data ? body.data : []).map(function (m) {
           return { id: m.id, label: m.display_name || m.id };
@@ -187,6 +189,8 @@
         };
       },
 
+      suggestedModel: suggestedFromMessage,
+
       /*
        * A lista crua traz dezenas de entradas, e a maioria não serve para
        * conversa: embeddings, geração de imagem e vídeo, leitura de voz, além
@@ -226,6 +230,17 @@
 
   function provider(name) {
     return PROVIDERS[name] || PROVIDERS.claude;
+  }
+
+  /*
+   * Quando um modelo é aposentado, a API não devolve só um 404: ela diz qual
+   * usar no lugar ("Please update your code to use models/gemini-3.6-flash").
+   * Aproveitar essa dica é melhor do que obrigar a pessoa a traduzir a
+   * mensagem de erro e mexer no seletor.
+   */
+  function suggestedFromMessage(body) {
+    var m = apiDetail(body).match(/use\s+(?:the\s+)?models\/([A-Za-z0-9._-]+)/i);
+    return m ? m[1] : '';
   }
 
   /** Mensagem que o próprio provedor mandou, quando existir. */
@@ -440,6 +455,29 @@
   }
 
   /**
+   * Chama o provedor e, se ele responder apontando um substituto para o modelo,
+   * salva a troca e tenta uma única vez com o novo. Uma tentativa só: se o
+   * substituto também falhar, o erro vai para o usuário em vez de virar laço.
+   */
+  function callModel(c, modelo, make) {
+    return sendAuth(c.p, c.key, function (auth) { return make(auth, modelo); }, 'POST')
+      .then(function (res) {
+        if (res.ok) return { res: res, modelo: modelo };
+
+        var sugerido = c.p.suggestedModel ? c.p.suggestedModel(res.body) : '';
+        if (!sugerido || sugerido === modelo) return { res: res, modelo: modelo };
+
+        return root.WhatsWorkStore.saveModelFor(c.settings.aiProvider, sugerido)
+          .then(function () {
+            return sendAuth(c.p, c.key, function (auth) { return make(auth, sugerido); }, 'POST');
+          })
+          .then(function (res2) {
+            return { res: res2, modelo: sugerido, trocado: modelo };
+          });
+      });
+  }
+
+  /**
    * Executa uma das tarefas de TASKS.
    * Resolve sempre — o erro vem como { ok: false, error } para o painel exibir.
    */
@@ -456,14 +494,13 @@
         draft: String((ctx && ctx.draft) || '').slice(0, MAX_TOTAL_CHARS)
       });
 
-      var modelo = modelFor(c.settings);
       var system = buildSystem(c.settings);
 
-      return sendAuth(c.p, c.key, function (auth) {
+      return callModel(c, modelFor(c.settings), function (auth, modelo) {
         return c.p.request(auth, modelo, system, prompt, task.effort, MAX_TOKENS);
-      }, 'POST').then(function (res) {
-        if (res.ok) return c.p.parse(res.body);
-        return { ok: false, error: withAttempt(c.p.error(res.status, res.body), c.p.label, modelo) };
+      }).then(function (r) {
+        if (r.res.ok) return c.p.parse(r.res.body);
+        return { ok: false, error: withAttempt(c.p.error(r.res.status, r.res.body), c.p.label, r.modelo) };
       }, function (err) {
         return { ok: false, error: networkError(err, c.p.host) };
       });
@@ -481,16 +518,19 @@
       // pessoa de descobrir que a credencial dela funciona, e a mensagem de
       // erro do próprio provedor é mais confiável que o meu palpite.
       var aviso = String(c.key).indexOf(c.p.keyPrefix) !== 0 ? ' (' + c.p.keyHint + ')' : '';
-      var modelo = modelFor(c.settings);
-      return sendAuth(c.p, c.key, function (auth) {
+      return callModel(c, modelFor(c.settings), function (auth, modelo) {
         return c.p.request(auth, modelo, 'Responda apenas: OK', 'Responda apenas: OK', 'low', 16);
-      }, 'POST').then(function (res) {
-        if (!res.ok) {
-          return { ok: false, error: withAttempt(c.p.error(res.status, res.body), c.p.label, modelo) + aviso };
+      }).then(function (r) {
+        if (!r.res.ok) {
+          return { ok: false, error: withAttempt(c.p.error(r.res.status, r.res.body), c.p.label, r.modelo) + aviso };
         }
-        var parsed = c.p.parse(res.body);
+        var parsed = c.p.parse(r.res.body);
         if (!parsed.ok) return parsed;
-        return { ok: true, text: 'Conexão funcionando com ' + c.p.label + '. Modelo: ' + modelo + '.' };
+        return {
+          ok: true,
+          text: 'Conexão funcionando com ' + c.p.label + '. Modelo: ' + r.modelo + '.' +
+            (r.trocado ? ' (O ' + r.trocado + ' foi aposentado; troquei para você.)' : '')
+        };
       }, function (err) {
         return { ok: false, error: networkError(err, c.p.host) };
       });

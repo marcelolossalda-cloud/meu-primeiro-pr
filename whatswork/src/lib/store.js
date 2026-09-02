@@ -63,7 +63,7 @@
     aiEnabled: false,            // IA desligada até você colocar a chave
     aiProvider: 'claude',        // 'claude' ou 'gemini'
     aiModelClaude: 'claude-opus-5',
-    aiModelGemini: 'gemini-2.5-flash',
+    aiModelGemini: 'gemini-3.6-flash',
     aiContextMessages: 12,       // quantas mensagens vão como contexto para a IA
     businessContext: NEGOCIO,    // o que você vende — a IA se apoia só nisso
     voiceStyle: ''               // como VOCÊ escreve: tom, ritmo, o que nunca diria
@@ -302,6 +302,12 @@
       : (settings.aiModelClaude || DEFAULT_SETTINGS.aiModelClaude);
   }
 
+  function saveModelFor(providerName, model) {
+    var patch = {};
+    patch[providerName === 'gemini' ? 'aiModelGemini' : 'aiModelClaude'] = model;
+    return saveSettings(patch);
+  }
+
   /*
    * As chaves ficam separadas do resto dos ajustes para nunca saírem junto num
    * export, e são guardadas por provedor: trocar de provedor não apaga a chave
@@ -431,6 +437,7 @@
     getApiKey: getApiKey,
     setApiKey: setApiKey,
     modelFor: modelFor,
+    saveModelFor: saveModelFor,
     getSendState: getSendState,
     checkSendAllowance: checkSendAllowance,
     recordSend: recordSend,

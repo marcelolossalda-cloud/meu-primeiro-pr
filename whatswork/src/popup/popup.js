@@ -60,10 +60,11 @@
         'dia — dá para usar sem cartão de crédito.',
       where: 'Onde pegar: aistudio.google.com → Chaves de API → Criar chave de API. ' +
         'O formato varia (já houve "AIza…", hoje há "AQ.…") — cole o que o Google mostrar.',
+      // Lista mínima para o primeiro uso; o botão "Atualizar lista de modelos"
+      // substitui isto pela resposta real da API.
       fallback: [
-        { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-        { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-        { id: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' }
+        { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash — rápido e barato' },
+        { id: 'gemini-3.6-pro', label: 'Gemini 3.6 Pro — mais capaz' }
       ]
     }
   };

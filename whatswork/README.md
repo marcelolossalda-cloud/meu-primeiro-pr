@@ -125,7 +125,7 @@ configuração do outro.
 | Chave vem de | platform.claude.com (Console) | Google AI Studio |
 | Prefixo | `sk-ant-…` | varia — já houve `AIza…`, hoje há `AQ.…` |
 | Plano gratuito | não — precisa de créditos | sim, com limite por minuto e por dia |
-| Padrão | `claude-opus-5` | `gemini-2.5-flash` |
+| Padrão | `claude-opus-5` | `gemini-3.6-flash` |
 
 Um ponto que confunde muita gente no Claude: a chave vem do **Console**, não do
 chat em **claude.ai** — e uma assinatura Claude Pro ou Max **não** paga o uso da
@@ -148,6 +148,12 @@ a chave válida de amanhã. O Google aceita chave de API (cabeçalho
 `x-goog-api-key`) e token OAuth (`Authorization: Bearer`) no mesmo endpoint, e
 a extensão tenta as duas formas: se a primeira volta 401 ou 403, ela reenvia com
 a outra. Qualquer outro erro chega ao usuário como veio, sem segunda tentativa.
+
+**Modelo aposentado se corrige sozinho.** Quando um modelo sai do ar, a API não
+devolve só um 404 — ela diz qual usar no lugar ("Please update your code to use
+models/…"). A extensão lê essa indicação, salva a troca e repete a chamada uma
+única vez; se o substituto também falhar, o erro vai para o usuário em vez de
+virar laço.
 
 **Testar conexão** faz uma chamada mínima e diz exatamente o que falhou — chave
 ausente, chave inválida, sem créditos, cota esgotada, modelo inexistente ou rede
@@ -218,7 +224,7 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 27 verificações cobrem: carga da extensão, injeção do painel, isolamento
+As 29 verificações cobrem: carga da extensão, injeção do painel, isolamento
 entre página e extensão, identificação da conversa, persistência de anotações e
 etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
@@ -230,6 +236,8 @@ popup, diagnóstico de conexão nos quatro desfechos (sucesso, sem créditos,
 chave inválida e rede fora), troca para o Gemini com endpoint, cabeçalho e
 formato de corpo próprios, chave "AQ." enviada como chave de API, credencial
 recusada reenviada como Bearer, erro não-autenticação sem segunda tentativa,
+troca automática de modelo aposentado e ausência de laço quando o substituto
+também falha,
 isolamento das chaves por provedor, ausência de
 requisição externa e ausência de erro de JS.
 
