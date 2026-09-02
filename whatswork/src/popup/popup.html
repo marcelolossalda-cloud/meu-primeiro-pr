@@ -38,14 +38,16 @@
   </section>
 
   <section>
-    <h2>Assistente de IA</h2>
+    <h2>Assistente de IA — Claude</h2>
 
     <label class="field-check">
       <input type="checkbox" id="set-ai">
       <span>Ativar as ações de IA
-        <small>Quando você clica numa ação, o texto das últimas mensagens da conversa é enviado para a API da Anthropic com a sua chave.</small>
+        <small>Quando você clica numa ação, o texto das últimas mensagens da conversa é enviado para o Claude (API da Anthropic) com a sua chave.</small>
       </span>
     </label>
+
+    <p class="notice">A chave vem de <strong>platform.claude.com</strong> (o Console), não do chat em claude.ai. Uma assinatura Claude Pro ou Max <strong>não</strong> paga o uso da API — são cobranças separadas. Você precisa de créditos no Console.</p>
 
     <div class="row">
       <input type="password" id="set-key" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
@@ -71,14 +73,15 @@
     <p class="muted">Preenche o campo acima com os princípios de <em>Como Fazer Amigos e Influenciar Pessoas</em> traduzidos em regras de escrita. Você edita depois.</p>
 
     <div class="field">
-      <label for="set-model">Modelo</label>
+      <label for="set-model">Modelo do Claude</label>
       <select id="set-model">
-        <option value="claude-opus-5">Opus 5 (padrão)</option>
-        <option value="claude-sonnet-5">Sonnet 5 (mais barato)</option>
-        <option value="claude-haiku-4-5">Haiku 4.5 (mais rápido)</option>
+        <option value="claude-opus-5">Claude Opus 5 (padrão)</option>
+        <option value="claude-sonnet-5">Claude Sonnet 5 (mais barato)</option>
+        <option value="claude-haiku-4-5">Claude Haiku 4.5 (mais rápido)</option>
       </select>
     </div>
 
+    <p class="muted">Onde pegar: <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noreferrer">platform.claude.com/settings/keys</a> · créditos em <a href="https://platform.claude.com/settings/billing" target="_blank" rel="noreferrer">Billing</a>.</p>
     <p class="muted">A chave fica só no seu computador e é lida apenas pelo service worker da extensão — nunca pela página do WhatsApp. Ela não entra no export de CSV.</p>
   </section>
 

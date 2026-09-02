@@ -410,6 +410,19 @@ async function waitFor(read, ok, timeoutMs, message) {
       'esperava sucesso, veio: ' + await popup.locator('#ai-test-result').textContent());
     assert.match(await popup.locator('#ai-test-result').textContent(), /Conexão funcionando/);
 
+    // Sem créditos — a mensagem precisa apontar o Console, não o claude.ai
+    await sw.evaluate(() => {
+      globalThis.fetch = () => Promise.resolve(new Response(
+        JSON.stringify({ error: { message: 'Your credit balance is too low to access the API.' } }),
+        { status: 400, headers: { 'content-type': 'application/json' } }));
+    });
+    await popup.locator('#ai-test').click();
+    await popup.waitForFunction(
+      () => document.getElementById('ai-test-result').textContent.includes('créditos'),
+      null, { timeout: 10000 });
+    assert.match(await popup.locator('#ai-test-result').textContent(),
+      /platform\.claude\.com/);
+
     // Chave inválida
     await sw.evaluate(() => {
       globalThis.fetch = () => Promise.resolve(new Response(

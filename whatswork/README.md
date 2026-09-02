@@ -113,7 +113,13 @@ a decisão de enviar continua sua. O teste confirma que nada é enviado.
 **Exportação CSV.** Células que começam com `=`, `+`, `-` ou `@` recebem um
 apóstrofo, para o Excel não interpretar um contato como fórmula.
 
-## Assistente de IA (opcional, desligado por padrão)
+## Assistente de IA — Claude (opcional, desligado por padrão)
+
+A IA usada é o **Claude**, pela API da Anthropic. Um ponto que confunde muita
+gente: a chave vem de **platform.claude.com** (o Console), não do chat em
+**claude.ai** — e uma assinatura Claude Pro ou Max **não** paga o uso da API.
+São cobranças separadas, mesmo sendo a mesma empresa e o mesmo modelo. É
+preciso ter créditos no Console.
 
 Seis ações na aba *IA*, divididas em **Responder** (sugerir resposta, melhorar
 meu texto) e **Vender** (contornar objeção, fechar a venda, retomar contato,

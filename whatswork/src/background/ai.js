@@ -197,9 +197,14 @@
     if (status === 401) return 'Chave da API inválida. Confira em Ajustes.';
     if (status === 403) return 'Essa chave não tem permissão para usar a API.';
     if (status === 404) return 'Modelo não encontrado — verifique o nome em Ajustes.';
-    if (status === 429) return 'Limite de uso da API atingido. Tente daqui a pouco.';
+    if (status === 429) return 'Limite de uso atingido. Tente daqui a pouco.';
+    if (status === 402) return 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing (a assinatura do claude.ai não cobre a API).';
     if (status >= 500) return 'A API da Anthropic está indisponível no momento.';
     var detalhe = body && body.error && body.error.message;
+    if (detalhe && /credit balance|insufficient/i.test(detalhe)) {
+      return 'Sem créditos na conta da API. Adicione em platform.claude.com → Billing ' +
+        '(a assinatura do claude.ai não cobre a API).';
+    }
     return 'Erro da API' + (detalhe ? ': ' + detalhe : ' (HTTP ' + status + ')');
   }
 
