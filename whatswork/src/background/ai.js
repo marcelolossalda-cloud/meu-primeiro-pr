@@ -111,7 +111,8 @@
       label: 'Gemini (Google)',
       host: 'generativelanguage.googleapis.com',
       keyPrefix: 'AIza',
-      keyHint: 'A chave do Gemini começa com "AIza" e sai do Google AI Studio.',
+      keyHint: 'A chave de API do Gemini começa com "AIza" (Google AI Studio → Create API key). ' +
+        'Um token OAuth também é aceito, mas expira em cerca de 1 hora.',
       defaultModel: 'gemini-2.5-flash',
       fallbackModels: [
         { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
@@ -121,14 +122,14 @@
 
       request: function (key, model, system, prompt, effort, maxTokens) {
         return {
-          // A chave vai no cabeçalho, não na query string: assim ela não entra
-          // em log de proxy nem em histórico de URL.
+          // A credencial vai no cabeçalho, não na query string: assim ela não
+          // entra em log de proxy nem em histórico de URL.
           url: 'https://generativelanguage.googleapis.com/v1beta/models/' +
             encodeURIComponent(model) + ':generateContent',
-          headers: {
-            'content-type': 'application/json',
-            'x-goog-api-key': key
-          },
+          headers: Object.assign(
+            { 'content-type': 'application/json' },
+            geminiAuth(key)
+          ),
           body: {
             systemInstruction: { parts: [{ text: system }] },
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -170,7 +171,7 @@
       listRequest: function (key) {
         return {
           url: 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',
-          headers: { 'x-goog-api-key': key }
+          headers: geminiAuth(key)
         };
       },
 
@@ -189,6 +190,18 @@
       }
     }
   };
+
+  /*
+   * O Google aceita duas credenciais diferentes na mesma API: chave de API
+   * (cabeçalho x-goog-api-key) e token OAuth (Authorization: Bearer). Em vez de
+   * adivinhar pelo formato e recusar o que não reconheço, escolho o cabeçalho
+   * pelo prefixo e deixo o próprio Google decidir se a credencial vale.
+   */
+  function geminiAuth(key) {
+    return String(key).indexOf('AIza') === 0
+      ? { 'x-goog-api-key': key }
+      : { authorization: 'Bearer ' + key };
+  }
 
   function provider(name) {
     return PROVIDERS[name] || PROVIDERS.claude;
@@ -394,13 +407,15 @@
   function test() {
     return settingsAndKey().then(function (c) {
       if (!c.key) return { ok: false, error: 'Falta a chave da API. Cole a chave no campo acima.' };
-      if (String(c.key).indexOf(c.p.keyPrefix) !== 0) {
-        return { ok: false, error: 'A chave não parece válida. ' + c.p.keyHint };
-      }
+
+      // O prefixo inesperado vira aviso, não bloqueio: barrar aqui impediria a
+      // pessoa de descobrir que a credencial dela funciona, e a mensagem de
+      // erro do próprio provedor é mais confiável que o meu palpite.
+      var aviso = String(c.key).indexOf(c.p.keyPrefix) !== 0 ? ' (' + c.p.keyHint + ')' : '';
       var modelo = modelFor(c.settings);
       var req = c.p.request(c.key, modelo, 'Responda apenas: OK', 'Responda apenas: OK', 'low', 16);
       return send(req, 'POST').then(function (res) {
-        if (!res.ok) return { ok: false, error: c.p.error(res.status, res.body) };
+        if (!res.ok) return { ok: false, error: c.p.error(res.status, res.body) + aviso };
         var parsed = c.p.parse(res.body);
         if (!parsed.ok) return parsed;
         return { ok: true, text: 'Conexão funcionando com ' + c.p.label + '. Modelo: ' + modelo + '.' };

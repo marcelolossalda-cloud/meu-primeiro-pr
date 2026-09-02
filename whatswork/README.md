@@ -123,7 +123,7 @@ configuração do outro.
 | | Claude | Gemini |
 |---|---|---|
 | Chave vem de | platform.claude.com (Console) | Google AI Studio |
-| Prefixo | `sk-ant-…` | `AIza…` |
+| Prefixo | `sk-ant-…` | `AIza…` (token OAuth também é aceito) |
 | Plano gratuito | não — precisa de créditos | sim, com limite por minuto e por dia |
 | Padrão | `claude-opus-5` | `gemini-2.5-flash` |
 
@@ -136,6 +136,13 @@ preenche o seletor com a resposta. Isso evita o erro de configuração mais chat
 uma lista fixa no código envelhece e o usuário só descobre com um 404 sem
 explicação. Se o modelo que estava salvo não aparecer mais na resposta, ele é
 trocado pelo primeiro disponível e o popup avisa.
+
+O Google aceita duas credenciais na mesma API — chave de API (cabeçalho
+`x-goog-api-key`) e token OAuth (`Authorization: Bearer`). A extensão escolhe o
+cabeçalho pelo prefixo e deixa o próprio Google decidir se a credencial vale;
+um prefixo inesperado vira aviso, não bloqueio, porque barrar antes de tentar
+impediria a pessoa de descobrir que a credencial dela funciona. Vale lembrar
+que token OAuth expira em cerca de uma hora — chave de API não.
 
 **Testar conexão** faz uma chamada mínima e diz exatamente o que falhou — chave
 ausente, prefixo errado, chave inválida, sem créditos, cota esgotada, modelo
@@ -203,7 +210,7 @@ sendo a real, então o Chrome injeta os content scripts normalmente e tudo roda
 com as APIs de extensão de verdade — `chrome.storage`, `chrome.runtime`,
 service worker. Nada de mock das APIs.
 
-As 24 verificações cobrem: carga da extensão, injeção do painel, isolamento
+As 25 verificações cobrem: carga da extensão, injeção do painel, isolamento
 entre página e extensão, identificação da conversa, persistência de anotações e
 etiquetas, modelos, envio manual, recusa de envio sem confirmação, confirmação
 pelo botão, envio automático quando permitido, bloqueio pelo limite por hora,
@@ -213,7 +220,8 @@ injeção de prompt, presença do contexto de negócio e do tom de voz no system
 prompt, existência e conteúdo das ações de venda, chave ausente da página,
 popup, diagnóstico de conexão nos quatro desfechos (sucesso, sem créditos,
 chave inválida e rede fora), troca para o Gemini com endpoint, cabeçalho e
-formato de corpo próprios, isolamento das chaves por provedor, ausência de
+formato de corpo próprios, token OAuth enviado como Bearer, isolamento das
+chaves por provedor, ausência de
 requisição externa e ausência de erro de JS.
 
 ## Como está organizado

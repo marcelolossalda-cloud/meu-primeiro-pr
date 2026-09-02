@@ -512,6 +512,32 @@ async function waitFor(read, ok, timeoutMs, message) {
     assert.strictEqual(corpo.generationConfig.maxOutputTokens, 16);
   });
 
+  await step('token OAuth do Google vai como Bearer, não como chave de API', async () => {
+    // O Google aceita as duas credenciais na mesma API; em vez de recusar pelo
+    // formato, a extensão escolhe o cabeçalho e deixa o Google decidir.
+    await sw.evaluate(() => {
+      globalThis.__apiCalls = [];
+      globalThis.fetch = function (url, init) {
+        globalThis.__apiCalls.push({ url: String(url), headers: init.headers });
+        return Promise.resolve(new Response(JSON.stringify({
+          candidates: [{ content: { parts: [{ text: 'OK' }] }, finishReason: 'STOP' }]
+        }), { status: 200, headers: { 'content-type': 'application/json' } }));
+      };
+    });
+    await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AQ.Ab8ExemploDeTokenOAuth'));
+
+    const res = await sw.evaluate(() => WhatsWorkAI.test());
+    assert.ok(res.ok, 'o token não deveria ser barrado antes de tentar: ' + res.error);
+
+    const call = (await sw.evaluate(() => globalThis.__apiCalls))[0];
+    assert.strictEqual(call.headers.authorization, 'Bearer AQ.Ab8ExemploDeTokenOAuth');
+    assert.strictEqual(call.headers['x-goog-api-key'], undefined);
+    assert.ok(!call.url.includes('AQ.Ab8'), 'a credencial não pode ir na URL');
+
+    // Devolve a chave de API para os passos seguintes.
+    await sw.evaluate(() => WhatsWorkStore.setApiKey('gemini', 'AIzaChaveDeTeste'));
+  });
+
   await step('cada provedor guarda a sua própria chave', async () => {
     const chaves = await sw.evaluate(() => Promise.all([
       WhatsWorkStore.getApiKey('claude'),
