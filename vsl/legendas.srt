@@ -1,527 +1,527 @@
 1
-00:00:00,000 --> 00:00:02,325
-Existe um padrão que se repete
+00:00:00,000 --> 00:00:02,676
+Ontem uma cliente saiu do seu salão
 
 2
-00:00:02,325 --> 00:00:05,352
-em milhares de salões de beleza no Brasil.
+00:00:02,676 --> 00:00:04,300
+com o cabelo impecável.
 
 3
-00:00:05,352 --> 00:00:08,730
-E quase ninguém fala sobre ele em voz alta.
+00:00:04,900 --> 00:00:07,927
+No caminho de casa, ela passou no mercado.
 
 4
-00:00:09,530 --> 00:00:11,154
-A profissional acorda cedo.
+00:00:07,927 --> 00:00:10,603
+E comprou um shampoo de doze reais.
 
 5
-00:00:11,154 --> 00:00:13,830
-Fica oito, dez, doze horas em pé.
+00:00:11,103 --> 00:00:14,481
+Que vai desmanchar o seu trabalho em duas semanas.
 
 6
-00:00:13,830 --> 00:00:16,155
-Atende uma cliente atrás da outra.
+00:00:15,681 --> 00:00:18,357
+Você viu o cabelo dela na cadeira.
 
 7
-00:00:16,155 --> 00:00:17,779
-A agenda até enche.
+00:00:18,357 --> 00:00:21,033
+Sabia exatamente o que ela precisava levar.
 
 8
-00:00:18,279 --> 00:00:19,551
-O corpo cansa.
+00:00:21,733 --> 00:00:23,356
+E não falou nada.
 
 9
-00:00:20,351 --> 00:00:24,080
-E aí, no fim do mês, ela abre o caixa.
-
-10
-00:00:24,080 --> 00:00:26,756
-E o número não corresponde ao esforço.
-
-11
-00:00:28,356 --> 00:00:30,681
-Se isso está acontecendo com você,
-
-12
-00:00:30,681 --> 00:00:34,059
-preste muita atenção no que eu vou dizer agora:
-
-13
-00:00:34,659 --> 00:00:36,634
-O problema não é você.
-
-14
-00:00:37,834 --> 00:00:39,457
-Você não é devagar.
-
-15
-00:00:39,457 --> 00:00:41,782
-Você não é ruim de atendimento.
-
-16
-00:00:41,782 --> 00:00:45,160
-E você definitivamente não precisa se dedicar mais —
-
-17
-00:00:45,160 --> 00:00:47,135
-você já se dedica demais.
-
-18
-00:00:48,035 --> 00:00:51,062
-O que existe aqui é uma falha estrutural
-
-19
-00:00:51,062 --> 00:00:54,791
-na forma como o dinheiro entra dentro de um salão.
-
-20
-00:00:54,791 --> 00:00:56,063
-Uma falha invisível.
-
-21
-00:00:56,063 --> 00:00:59,792
-É ela que faz a profissional mais talentosa da rua
-
-22
-00:00:59,792 --> 00:01:02,468
-faturar menos que a concorrente do lado.
-
-23
-00:01:03,268 --> 00:01:05,944
-Nos próximos minutos, eu vou te mostrar
-
-24
-00:01:05,944 --> 00:01:07,919
-exatamente onde está esse vazamento.
-
-25
-00:01:07,919 --> 00:01:12,349
-E o método prático de 7 dias que foi criado para fechá-lo.
-
-26
-00:01:13,749 --> 00:01:15,022
-Vamos ao diagnóstico.
-
-27
-00:01:15,622 --> 00:01:17,245
-Quando o faturamento trava,
-
-28
-00:01:17,245 --> 00:01:20,272
-o mercado sempre dá os mesmos quatro conselhos.
-
-29
-00:01:20,272 --> 00:01:21,896
-"Poste mais no Instagram."
-
-30
-00:01:22,196 --> 00:01:23,246
-"Faça promoção."
-
-31
-00:01:23,546 --> 00:01:24,818
-"Baixe o preço."
-
-32
-00:01:25,118 --> 00:01:26,391
-"Trabalhe mais horas."
-
-33
-00:01:27,291 --> 00:01:30,669
-Repare no que essas quatro receitas têm em comum.
-
-34
-00:01:30,669 --> 00:01:32,994
-Todas elas partem do mesmo pressuposto:
-
-35
-00:01:32,994 --> 00:01:36,021
-que o seu problema é falta de cliente.
-
-36
-00:01:36,721 --> 00:01:39,046
-Na maioria dos casos, não é.
-
-37
-00:01:40,546 --> 00:01:43,574
-A maioria das profissionais ignora um fato desconfortável.
-
-38
-00:01:43,574 --> 00:01:46,601
-O dinheiro que está faltando no seu caixa
-
-39
-00:01:46,601 --> 00:01:49,277
-já entrou pela porta do salão hoje.
-
-40
-00:01:49,277 --> 00:01:51,251
-E saiu sem ser aproveitado.
-
-41
-00:01:52,251 --> 00:01:55,980
-Pense na cliente que sentou na sua cadeira essa semana.
-
-42
-00:01:56,480 --> 00:01:58,454
-Você viu o fio quebrado.
-
-43
-00:01:58,454 --> 00:02:02,183
-Você sabia exatamente qual produto ela precisava levar para casa.
-
-44
-00:02:02,183 --> 00:02:04,859
-Você sabia que ela ia sair dali
-
-45
-00:02:04,859 --> 00:02:07,184
-e comprar qualquer coisa no mercado.
-
-46
-00:02:07,184 --> 00:02:10,913
-Algo que ia estragar o seu trabalho em duas semanas.
-
-47
-00:02:11,713 --> 00:02:13,688
-E você não falou nada.
-
-48
-00:02:15,088 --> 00:02:17,764
+00:00:24,856 --> 00:00:27,533
 Não foi por falta de conhecimento técnico.
 
-49
-00:02:17,764 --> 00:02:19,738
+10
+00:00:27,533 --> 00:00:29,507
 Disso você tem de sobra.
 
+11
+00:00:30,107 --> 00:00:33,134
+Foi porque ninguém nunca te ensinou como falar
+
+12
+00:00:33,134 --> 00:00:35,459
+sem se sentir uma vendedora chata.
+
+13
+00:00:36,559 --> 00:00:40,288
+Essa cena se repete em milhares de salões no Brasil.
+
+14
+00:00:40,288 --> 00:00:44,368
+Todo dia. E quase ninguém fala sobre ela em voz alta.
+
+15
+00:00:45,168 --> 00:00:46,791
+Ela tem um custo.
+
+16
+00:00:46,791 --> 00:00:49,467
+Um custo que quase nenhuma profissional calcula.
+
+17
+00:00:50,467 --> 00:00:53,144
+Nos próximos minutos eu vou te mostrar
+
+18
+00:00:53,144 --> 00:00:54,767
+como calcular o seu.
+
+19
+00:00:54,767 --> 00:00:58,496
+E o método de 7 dias que fecha esse vazamento.
+
+20
+00:00:59,896 --> 00:01:02,221
+Antes, repare no seu próprio mês.
+
+21
+00:01:02,721 --> 00:01:03,994
+A agenda enche.
+
+22
+00:01:03,994 --> 00:01:07,021
+Você fica oito, dez, doze horas em pé.
+
+23
+00:01:07,021 --> 00:01:08,293
+O corpo cansa.
+
+24
+00:01:09,193 --> 00:01:12,220
+E no dia 30 você abre o caixa.
+
+25
+00:01:12,220 --> 00:01:14,546
+O número não corresponde ao esforço.
+
+26
+00:01:16,046 --> 00:01:19,424
+Se isso está acontecendo com você, presta atenção agora:
+
+27
+00:01:19,424 --> 00:01:21,398
+O problema não é você.
+
+28
+00:01:22,698 --> 00:01:24,321
+Você não é devagar.
+
+29
+00:01:24,321 --> 00:01:26,647
+Você não é ruim de atendimento.
+
+30
+00:01:26,647 --> 00:01:31,077
+E não precisa se dedicar mais — você já se dedica demais.
+
+31
+00:01:32,077 --> 00:01:33,701
+O problema é estrutural.
+
+32
+00:01:33,701 --> 00:01:37,780
+Está na forma como o dinheiro entra dentro de um salão.
+
+33
+00:01:37,780 --> 00:01:41,509
+É ela que faz a profissional mais talentosa da rua
+
+34
+00:01:41,509 --> 00:01:44,185
+faturar menos que a concorrente do lado.
+
+35
+00:01:45,385 --> 00:01:47,009
+Quando o faturamento trava,
+
+36
+00:01:47,009 --> 00:01:50,036
+o mercado dá sempre os mesmos quatro conselhos.
+
+37
+00:01:50,036 --> 00:01:51,659
+"Poste mais no Instagram."
+
+38
+00:01:51,959 --> 00:01:53,009
+"Faça promoção."
+
+39
+00:01:53,309 --> 00:01:54,582
+"Baixe o preço."
+
+40
+00:01:54,882 --> 00:01:56,155
+"Trabalhe mais horas."
+
+41
+00:01:57,055 --> 00:02:00,082
+Repare no que os quatro têm em comum.
+
+42
+00:02:00,082 --> 00:02:02,056
+Todos partem do mesmo pressuposto:
+
+43
+00:02:02,056 --> 00:02:05,083
+que o seu problema é falta de cliente.
+
+44
+00:02:05,783 --> 00:02:08,108
+Na maioria dos salões, não é.
+
+45
+00:02:09,608 --> 00:02:12,284
+O dinheiro que falta no seu caixa
+
+46
+00:02:12,284 --> 00:02:14,961
+já entrou pela porta do salão hoje.
+
+47
+00:02:14,961 --> 00:02:16,935
+E saiu sem ser aproveitado.
+
+48
+00:02:18,135 --> 00:02:20,460
+Faz uma conta comigo, de cabeça.
+
+49
+00:02:21,160 --> 00:02:23,485
+Quantas clientes você atendeu essa semana?
+
 50
-00:02:20,438 --> 00:02:23,465
-Você não falou porque ninguém nunca te ensinou
+00:02:24,385 --> 00:02:27,412
+Agora pensa em quantas saíram sem levar nada.
 
 51
-00:02:23,465 --> 00:02:26,492
-como falar sem se sentir uma vendedora chata.
+00:02:28,412 --> 00:02:30,036
+Multiplica por quatro semanas.
 
 52
-00:02:27,492 --> 00:02:29,466
-Essa é a causa real.
-
-53
-00:02:29,466 --> 00:02:31,441
-Não é falta de esforço.
-
-54
-00:02:31,441 --> 00:02:33,766
-É falta de método de conversa.
-
-55
-00:02:34,966 --> 00:02:38,344
-E aqui está a parte que ninguém te conta:
-
-56
-00:02:38,344 --> 00:02:39,617
-enquanto isso continuar,
-
-57
-00:02:39,617 --> 00:02:44,047
-cada dia de trabalho é um dia de dinheiro deixado na cadeira.
-
-58
-00:02:44,647 --> 00:02:46,622
-Não é um mês perdido.
-
-59
-00:02:46,622 --> 00:02:47,894
-É todo mês.
-
-60
-00:02:47,894 --> 00:02:49,518
-É o ano inteiro.
-
-61
-00:02:51,118 --> 00:02:52,390
-Agora, a descoberta.
-
-62
-00:02:52,990 --> 00:02:56,017
-Quando você analisa os salões que faturam bem
-
-63
-00:02:56,017 --> 00:02:57,641
-sem aumentar a jornada,
-
-64
-00:02:57,641 --> 00:02:59,615
-aparece uma estrutura em comum.
-
-65
-00:02:59,615 --> 00:03:01,941
-Três movimentos. Sempre na mesma ordem.
-
-66
-00:03:02,941 --> 00:03:03,991
-Primeiro: ATRAIR.
-
-67
-00:03:04,391 --> 00:03:06,365
-Ações simples, de custo zero,
-
-68
-00:03:06,365 --> 00:03:09,041
-para despertar interesse e trazer clientes novas.
-
-69
-00:03:09,041 --> 00:03:12,419
-Sem depender de sorte e sem depender de algoritmo.
-
-70
-00:03:13,219 --> 00:03:14,269
-Segundo: APROVEITAR.
-
-71
-00:03:14,669 --> 00:03:16,994
-Um novo olhar durante o atendimento.
-
-72
-00:03:16,994 --> 00:03:20,723
-Aprender a enxergar, em cada cliente que senta na cadeira,
-
-73
-00:03:20,723 --> 00:03:23,048
-a oportunidade que já está ali.
-
-74
-00:03:23,048 --> 00:03:25,374
-Visível. Esperando só para ser nomeada.
-
-75
-00:03:26,174 --> 00:03:27,446
-Terceiro: VENDER NATURALMENTE.
-
-76
-00:03:27,846 --> 00:03:30,522
-Transformar essa observação técnica em uma recomendação.
-
-77
-00:03:30,522 --> 00:03:33,549
-De serviço, de produto ou de home care.
-
-78
-00:03:33,549 --> 00:03:35,524
-Que soa como cuidado profissional.
-
-79
-00:03:35,524 --> 00:03:37,498
-Não como empurrão de vendedora.
-
-80
-00:03:38,998 --> 00:03:40,622
-A metáfora é simples.
-
-81
-00:03:41,122 --> 00:03:44,499
-A maioria das profissionais tenta encher um balde furado
-
-82
-00:03:44,499 --> 00:03:46,123
-colocando mais água dentro.
-
-83
-00:03:46,123 --> 00:03:48,448
-Mais cliente. Mais hora. Mais promoção.
-
-84
-00:03:49,148 --> 00:03:51,123
-Esse método faz o contrário.
-
-85
-00:03:51,123 --> 00:03:53,097
-Ele tampa os furos primeiro.
-
-86
-00:03:53,097 --> 00:03:55,773
-Aí sim, cada litro que entra, fica.
-
-87
-00:03:56,973 --> 00:04:00,702
-É por isso que ele funciona onde a promoção falha.
-
-88
-00:04:00,702 --> 00:04:04,080
-Promoção traz movimento e leva a sua margem junto.
-
-89
-00:04:04,080 --> 00:04:07,107
-Isso aqui aumenta o valor de cada atendimento
-
-90
-00:04:07,107 --> 00:04:09,081
-que você já faz hoje.
-
-91
-00:04:10,481 --> 00:04:13,859
-A forma prática de aplicar essa estrutura se chama
-
-92
-00:04:13,859 --> 00:04:16,535
-Caixa Rápido — Desafio de 7 Dias.
-
-93
-00:04:17,235 --> 00:04:19,210
-São 7 dias. 7 missões.
-
-94
-00:04:19,210 --> 00:04:22,237
-Uma por dia, para executar dentro do salão,
-
-95
-00:04:22,237 --> 00:04:24,562
-no meio da sua rotina normal.
-
-96
-00:04:25,462 --> 00:04:28,138
-Dia 1: você define a sua meta.
-
-97
-00:04:28,338 --> 00:04:30,312
-Dia 2: ações para atrair.
-
-98
-00:04:30,512 --> 00:04:33,189
-Dia 3: enxergar as oportunidades na cadeira.
-
-99
-00:04:33,389 --> 00:04:35,363
-Dia 4: a venda natural.
-
-100
-00:04:35,563 --> 00:04:37,186
-Dia 5: home care.
-
-101
-00:04:37,386 --> 00:04:41,115
-Dia 6: respostas prontas para "está caro" e "vou pensar".
-
-102
-00:04:41,315 --> 00:04:43,991
-Dia 7: o seu plano de vendas,
-
-103
-00:04:43,991 --> 00:04:47,369
-pronto para continuar rodando depois que o desafio acabar.
-
-104
-00:04:48,369 --> 00:04:50,344
-E vêm dois bônus incluídos.
-
-105
-00:04:50,344 --> 00:04:53,371
-O treinamento de ChatGPT para comunicação e vendas,
-
-106
-00:04:53,371 --> 00:04:55,345
-para você criar divulgação, legenda
-
-107
-00:04:55,345 --> 00:04:57,670
-e mensagem de WhatsApp em minutos.
-
-108
-00:04:57,670 --> 00:05:00,346
-E o acesso ao app USALON 30D.
-
-109
-00:05:01,846 --> 00:05:03,470
-Agora, a conta fria.
-
-110
-00:05:04,070 --> 00:05:08,150
-Uma única indicação de home care que você não fez hoje.
-
-111
-00:05:08,150 --> 00:05:09,773
-Multiplique por trinta dias.
-
-112
-00:05:09,773 --> 00:05:11,397
+00:02:30,036 --> 00:02:31,659
 Depois por doze meses.
 
-113
-00:05:12,397 --> 00:05:15,424
+53
+00:02:32,859 --> 00:02:35,185
+Esse número é o seu vazamento.
+
+54
+00:02:36,685 --> 00:02:39,010
+E ele não acontece uma vez.
+
+55
+00:02:39,010 --> 00:02:41,335
+Acontece em cada cadeira, todo dia.
+
+56
+00:02:41,935 --> 00:02:44,962
+Não é um mês perdido. É todo mês.
+
+57
+00:02:44,962 --> 00:02:46,586
+É o ano inteiro.
+
+58
+00:02:47,886 --> 00:02:50,913
+E a causa não é falta de esforço.
+
+59
+00:02:50,913 --> 00:02:53,238
+É falta de método de conversa.
+
+60
+00:02:54,738 --> 00:02:56,362
+Agora a parte boa.
+
+61
+00:02:56,862 --> 00:02:59,889
+Quando você olha os salões que faturam bem
+
+62
+00:02:59,889 --> 00:03:01,512
+sem aumentar a jornada,
+
+63
+00:03:01,512 --> 00:03:03,486
+aparece sempre a mesma estrutura.
+
+64
+00:03:03,486 --> 00:03:05,461
+Três movimentos, na mesma ordem.
+
+65
+00:03:06,461 --> 00:03:07,511
+Primeiro: atrair.
+
+66
+00:03:07,911 --> 00:03:11,289
+Ações simples, de custo zero, para trazer clientes novas.
+
+67
+00:03:11,289 --> 00:03:14,316
+Sem depender de sorte, sem depender de algoritmo.
+
+68
+00:03:15,116 --> 00:03:16,166
+Segundo: aproveitar.
+
+69
+00:03:16,566 --> 00:03:18,891
+Um novo olhar durante o atendimento.
+
+70
+00:03:18,891 --> 00:03:21,918
+Enxergar, em cada cliente que senta na cadeira,
+
+71
+00:03:21,918 --> 00:03:25,296
+a oportunidade que já está ali, esperando ser nomeada.
+
+72
+00:03:26,096 --> 00:03:27,369
+Terceiro: vender naturalmente.
+
+73
+00:03:27,769 --> 00:03:30,445
+Transformar o que você viu em recomendação.
+
+74
+00:03:30,445 --> 00:03:32,419
+Que soa como cuidado profissional,
+
+75
+00:03:32,419 --> 00:03:34,394
+não como empurrão de vendedora.
+
+76
+00:03:35,894 --> 00:03:37,517
+A imagem é simples.
+
+77
+00:03:38,017 --> 00:03:40,693
+A maioria tenta encher um balde furado
+
+78
+00:03:40,693 --> 00:03:42,317
+colocando mais água dentro.
+
+79
+00:03:42,317 --> 00:03:44,642
+Mais cliente. Mais hora. Mais promoção.
+
+80
+00:03:45,542 --> 00:03:47,516
+Esse método faz o contrário.
+
+81
+00:03:47,516 --> 00:03:49,491
+Ele tampa os furos primeiro.
+
+82
+00:03:50,191 --> 00:03:52,867
+Aí sim, cada litro que entra, fica.
+
+83
+00:03:54,067 --> 00:03:57,445
+É por isso que funciona onde a promoção falha.
+
+84
+00:03:57,445 --> 00:04:00,823
+Promoção traz movimento e leva a sua margem junto.
+
+85
+00:04:00,823 --> 00:04:03,850
+Isso aqui aumenta o valor de cada atendimento
+
+86
+00:04:03,850 --> 00:04:05,824
+que você já faz hoje.
+
+87
+00:04:07,224 --> 00:04:09,549
+A forma prática de aplicar isso
+
+88
+00:04:09,549 --> 00:04:12,927
+se chama Caixa Rápido — Desafio de 7 Dias.
+
+89
+00:04:13,627 --> 00:04:15,602
+São 7 dias. 7 missões.
+
+90
+00:04:15,602 --> 00:04:18,629
+Uma por dia, para executar dentro do salão,
+
+91
+00:04:18,629 --> 00:04:20,954
+no meio da sua rotina normal.
+
+92
+00:04:21,854 --> 00:04:24,530
+Dia 1: você define a sua meta.
+
+93
+00:04:24,730 --> 00:04:27,055
+Dia 2: as ações para atrair.
+
+94
+00:04:27,255 --> 00:04:29,931
+Dia 3: enxergar as oportunidades na cadeira.
+
+95
+00:04:30,131 --> 00:04:32,106
+Dia 4: a venda natural.
+
+96
+00:04:32,306 --> 00:04:33,929
+Dia 5: home care.
+
+97
+00:04:34,129 --> 00:04:37,858
+Dia 6: respostas prontas para "está caro" e "vou pensar".
+
+98
+00:04:38,058 --> 00:04:42,138
+Dia 7: o seu plano de vendas, para continuar rodando depois.
+
+99
+00:04:43,138 --> 00:04:45,112
+E vêm dois bônus junto.
+
+100
+00:04:45,112 --> 00:04:48,139
+O treinamento de ChatGPT para comunicação e vendas:
+
+101
+00:04:48,139 --> 00:04:51,166
+divulgação, legenda e mensagem de WhatsApp em minutos.
+
+102
+00:04:51,166 --> 00:04:53,842
+E o acesso ao app USALON 30D.
+
+103
+00:04:55,142 --> 00:04:58,169
+Talvez você esteja pensando: eu não tenho tempo.
+
+104
+00:04:58,769 --> 00:05:01,796
+Cada missão cabe entre um atendimento e outro.
+
+105
+00:05:02,696 --> 00:05:05,022
+Ou então: eu não sei vender.
+
+106
+00:05:05,022 --> 00:05:08,399
+Esse é exatamente o ponto de partida do método.
+
+107
+00:05:09,699 --> 00:05:11,323
+Agora, a conta fria.
+
+108
+00:05:11,823 --> 00:05:15,903
+Uma única indicação de home care que você não fez hoje.
+
+109
+00:05:15,903 --> 00:05:17,526
+Multiplique por trinta dias.
+
+110
+00:05:17,526 --> 00:05:19,150
+Depois por doze meses.
+
+111
+00:05:20,150 --> 00:05:23,177
 Esse é o custo de não fazer nada.
 
-114
-00:05:16,624 --> 00:05:20,002
-O acesso completo ao desafio, com os dois bônus,
+112
+00:05:24,477 --> 00:05:27,153
+O acesso completo, com os dois bônus,
 
-115
-00:05:20,002 --> 00:05:22,678
+113
+00:05:27,153 --> 00:05:29,829
 é um pagamento único de 97 reais.
 
-116
-00:05:24,078 --> 00:05:26,052
+114
+00:05:31,229 --> 00:05:33,203
 Clique no botão aqui embaixo
 
-117
-00:05:26,052 --> 00:05:29,079
+115
+00:05:33,203 --> 00:05:36,230
 e garanta o seu acesso por 97 reais.
 
-118
-00:05:29,079 --> 00:05:30,703
+116
+00:05:36,230 --> 00:05:37,854
 Pagamento único, pela Hotmart.
 
+117
+00:05:38,754 --> 00:05:41,079
+E você não precisa decidir agora.
+
+118
+00:05:41,079 --> 00:05:43,054
+São 7 dias de garantia.
+
 119
-00:05:31,603 --> 00:05:34,630
-E olha: você não precisa decidir nada hoje.
+00:05:43,054 --> 00:05:46,081
+Entre, aplique as primeiras missões no seu salão,
 
 120
-00:05:34,630 --> 00:05:36,955
-Você tem 7 dias de garantia.
-
-121
-00:05:36,955 --> 00:05:40,333
-Entre, aplique as primeiras missões dentro do seu salão,
-
-122
-00:05:40,333 --> 00:05:43,360
+00:05:46,081 --> 00:05:49,108
 e observe o que acontece no seu caixa.
 
-123
-00:05:43,360 --> 00:05:45,685
-Se não fizer sentido para você,
+121
+00:05:49,108 --> 00:05:52,836
+Se não fizer sentido, peça o reembolso dentro do prazo,
 
-124
-00:05:45,685 --> 00:05:48,712
-é só pedir o reembolso dentro do prazo,
-
-125
-00:05:48,712 --> 00:05:50,686
+122
+00:05:52,836 --> 00:05:54,811
 conforme as condições da Hotmart.
 
-126
-00:05:51,486 --> 00:05:53,812
+123
+00:05:55,711 --> 00:05:58,036
 O risco de testar é zero.
 
-127
-00:05:54,712 --> 00:05:57,388
+124
+00:05:58,936 --> 00:06:01,612
 O risco de continuar exatamente como está,
 
-128
-00:05:57,388 --> 00:05:58,661
+125
+00:06:01,612 --> 00:06:02,885
 você já conhece.
 
+126
+00:06:02,885 --> 00:06:04,859
+Ele volta todo dia 30.
+
+127
+00:06:06,459 --> 00:06:09,837
+Daqui a sete dias, duas coisas podem ser verdade.
+
+128
+00:06:09,837 --> 00:06:13,215
+Ou a semana passou igual a todas as outras.
+
 129
-00:05:58,661 --> 00:06:00,635
-Ele aparece todo dia 30.
+00:06:13,215 --> 00:06:16,944
+Ou você terminou o desafio com um plano na mão.
 
 130
-00:06:02,235 --> 00:06:03,858
+00:06:18,044 --> 00:06:19,667
 Talento você já tem.
 
 131
-00:06:04,658 --> 00:06:06,633
+00:06:20,467 --> 00:06:22,442
 O que falta é estratégia.
 
 132
-00:06:07,633 --> 00:06:09,958
+00:06:23,442 --> 00:06:25,767
 Clique no botão e comece hoje.

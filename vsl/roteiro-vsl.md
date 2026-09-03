@@ -1,8 +1,8 @@
 # MINI-VSL — CAIXA RÁPIDO 7 DIAS
 
-**Roteiro de vídeo de vendas — Método RMBC**
+**Roteiro de vídeo de vendas — Método RMBC · versão 2**
 
-Duração 6 min 12 s · 836 palavras · 5 blocos
+Duração 6 min 28 s · 846 palavras · 5 blocos
 
 **Tom:** observador analítico. Repórter investigativo diagnosticando um padrão de mercado. Frio na lógica, quente na dor. Nunca "eu sofri" — sempre "existe um padrão".
 
@@ -14,113 +14,139 @@ Duração 6 min 12 s · 836 palavras · 5 blocos
 
 ---
 
-## BLOCO 1 — O LEAD: O PADRÃO OCULTO
-*(0:00 – 1:05)*
+## BLOCO 1 — A CENA QUE SE REPETE
+*(0:00 – 1:15)*
 
-> Cena: tela escura, texto branco surgindo. Salão vazio no fim do expediente, luz do espelho acesa.
+> Cena: close na cliente na cadeira, cabelo pronto. Depois a prateleira do mercado. Depois as duas silhuetas, com a fala que não aconteceu.
 
-Existe um padrão que se repete em milhares de salões de beleza no Brasil — e quase ninguém fala sobre ele em voz alta.
+Ontem uma cliente saiu do seu salão com o cabelo impecável.
 
-A profissional acorda cedo. Fica oito, dez, doze horas em pé. Atende uma cliente atrás da outra. A agenda até enche.
+No caminho de casa, ela passou no mercado. E comprou um shampoo de doze reais.
 
-O corpo cansa.
-
-E aí, no fim do mês, ela abre o caixa. E o número não corresponde ao esforço.
+Que vai desmanchar o seu trabalho em duas semanas.
 
 **[PAUSA]**
 
-Se isso está acontecendo com você, preste muita atenção no que eu vou dizer agora:
+Você viu o cabelo dela na cadeira. Sabia exatamente o que ela precisava levar.
 
-O problema não é você.
-
-Você não é devagar. Você não é ruim de atendimento. E você definitivamente não precisa "se dedicar mais" — você já se dedica demais.
-
-O que existe aqui é uma falha estrutural na forma como o dinheiro entra dentro de um salão. Uma falha invisível. É ela que faz a profissional mais talentosa da rua faturar menos que a concorrente do lado.
-
-Nos próximos minutos, eu vou te mostrar exatamente onde está esse vazamento. E o método prático de 7 dias que foi criado para fechá-lo.
-
----
-
-## BLOCO 2 — O DIAGNÓSTICO: POR QUE TUDO FALHOU
-*(1:05 – 2:35)*
-
-> Cena: os quatro conselhos aparecendo em cartões, um a um, e sendo riscados no fim.
-
-Vamos ao diagnóstico.
-
-Quando o faturamento trava, o mercado sempre dá os mesmos quatro conselhos: "poste mais no Instagram". "Faça promoção". "Baixe o preço". "Trabalhe mais horas".
-
-Repare no que essas quatro receitas têm em comum.
-
-Todas elas partem do mesmo pressuposto: que o seu problema é falta de cliente.
-
-Na maioria dos casos, não é.
+E não falou nada.
 
 **[PAUSA]**
-
-A maioria das profissionais ignora um fato desconfortável: o dinheiro que está faltando no seu caixa já entrou pela porta do salão hoje. E saiu sem ser aproveitado.
-
-Pense na cliente que sentou na sua cadeira essa semana.
-
-Você viu o fio quebrado. Você sabia exatamente qual produto ela precisava levar para casa. Você sabia que ela ia sair dali e comprar qualquer coisa no mercado — algo que ia estragar o seu trabalho em duas semanas.
-
-E você não falou nada.
 
 Não foi por falta de conhecimento técnico. Disso você tem de sobra.
 
-Você não falou porque ninguém nunca te ensinou como falar sem se sentir uma vendedora chata.
+Foi porque ninguém nunca te ensinou como falar sem se sentir uma vendedora chata.
 
-Essa é a causa real. Não é falta de esforço. É falta de método de conversa.
+Essa cena se repete em milhares de salões no Brasil. Todo dia. E quase ninguém fala sobre ela em voz alta.
 
-E aqui está a parte que ninguém te conta: enquanto isso continuar, cada dia de trabalho é um dia de dinheiro deixado na cadeira. Não é um mês perdido. É todo mês. É o ano inteiro.
+Ela tem um custo. Um custo que quase nenhuma profissional calcula.
+
+Nos próximos minutos eu vou te mostrar como calcular o seu. E o método de 7 dias que fecha esse vazamento.
 
 ---
 
-## BLOCO 3 — A SOLUÇÃO: O MECANISMO ÚNICO
-*(2:35 – 4:05)*
+## BLOCO 2 — POR QUE O CAIXA NÃO FECHA
+*(1:15 – 3:05)*
 
-> Cena: os 3 pilares surgindo numerados, um a um. Depois, o balde furado — que vaza até o momento exato em que o texto diz que os furos são tampados.
+> Cena: a rotina em pé, o caixa em barras, os quatro conselhos em cartões — riscados —, e a conta de cabeça em três multiplicações.
 
-Agora, a descoberta.
+Antes, repare no seu próprio mês.
 
-Quando você analisa os salões que faturam bem sem aumentar a jornada, aparece uma estrutura em comum. Três movimentos. Sempre na mesma ordem.
+A agenda enche. Você fica oito, dez, doze horas em pé. O corpo cansa.
 
-**Primeiro: ATRAIR.** Ações simples, de custo zero, para despertar interesse e trazer clientes novas — sem depender de sorte e sem depender de algoritmo.
-
-**Segundo: APROVEITAR.** Um novo olhar durante o atendimento. Aprender a enxergar, em cada cliente que senta na cadeira, a oportunidade que já está ali. Visível. Esperando só para ser nomeada.
-
-**Terceiro: VENDER NATURALMENTE.** Transformar essa observação técnica em uma recomendação — de serviço, de produto ou de home care — que soa como cuidado profissional. Não como empurrão de vendedora.
+E no dia 30 você abre o caixa. O número não corresponde ao esforço.
 
 **[PAUSA]**
 
-A metáfora é simples.
+Se isso está acontecendo com você, presta atenção agora: o problema não é você.
 
-A maioria das profissionais tenta encher um balde furado colocando mais água dentro. Mais cliente. Mais hora. Mais promoção.
+Você não é devagar. Você não é ruim de atendimento. E não precisa se dedicar mais — você já se dedica demais.
 
-Esse método faz o contrário. Ele tampa os furos primeiro. Aí sim, cada litro que entra, fica.
+O problema é estrutural. Está na forma como o dinheiro entra dentro de um salão. É ela que faz a profissional mais talentosa da rua faturar menos que a concorrente do lado.
 
-É por isso que ele funciona onde a promoção falha. Promoção traz movimento e leva a sua margem junto. Isso aqui aumenta o valor de cada atendimento que você já faz hoje.
+Quando o faturamento trava, o mercado dá sempre os mesmos quatro conselhos. "Poste mais no Instagram". "Faça promoção". "Baixe o preço". "Trabalhe mais horas".
+
+Repare no que os quatro têm em comum. Todos partem do mesmo pressuposto: que o seu problema é falta de cliente.
+
+Na maioria dos salões, não é.
+
+**[PAUSA]**
+
+O dinheiro que falta no seu caixa já entrou pela porta do salão hoje. E saiu sem ser aproveitado.
+
+Faz uma conta comigo, de cabeça.
+
+Quantas clientes você atendeu essa semana?
+
+Agora pensa em quantas saíram sem levar nada.
+
+Multiplica por quatro semanas. Depois por doze meses.
+
+Esse número é o seu vazamento.
+
+**[PAUSA]**
+
+E ele não acontece uma vez. Acontece em cada cadeira, todo dia. Não é um mês perdido. É todo mês. É o ano inteiro.
+
+E a causa não é falta de esforço. É falta de método de conversa.
 
 ---
 
-## BLOCO 4 — A OFERTA: A FERRAMENTA
-*(4:05 – 5:20)*
+## BLOCO 3 — O QUE OS SALÕES QUE FATURAM BEM FAZEM
+*(3:05 – 4:20)*
 
-> Cena: o produto em destaque. Os 7 dias aparecendo em linha do tempo horizontal, acendendo um a um.
+> Cena: os três pilares acendendo um a um. Depois o balde, que vaza até o segundo exato em que o texto tampa os furos.
 
-A forma prática de aplicar essa estrutura se chama Caixa Rápido — Desafio de 7 Dias.
+Agora a parte boa.
+
+Quando você olha os salões que faturam bem sem aumentar a jornada, aparece sempre a mesma estrutura. Três movimentos, na mesma ordem.
+
+**Primeiro: atrair.** Ações simples, de custo zero, para trazer clientes novas. Sem depender de sorte, sem depender de algoritmo.
+
+**Segundo: aproveitar.** Um novo olhar durante o atendimento. Enxergar, em cada cliente que senta na cadeira, a oportunidade que já está ali, esperando ser nomeada.
+
+**Terceiro: vender naturalmente.** Transformar o que você viu em recomendação. Que soa como cuidado profissional, não como empurrão de vendedora.
+
+**[PAUSA]**
+
+A imagem é simples.
+
+A maioria tenta encher um balde furado colocando mais água dentro. Mais cliente. Mais hora. Mais promoção.
+
+Esse método faz o contrário. Ele tampa os furos primeiro. Aí sim, cada litro que entra, fica.
+
+É por isso que funciona onde a promoção falha. Promoção traz movimento e leva a sua margem junto. Isso aqui aumenta o valor de cada atendimento que você já faz hoje.
+
+---
+
+## BLOCO 4 — O DESAFIO DE 7 DIAS
+*(4:20 – 5:45)*
+
+> Cena: o produto, os 7 dias acendendo um a um, os dois bônus, as objeções e a conta fria.
+
+A forma prática de aplicar isso se chama Caixa Rápido — Desafio de 7 Dias.
 
 São 7 dias. 7 missões. Uma por dia, para executar dentro do salão, no meio da sua rotina normal.
 
 - **Dia 1:** você define a sua meta.
-- **Dia 2:** ações para atrair.
+- **Dia 2:** as ações para atrair.
 - **Dia 3:** enxergar as oportunidades na cadeira.
 - **Dia 4:** a venda natural.
 - **Dia 5:** home care.
 - **Dia 6:** respostas prontas para "está caro" e "vou pensar".
-- **Dia 7:** o seu plano de vendas, pronto para continuar rodando depois que o desafio acabar.
+- **Dia 7:** o seu plano de vendas, para continuar rodando depois.
 
-E vêm dois bônus incluídos: o treinamento de ChatGPT para comunicação e vendas, para você criar divulgação, legenda e mensagem de WhatsApp em minutos. E o acesso ao app USALON 30D.
+E vêm dois bônus junto. O treinamento de ChatGPT para comunicação e vendas: divulgação, legenda e mensagem de WhatsApp em minutos. E o acesso ao app USALON 30D.
+
+**[PAUSA]**
+
+Talvez você esteja pensando: eu não tenho tempo.
+
+Cada missão cabe entre um atendimento e outro.
+
+Ou então: eu não sei vender.
+
+Esse é exatamente o ponto de partida do método.
 
 **[PAUSA]**
 
@@ -130,26 +156,28 @@ Uma única indicação de home care que você não fez hoje. Multiplique por tri
 
 Esse é o custo de não fazer nada.
 
-O acesso completo ao desafio, com os dois bônus, é um pagamento único de 97 reais.
+O acesso completo, com os dois bônus, é um pagamento único de 97 reais.
 
 ---
 
-## BLOCO 5 — FECHAMENTO: LÓGICA FINAL
-*(5:20 – 6:12)*
+## BLOCO 5 — A DECISÃO
+*(5:45 – 6:28)*
 
-> Cena: botão de compra pulsando na tela. Selo de garantia visível. O calendário fechando o mês, com o dia 30 marcado.
+> Cena: botão pulsando, selo de garantia, o calendário com o dia 30 marcado, e o fechamento.
 
 Clique no botão aqui embaixo e garanta o seu acesso por 97 reais. Pagamento único, pela Hotmart.
 
-E olha: você não precisa decidir nada hoje.
+E você não precisa decidir agora. São 7 dias de garantia.
 
-Você tem 7 dias de garantia. Entre, aplique as primeiras missões dentro do seu salão, e observe o que acontece no seu caixa. Se não fizer sentido para você, é só pedir o reembolso dentro do prazo, conforme as condições da Hotmart.
+Entre, aplique as primeiras missões no seu salão, e observe o que acontece no seu caixa. Se não fizer sentido, peça o reembolso dentro do prazo, conforme as condições da Hotmart.
 
 O risco de testar é zero.
 
-O risco de continuar exatamente como está, você já conhece. Ele aparece todo dia 30.
+O risco de continuar exatamente como está, você já conhece. Ele volta todo dia 30.
 
 **[PAUSA]**
+
+Daqui a sete dias, duas coisas podem ser verdade. Ou a semana passou igual a todas as outras. Ou você terminou o desafio com um plano na mão.
 
 Talento você já tem.
 
@@ -159,8 +187,18 @@ Clique no botão e comece hoje.
 
 ---
 
+## O que mudou da versão 1 para esta
+
+| Onde | Versão 1 | Versão 2 |
+|---|---|---|
+| Abertura | tese sobre o mercado ("existe um padrão…") | cena concreta: a cliente que comprou shampoo no mercado |
+| Ciclo aberto | nenhum | "existe um custo que quase ninguém calcula" — só fecha no bloco 2 |
+| A conta | número entregue pronto no bloco 4 | quem assiste calcula o próprio número, ao vivo, no bloco 2 |
+| Objeções | ficavam de fora | "não tenho tempo" e "não sei vender" entram antes do preço |
+| Fechamento | resumo | duas estradas: a semana igual às outras, ou o plano na mão |
+
 ## Nota de conformidade
 
-Nenhuma linha deste roteiro promete um valor de faturamento específico, e isso é proposital. Prometer "R$ 5 mil em 7 dias" derruba anúncio no Meta e gera reembolso em massa na Hotmart. A promessa fica em **método e rotina**, nunca em número garantido.
+Nenhuma linha promete um valor de faturamento específico, e isso é proposital. Prometer "R$ 5 mil em 7 dias" derruba anúncio no Meta e gera reembolso em massa na Hotmart. A promessa fica em **método e rotina**, nunca em número garantido — inclusive na conta do bloco 2, em que quem assiste chega ao próprio número sem nenhuma promessa da nossa parte.
 
 Depoimento tem que ser real, gravado pela própria aluna, com autorização. Pessoa de banco de imagem nunca pode aparecer como aluna, cliente ou resultado.

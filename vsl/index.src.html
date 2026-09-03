@@ -202,10 +202,10 @@ h1.headline{
 .leak .drop{animation:drip 1.4s linear infinite}
 .leak .drop:nth-of-type(2){animation-delay:.45s}.leak .drop:nth-of-type(3){animation-delay:.9s}
 @keyframes drip{0%{opacity:0;transform:translateY(0)}15%{opacity:1}100%{opacity:0;transform:translateY(40px)}}
-.leak.patched .drop{animation:drip 1.4s linear 8.6}
-.leak.patched .water{animation:fillup 5s ease-in-out 2.42, fillup-stay 4s ease-out 12.1s forwards}
+.leak.patched .drop{animation:drip 1.4s linear 8.3}
+.leak.patched .water{animation:fillup 5s ease-in-out 2.32, fillup-stay 4s ease-out 11.6s forwards}
 @keyframes fillup-stay{0%{transform:scaleY(.25)}100%{transform:scaleY(.92)}}
-.patch{opacity:0;animation:rise .5s 12.1s forwards}
+.patch{opacity:0;animation:rise .5s 11.6s forwards}
 
 .statement{font-family:var(--display);font-weight:600;font-size:5cqw;line-height:1.24;letter-spacing:-.01em;margin:0}
 .statement s{text-decoration-color:var(--clay);text-decoration-thickness:.35cqw;color:var(--smoke);opacity:.15;animation:reveal .5s var(--d,0s) forwards}
@@ -243,7 +243,7 @@ h1.headline{
 .cal i.mark{background:var(--clay);color:var(--bone);box-shadow:0 0 4cqw -.5cqw rgba(168,80,63,.9);animation:markIn .5s 7.2s backwards}
 .duo{display:flex;gap:4cqw;justify-content:center;align-items:center;font-family:var(--display);font-weight:600;font-size:6.4cqw}
 .duo .have{color:var(--bone)}
-.duo .need{color:var(--brass-soft);opacity:0;animation:rise .6s 2.4s forwards}
+.duo .need{color:var(--brass-soft);opacity:0;animation:rise .6s 14s forwards}
 .duo .plus{color:var(--smoke);font-size:.6em}
 
 /* ---------- controles ---------- */
@@ -589,10 +589,10 @@ const SCENES = {
   'rotina': `<div class="scene-inner"><div class="hour-run"><b>8h</b><b>10h</b><b>12h</b></div></div>`,
   'caixa': `<div class="scene-inner"><div class="bars">
       <div class="bar-row"><span class="bar-label">Esforço do mês<span>100%</span></span><div class="bar"><i style="--w:100%;--d:.4s"></i></div></div>
-      <div class="bar-row"><span class="bar-label">O que sobra no caixa<span>?</span></span><div class="bar short"><i style="--w:34%;--d:3.9s"></i></div></div>
+      <div class="bar-row"><span class="bar-label">O que sobra no caixa<span>?</span></span><div class="bar short"><i style="--w:34%;--d:3.4s"></i></div></div>
     </div></div>`,
   'atencao': '',
-  'nao-e-voce': `<div class="scene-inner"><p class="statement"><s style="--d:3.2s">devagar</s> &nbsp; <s style="--d:4.8s">ruim de atendimento</s> &nbsp; <s style="--d:7.1s">falta de dedicação</s></p></div>`,
+  'nao-e-voce': `<div class="scene-inner"><p class="statement"><s style="--d:6.7s">devagar</s> &nbsp; <s style="--d:8.3s">ruim de atendimento</s> &nbsp; <s style="--d:10.6s">falta de dedicação</s></p></div>`,
   'vazamento': `<div class="scene-inner"><svg class="leak" viewBox="0 0 220 170" aria-hidden="true">
       <clipPath id="bk"><path d="M46 46 h128 l-16 100 h-96 Z"/></clipPath>
       <g clip-path="url(#bk)"><rect class="water" x="40" y="46" width="140" height="100" fill="#D39A3E" opacity=".55"/></g>
@@ -610,17 +610,25 @@ const SCENES = {
       <div class="card" style="animation-delay:9.5s">“Trabalhe mais horas.”</div>
     </div></div>`,
   'pressuposto': `<div class="scene-inner"><div class="cards settled">
-      <div class="card struck" style="--d:9.4s">“Poste mais no Instagram.”</div>
-      <div class="card struck" style="--d:9.7s">“Faça promoção.”</div>
-      <div class="card struck" style="--d:10s">“Baixe o preço.”</div>
-      <div class="card struck" style="--d:10.3s">“Trabalhe mais horas.”</div>
+      <div class="card struck" style="--d:8.7s">“Poste mais no Instagram.”</div>
+      <div class="card struck" style="--d:9s">“Faça promoção.”</div>
+      <div class="card struck" style="--d:9.3s">“Baixe o preço.”</div>
+      <div class="card struck" style="--d:9.6s">“Trabalhe mais horas.”</div>
     </div></div>`,
-  'ja-entrou': `<div class="scene-inner"><div class="mult"><b style="--d:6.1s">ENTROU</b><i>→</i><b style="--d:8.7s">SAIU</b></div></div>`,
+  'mercado': '',
+  'calculo': `<div class="scene-inner"><div class="mult">
+      <b style="--d:3s">clientes<br>da semana</b><i>×</i><b style="--d:10.3s">4<br>semanas</b><i>×</i><b style="--d:11.9s">12<br>meses</b>
+    </div></div>`,
+  'objecoes': `<div class="scene-inner"><div class="contrast">
+      <div style="--d:.6s"><span class="x">✕</span> “não tenho tempo”</div>
+      <div style="--d:2.9s"><span class="v">✓</span> uma missão entre um atendimento e outro</div>
+    </div></div>`,
+  'ja-entrou': `<div class="scene-inner"><div class="mult"><b style="--d:2.7s">ENTROU</b><i>→</i><b style="--d:5.4s">SAIU</b></div></div>`,
   'cadeira': '',
   'silencio': '',
   'causa': `<div class="scene-inner"><div class="contrast">
-      <div style="--d:1.6s"><span class="x">✕</span> falta de esforço</div>
-      <div style="--d:3.3s"><span class="v">✓</span> falta de método de conversa</div>
+      <div style="--d:.6s"><span class="x">✕</span> falta de esforço</div>
+      <div style="--d:3.2s"><span class="v">✓</span> falta de método de conversa</div>
     </div></div>`,
   'todo-mes': `<div class="scene-inner"><div class="dots" id="dots"></div></div>`,
   'descoberta': `<div class="scene-inner"><div class="pillars">
@@ -635,8 +643,8 @@ const SCENES = {
       <g class="patch"><rect x="60" y="114" width="12" height="12" rx="2" fill="#A8503F"/><rect x="104" y="126" width="12" height="12" rx="2" fill="#A8503F"/><rect x="144" y="112" width="12" height="12" rx="2" fill="#A8503F"/></g>
     </svg></div>`,
   'margem': `<div class="scene-inner"><div class="bars">
-      <div class="bar-row"><span class="bar-label">Promoção: movimento<span>margem ↓</span></span><div class="bar short"><i style="--w:82%;--d:3.9s"></i></div></div>
-      <div class="bar-row"><span class="bar-label">Método: valor por atendimento<span>margem ↑</span></span><div class="bar"><i style="--w:96%;--d:7.3s"></i></div></div>
+      <div class="bar-row"><span class="bar-label">Promoção: movimento<span>margem ↓</span></span><div class="bar short"><i style="--w:82%;--d:3.6s"></i></div></div>
+      <div class="bar-row"><span class="bar-label">Método: valor por atendimento<span>margem ↑</span></span><div class="bar"><i style="--w:96%;--d:7s"></i></div></div>
     </div></div>`,
   'produto': `<div class="scene-inner"><div class="mock">
       <span class="kicker">Desafio prático</span>
@@ -648,9 +656,9 @@ const SCENES = {
     </div></div>`,
   'bonus': `<div class="scene-inner"><div class="bonus">
       <div style="--d:2s"><b>ChatGPT para vendas</b><span>Divulgação, legenda e mensagem de WhatsApp em minutos.</span></div>
-      <div style="--d:9.3s"><b>App USALON 30D</b><span>Acesso incluído junto do desafio.</span></div>
+      <div style="--d:8s"><b>App USALON 30D</b><span>Acesso incluído junto do desafio.</span></div>
     </div></div>`,
-  'conta-fria': `<div class="scene-inner"><div class="mult"><b style="--d:2.2s">1 indicação</b><i>×</i><b style="--d:6.3s">30 dias</b><i>×</i><b style="--d:7.9s">12 meses</b></div></div>`,
+  'conta-fria': `<div class="scene-inner"><div class="mult"><b style="--d:2.1s">1 indicação</b><i>×</i><b style="--d:6.2s">30 dias</b><i>×</i><b style="--d:7.8s">12 meses</b></div></div>`,
   'preco': `<div class="scene-inner"><div class="price"><sup>R$</sup>97</div><div class="numeral"><small>pagamento único</small></div></div>`,
   'cta': `<div class="scene-inner"><span class="cta-pulse">QUERO COMEÇAR POR R$ 97</span></div>`,
   'garantia': `<div class="scene-inner"><div class="seal"><b>7</b><span>dias de garantia</span></div></div>`,
@@ -670,6 +678,9 @@ const CENA_ARTE = {
   'diagnostico': () => ART.notebook(),
   'conselhos': () => ART.celular('feed'),
   'pressuposto': () => ART.celular('feed'),
+  'mercado': () => ART.prateleira(4),
+  'calculo': () => ART.agenda(),
+  'objecoes': () => ART.conversa(false),
   'ja-entrou': () => ART.porta(),
   'cadeira': () => ART.cadeira(),
   'silencio': () => ART.conversa(true),
@@ -806,7 +817,7 @@ function renderScene(id) {
     const d = sceneHost.querySelector('#dots');
     for (let i = 0; i < 30; i++) {
       const s = document.createElement('i');
-      s.style.animationDelay = (4.5 + i * 0.16) + 's';
+      s.style.animationDelay = (2.3 + i * 0.16) + 's';
       d.appendChild(s);
     }
   }

@@ -292,6 +292,10 @@ def main():
     for t0 in falas_ini[2:4]:
         mix.add(tesoura(), t0 + .2, E * .8)
 
+    ini, fim, falas_ini = cena('mercado')          # o bipe do caixa do supermercado
+    if falas_ini:
+        mix.add(sino(2093, .35, .4, 1.6), falas_ini[1], E * .5)
+
     ini, fim, falas_ini = cena('caixa')
     mix.add(moeda(), ini + .2, E * .8)
     mix.add(batida_grave(), falas_ini[-1], E * .9)          # "não corresponde ao esforço"
@@ -333,6 +337,15 @@ def main():
     ini, fim, falas_ini = cena('causa')
     mix.add(sino(1320, 1.2, .5), falas_ini[-1], E * .55)
 
+    ini, fim, falas_ini = cena('objecoes')         # as duas objeções, antes do preço
+    if falas_ini:
+        mix.add(sino(880, .8, .4), falas_ini[1], E * .45)
+        mix.add(reverb(sino(1174.66, 1.4, .5), 1.8, .35), falas_ini[-1], E * .5)
+
+    ini, fim, falas_ini = cena('calculo')          # a conta de cabeça: um toque por passo
+    for k, t0 in enumerate(falas_ini[1:5]):
+        mix.add(sino(659.25 * (1 + k * .18), .9, .45), t0, E * .5)
+
     ini, fim, _ = cena('todo-mes')
     t = ini
     while t < fim:
@@ -345,12 +358,13 @@ def main():
         mix.add(reverb(sino(f, 1.8, .6), 2.0, .4), ini, E * .7)
 
     ini, fim, falas_ini = cena('balde')
+    tampou = next((c['inicio'] for c in falas if 'tampa os furos' in c['texto']), ini + 12)
     t = ini
-    while t < ini + 12.1:                                    # vaza até tampar os furos
+    while t < tampou:                                        # vaza até tampar os furos
         mix.add(gota(), t, E * .6)
         t += 1.4
-    mix.add(batida_grave(), ini + 12.1, E * .7)              # os furos tampados
-    mix.add(reverb(sino(392, 2.4, .6), 2.4, .5), ini + 12.4, E * .5)
+    mix.add(batida_grave(), tampou, E * .7)                  # os furos tampados
+    mix.add(reverb(sino(392, 2.4, .6), 2.4, .5), tampou + .3, E * .5)
 
     ini, fim, falas_ini = cena('margem')
     for t0 in falas_ini[1:3]:
