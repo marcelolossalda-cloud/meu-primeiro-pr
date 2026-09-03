@@ -61,11 +61,15 @@ function inicioDoVideo(ff, arquivo) {
   const page = await context.newPage();
   await page.goto(PAGINA);
 
-  // esconde tudo que não é o quadro do vídeo
+  // sobra só o quadro do vídeo: esconde por exclusão, para não quebrar
+  // quando a página de vendas ganhar seções novas
   await page.addStyleTag({ content: `
-    .masthead,.headline,.sub,.controls,.offer,.panel,footer{display:none!important}
-    body{overflow:hidden}
+    body > *:not(.wrap){display:none!important}
+    .wrap > *:not(.hero){display:none!important}
+    .hero > *:not(.stage){display:none!important}
+    body{overflow:hidden;background:#080605}
     .wrap{max-width:none;padding:0;margin:0}
+    .hero{margin:0}
     .stage{border:0;border-radius:0;height:100vh;aspect-ratio:auto}
     #flash{position:fixed;inset:0;z-index:99;background:#C9A05A}
   `});
