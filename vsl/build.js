@@ -132,12 +132,17 @@ a{color:var(--brass)}
 </div>`;
 fs.writeFileSync(path.join(dir, 'producao.html'), producao);
 
+/* ---------- teleprompter: mesmo roteiro, mesmo relógio ---------- */
+const prompter = fs.readFileSync(path.join(dir, 'teleprompter.src.html'), 'utf8')
+  .replace(/\/\*__CUES__\*\/[\s\S]*?\/\*__END_CUES__\*\//, `/*__CUES__*/${json}/*__END_CUES__*/`);
+fs.writeFileSync(path.join(dir, 'teleprompter.html'), prompter);
+
 /* ---------- tempos (usado por trilha.py e por quem for editar) ---------- */
 fs.writeFileSync(path.join(dir, 'tempos.json'), JSON.stringify({
   total: TOTAL,
   falas: timed.map(c => ({ inicio: +c.start.toFixed(3), fim: +c.end.toFixed(3), cena: c.s, bloco: c.b || undefined, texto: c.t })),
 }, null, 1));
 
-console.log('index.html (vendas) + producao.html' + (temTrilha ? ' + index.artifact.html' : '') +
+console.log('index.html (vendas) + producao.html + teleprompter.html' + (temTrilha ? ' + index.artifact.html' : '') +
   ' + legendas.srt + legendas.vtt + narracao.txt + tempos.json');
 console.log(`${CUES.length} falas · ${words} palavras · ${Math.floor(TOTAL / 60)}:${pad(Math.round(TOTAL) % 60)} de duração`);

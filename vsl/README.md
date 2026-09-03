@@ -10,6 +10,7 @@ Abra `index.html` no navegador para assistir.
 vsl/
 ├── index.html          página de vendas pronta (gerada — não edite à mão)
 ├── producao.html       material interno: roteiro cronometrado e notas
+├── teleprompter.html   o roteiro rolando no tempo certo, para você narrar
 ├── index.artifact.html mesma página com a trilha embutida, para publicar solta
 ├── index.src.html      fonte da página: estilo, cenas e player
 ├── roteiro.cues.js     fonte do roteiro: cada fala, cena e pausa
@@ -47,6 +48,29 @@ node vsl/build.js
 Isso regenera `index.html`, `legendas.srt`, `legendas.vtt` e `narracao.txt` já com os tempos
 recalculados. O ritmo assumido é de locução calma em português (~2,85 palavras por segundo);
 as constantes ficam no topo do `<script>` em `index.src.html`.
+
+## Narrar
+
+Abra `teleprompter.html`: o roteiro rola sozinho, no mesmo relógio da VSL, com a fala atual em
+destaque na linha de leitura e as marcações de respiro entre os trechos. Se você ler no ritmo
+dele, a sua gravação encaixa no vídeo sem precisar de ajuste.
+
+| Controle | Para quê |
+|---|---|
+| **Começar** (ou barra de espaço) | conta 3, 2, 1 e começa a rolar |
+| **Ritmo – / +** | estica ou aperta o tempo todo, se você fala mais devagar ou mais rápido |
+| **A– / A+** | tamanho do texto (setas + e − também) |
+| **Espelhar** | inverte para vidro de teleprompter |
+| **● Gravar voz** | grava pelo microfone e devolve o arquivo para baixar |
+| ← → | pula 5 segundos |
+
+Gravou? Salve como `assets/narracao.mp3` e preencha `"narracao"` no `manifest.json`: o player passa
+a sincronizar a legenda pela sua voz. O arquivo sai em `.webm` — converta com
+`ffmpeg -i narracao.webm -c:a libmp3lame -b:a 128k narracao.mp3`.
+
+A gravação pelo navegador precisa de permissão de microfone e funciona melhor com o arquivo aberto
+direto do seu computador. Para a locução final, um microfone decente e um cômodo com pouco eco
+valem mais que qualquer ajuste depois.
 
 ## Link do checkout
 

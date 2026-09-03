@@ -1,0 +1,305 @@
+<title>Teleprompter — Caixa Rápido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Karla:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ink:#0A0807; --painel:#15100E; --bone:#F6F0E9; --smoke:#8B7D74;
+  --brass:#E0A94A; --clay:#A8503F; --line:rgba(246,240,233,.13);
+  --display:"Fraunces",Georgia,serif;
+  --body:"Karla","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --tam:44px;              /* tamanho da fala, controlado pelos botões */
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ink);color:var(--bone);font-family:var(--body);overflow:hidden}
+
+.tela{position:fixed;inset:0 0 92px 0;overflow:hidden}
+.tela.espelhado .fluxo{transform:scaleX(-1)}
+.fluxo{position:absolute;left:0;right:0;padding:0 8vw;will-change:transform}
+
+.fala{
+  font-family:var(--display);font-weight:600;font-size:var(--tam);line-height:1.34;
+  letter-spacing:-.01em;margin:0;padding:.34em 0;color:rgba(246,240,233,.26);
+  transition:color .25s ease, opacity .25s ease;text-wrap:balance;
+}
+.fala.ja{color:rgba(246,240,233,.13)}
+.fala.agora{color:var(--bone)}
+.fala.proxima{color:rgba(246,240,233,.42)}
+
+.marca{
+  font-family:var(--mono);font-size:.34em;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--clay);padding:.5em 0 .9em;display:block;
+}
+.bloco-marca{
+  font-family:var(--mono);font-size:.3em;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--brass);display:block;margin:1.6em 0 .5em;padding-top:.9em;border-top:1px solid var(--line);
+}
+
+/* linha de leitura: onde o olho fica */
+.guia{position:fixed;left:0;right:0;top:38%;pointer-events:none;z-index:3}
+.guia::before,.guia::after{
+  content:"";position:absolute;top:0;width:3vw;height:2px;background:linear-gradient(90deg,transparent,var(--brass));
+}
+.guia::before{left:0}
+.guia::after{right:0;transform:scaleX(-1)}
+.sombra-topo,.sombra-base{position:fixed;left:0;right:0;height:26vh;pointer-events:none;z-index:2}
+.sombra-topo{top:0;background:linear-gradient(var(--ink) 12%,transparent)}
+.sombra-base{bottom:92px;background:linear-gradient(transparent,var(--ink) 78%)}
+
+/* contagem regressiva */
+.contagem{
+  position:fixed;inset:0;z-index:9;display:none;place-content:center;background:rgba(10,8,7,.94);
+  font-family:var(--display);font-size:22vw;font-weight:600;color:var(--brass);
+}
+.contagem.on{display:grid}
+
+/* barra de controle */
+.barra{
+  position:fixed;left:0;right:0;bottom:0;height:92px;z-index:5;
+  display:flex;align-items:center;gap:14px;padding:0 18px;
+  background:var(--painel);border-top:1px solid var(--line);
+}
+button{
+  background:none;border:1px solid var(--line);color:var(--bone);border-radius:4px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  padding:12px 14px;cursor:pointer;transition:.15s;white-space:nowrap;
+}
+button:hover{border-color:var(--brass);color:var(--brass)}
+button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+button[aria-pressed="true"]{color:var(--brass);border-color:rgba(224,169,74,.55);background:rgba(224,169,74,.10)}
+button.principal{background:var(--brass);color:#14100E;border-color:var(--brass);font-weight:700;padding:14px 26px}
+button.gravar[aria-pressed="true"]{background:var(--clay);border-color:var(--clay);color:var(--bone)}
+.grupo{display:flex;gap:6px;align-items:center}
+.rotulo{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--smoke)}
+.tempo{font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums;color:var(--bone);min-width:112px}
+.tempo b{color:var(--brass);font-weight:500}
+.trilho{flex:1;height:4px;background:rgba(246,240,233,.12);border-radius:2px;cursor:pointer;position:relative}
+.trilho i{position:absolute;inset:0 auto 0 0;width:0;background:var(--brass);border-radius:2px}
+.aviso{position:fixed;right:18px;bottom:104px;z-index:6;font-family:var(--mono);font-size:11px;color:var(--smoke)}
+.aviso a{color:var(--brass)}
+
+@media (max-width:760px){
+  .barra{height:auto;flex-wrap:wrap;padding:10px;gap:8px;justify-content:center}
+  .tela{inset:0 0 128px 0}
+  .sombra-base{bottom:128px}
+  .esconde-mobile{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .fluxo{transition:none!important} }
+</style>
+
+<div class="tela" id="tela">
+  <div class="fluxo" id="fluxo"></div>
+</div>
+<div class="sombra-topo"></div>
+<div class="sombra-base"></div>
+<div class="guia"></div>
+<div class="contagem" id="contagem">3</div>
+
+<div class="barra">
+  <button class="principal" id="btnPlay">Começar</button>
+  <button id="btnVoltar" title="Voltar ao início">⟲</button>
+  <div class="tempo" id="tempo">0:00 <b>/ 6:12</b></div>
+  <div class="trilho" id="trilho"><i id="prog"></i></div>
+  <div class="grupo esconde-mobile">
+    <span class="rotulo">Ritmo</span>
+    <button id="maisLento">–</button><span class="rotulo" id="ritmo">1.0×</span><button id="maisRapido">+</button>
+  </div>
+  <div class="grupo esconde-mobile">
+    <span class="rotulo">Texto</span>
+    <button id="menor">A–</button><button id="maior">A+</button>
+  </div>
+  <button id="btnEspelho" aria-pressed="false">Espelhar</button>
+  <button class="gravar" id="btnGravar" aria-pressed="false">● Gravar voz</button>
+</div>
+
+<div class="aviso" id="aviso"></div>
+
+<script>
+const CUES = /*__CUES__*/[{"t":"Existe um padrão que se repete","s":"abertura","b":"Bloco 1 — O padrão oculto"},{"t":"em milhares de salões de beleza no Brasil.","s":"abertura"},{"t":"E quase ninguém fala sobre ele em voz alta.","s":"abertura","p":0.8},{"t":"A profissional acorda cedo.","s":"rotina"},{"t":"Fica oito, dez, doze horas em pé.","s":"rotina"},{"t":"Atende uma cliente atrás da outra.","s":"rotina"},{"t":"A agenda até enche.","s":"rotina","p":0.5},{"t":"O corpo cansa.","s":"rotina","p":0.8},{"t":"E aí, no fim do mês, ela abre o caixa.","s":"caixa"},{"t":"E o número não corresponde ao esforço.","s":"caixa","p":1.6},{"t":"Se isso está acontecendo com você,","s":"atencao"},{"t":"preste muita atenção no que eu vou dizer agora:","s":"atencao","p":0.6},{"t":"O problema não é você.","s":"nao-e-voce","p":1.2},{"t":"Você não é devagar.","s":"nao-e-voce"},{"t":"Você não é ruim de atendimento.","s":"nao-e-voce"},{"t":"E você definitivamente não precisa se dedicar mais —","s":"nao-e-voce"},{"t":"você já se dedica demais.","s":"nao-e-voce","p":0.9},{"t":"O que existe aqui é uma falha estrutural","s":"vazamento"},{"t":"na forma como o dinheiro entra dentro de um salão.","s":"vazamento"},{"t":"Uma falha invisível.","s":"vazamento"},{"t":"É ela que faz a profissional mais talentosa da rua","s":"vazamento"},{"t":"faturar menos que a concorrente do lado.","s":"vazamento","p":0.8},{"t":"Nos próximos minutos, eu vou te mostrar","s":"promessa"},{"t":"exatamente onde está esse vazamento.","s":"promessa"},{"t":"E o método prático de 7 dias que foi criado para fechá-lo.","s":"promessa","p":1.4},{"t":"Vamos ao diagnóstico.","s":"diagnostico","p":0.6,"b":"Bloco 2 — O diagnóstico"},{"t":"Quando o faturamento trava,","s":"conselhos"},{"t":"o mercado sempre dá os mesmos quatro conselhos.","s":"conselhos"},{"t":"\"Poste mais no Instagram.\"","s":"conselhos","p":0.3},{"t":"\"Faça promoção.\"","s":"conselhos","p":0.3},{"t":"\"Baixe o preço.\"","s":"conselhos","p":0.3},{"t":"\"Trabalhe mais horas.\"","s":"conselhos","p":0.9},{"t":"Repare no que essas quatro receitas têm em comum.","s":"pressuposto"},{"t":"Todas elas partem do mesmo pressuposto:","s":"pressuposto"},{"t":"que o seu problema é falta de cliente.","s":"pressuposto","p":0.7},{"t":"Na maioria dos casos, não é.","s":"pressuposto","p":1.5},{"t":"A maioria das profissionais ignora um fato desconfortável.","s":"ja-entrou"},{"t":"O dinheiro que está faltando no seu caixa","s":"ja-entrou"},{"t":"já entrou pela porta do salão hoje.","s":"ja-entrou"},{"t":"E saiu sem ser aproveitado.","s":"ja-entrou","p":1},{"t":"Pense na cliente que sentou na sua cadeira essa semana.","s":"cadeira","p":0.5},{"t":"Você viu o fio quebrado.","s":"cadeira"},{"t":"Você sabia exatamente qual produto ela precisava levar para casa.","s":"cadeira"},{"t":"Você sabia que ela ia sair dali","s":"cadeira"},{"t":"e comprar qualquer coisa no mercado.","s":"cadeira"},{"t":"Algo que ia estragar o seu trabalho em duas semanas.","s":"cadeira","p":0.8},{"t":"E você não falou nada.","s":"silencio","p":1.4},{"t":"Não foi por falta de conhecimento técnico.","s":"silencio"},{"t":"Disso você tem de sobra.","s":"silencio","p":0.7},{"t":"Você não falou porque ninguém nunca te ensinou","s":"silencio"},{"t":"como falar sem se sentir uma vendedora chata.","s":"silencio","p":1},{"t":"Essa é a causa real.","s":"causa"},{"t":"Não é falta de esforço.","s":"causa"},{"t":"É falta de método de conversa.","s":"causa","p":1.2},{"t":"E aqui está a parte que ninguém te conta:","s":"todo-mes"},{"t":"enquanto isso continuar,","s":"todo-mes"},{"t":"cada dia de trabalho é um dia de dinheiro deixado na cadeira.","s":"todo-mes","p":0.6},{"t":"Não é um mês perdido.","s":"todo-mes"},{"t":"É todo mês.","s":"todo-mes"},{"t":"É o ano inteiro.","s":"todo-mes","p":1.6},{"t":"Agora, a descoberta.","s":"descoberta","p":0.6,"b":"Bloco 3 — O mecanismo único"},{"t":"Quando você analisa os salões que faturam bem","s":"descoberta"},{"t":"sem aumentar a jornada,","s":"descoberta"},{"t":"aparece uma estrutura em comum.","s":"descoberta"},{"t":"Três movimentos. Sempre na mesma ordem.","s":"descoberta","p":1},{"t":"Primeiro: ATRAIR.","s":"pilar-1","p":0.4},{"t":"Ações simples, de custo zero,","s":"pilar-1"},{"t":"para despertar interesse e trazer clientes novas.","s":"pilar-1"},{"t":"Sem depender de sorte e sem depender de algoritmo.","s":"pilar-1","p":0.8},{"t":"Segundo: APROVEITAR.","s":"pilar-2","p":0.4},{"t":"Um novo olhar durante o atendimento.","s":"pilar-2"},{"t":"Aprender a enxergar, em cada cliente que senta na cadeira,","s":"pilar-2"},{"t":"a oportunidade que já está ali.","s":"pilar-2"},{"t":"Visível. Esperando só para ser nomeada.","s":"pilar-2","p":0.8},{"t":"Terceiro: VENDER NATURALMENTE.","s":"pilar-3","p":0.4},{"t":"Transformar essa observação técnica em uma recomendação.","s":"pilar-3"},{"t":"De serviço, de produto ou de home care.","s":"pilar-3"},{"t":"Que soa como cuidado profissional.","s":"pilar-3"},{"t":"Não como empurrão de vendedora.","s":"pilar-3","p":1.5},{"t":"A metáfora é simples.","s":"balde","p":0.5},{"t":"A maioria das profissionais tenta encher um balde furado","s":"balde"},{"t":"colocando mais água dentro.","s":"balde"},{"t":"Mais cliente. Mais hora. Mais promoção.","s":"balde","p":0.7},{"t":"Esse método faz o contrário.","s":"balde"},{"t":"Ele tampa os furos primeiro.","s":"balde"},{"t":"Aí sim, cada litro que entra, fica.","s":"balde","p":1.2},{"t":"É por isso que ele funciona onde a promoção falha.","s":"margem"},{"t":"Promoção traz movimento e leva a sua margem junto.","s":"margem"},{"t":"Isso aqui aumenta o valor de cada atendimento","s":"margem"},{"t":"que você já faz hoje.","s":"margem","p":1.4},{"t":"A forma prática de aplicar essa estrutura se chama","s":"produto","b":"Bloco 4 — A oferta"},{"t":"Caixa Rápido — Desafio de 7 Dias.","s":"produto","p":0.7},{"t":"São 7 dias. 7 missões.","s":"produto"},{"t":"Uma por dia, para executar dentro do salão,","s":"produto"},{"t":"no meio da sua rotina normal.","s":"produto","p":0.9},{"t":"Dia 1: você define a sua meta.","s":"dias","p":0.2},{"t":"Dia 2: ações para atrair.","s":"dias","p":0.2},{"t":"Dia 3: enxergar as oportunidades na cadeira.","s":"dias","p":0.2},{"t":"Dia 4: a venda natural.","s":"dias","p":0.2},{"t":"Dia 5: home care.","s":"dias","p":0.2},{"t":"Dia 6: respostas prontas para \"está caro\" e \"vou pensar\".","s":"dias","p":0.2},{"t":"Dia 7: o seu plano de vendas,","s":"dias"},{"t":"pronto para continuar rodando depois que o desafio acabar.","s":"dias","p":1},{"t":"E vêm dois bônus incluídos.","s":"bonus"},{"t":"O treinamento de ChatGPT para comunicação e vendas,","s":"bonus"},{"t":"para você criar divulgação, legenda","s":"bonus"},{"t":"e mensagem de WhatsApp em minutos.","s":"bonus"},{"t":"E o acesso ao app USALON 30D.","s":"bonus","p":1.5},{"t":"Agora, a conta fria.","s":"conta-fria","p":0.6},{"t":"Uma única indicação de home care que você não fez hoje.","s":"conta-fria"},{"t":"Multiplique por trinta dias.","s":"conta-fria"},{"t":"Depois por doze meses.","s":"conta-fria","p":1},{"t":"Esse é o custo de não fazer nada.","s":"conta-fria","p":1.2},{"t":"O acesso completo ao desafio, com os dois bônus,","s":"preco"},{"t":"é um pagamento único de 97 reais.","s":"preco","p":1.4},{"t":"Clique no botão aqui embaixo","s":"cta","b":"Bloco 5 — Fechamento"},{"t":"e garanta o seu acesso por 97 reais.","s":"cta"},{"t":"Pagamento único, pela Hotmart.","s":"cta","p":0.9},{"t":"E olha: você não precisa decidir nada hoje.","s":"garantia"},{"t":"Você tem 7 dias de garantia.","s":"garantia"},{"t":"Entre, aplique as primeiras missões dentro do seu salão,","s":"garantia"},{"t":"e observe o que acontece no seu caixa.","s":"garantia"},{"t":"Se não fizer sentido para você,","s":"garantia"},{"t":"é só pedir o reembolso dentro do prazo,","s":"garantia"},{"t":"conforme as condições da Hotmart.","s":"garantia","p":0.8},{"t":"O risco de testar é zero.","s":"risco","p":0.9},{"t":"O risco de continuar exatamente como está,","s":"risco"},{"t":"você já conhece.","s":"risco"},{"t":"Ele aparece todo dia 30.","s":"risco","p":1.6},{"t":"Talento você já tem.","s":"fecho","p":0.8},{"t":"O que falta é estratégia.","s":"fecho","p":1},{"t":"Clique no botão e comece hoje.","s":"fecho","p":2}]/*__END_CUES__*/;
+
+/* mesmo modelo de tempo da VSL: o que você lê aqui casa com o vídeo */
+const RATE = 2.85, FLOOR = 1.05, OVERHEAD = 0.22;
+let t = 0;
+for (const c of CUES) {
+  const p = c.t.trim().split(/\s+/).length;
+  c.start = t;
+  c.dur = Math.max(FLOOR, p / RATE + OVERHEAD);
+  t += c.dur + (c.p || 0);
+  c.end = t;
+}
+const TOTAL = t;
+
+const $ = s => document.querySelector(s);
+const fluxo = $('#fluxo'), tela = $('#tela'), contagem = $('#contagem'),
+      btnPlay = $('#btnPlay'), tempoEl = $('#tempo'), prog = $('#prog'),
+      trilho = $('#trilho'), aviso = $('#aviso');
+
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+
+/* ---- monta o texto ---- */
+const falas = [];
+CUES.forEach((c, i) => {
+  if (c.b) {
+    const b = document.createElement('span');
+    b.className = 'bloco-marca';
+    b.textContent = c.b;
+    fluxo.appendChild(b);
+  }
+  const p = document.createElement('p');
+  p.className = 'fala';
+  p.textContent = c.t;
+  p.dataset.i = i;
+  fluxo.appendChild(p);
+  falas.push(p);
+  if ((c.p || 0) >= 0.8) {
+    const m = document.createElement('span');
+    m.className = 'marca';
+    m.textContent = '— respire —';
+    fluxo.appendChild(m);
+  }
+});
+
+/* ---- relógio ---- */
+let tempo = 0, rodando = false, ultimo = 0, atual = -1, ritmo = 1;
+
+function pintar() {
+  let i = CUES.findIndex(c => tempo >= c.start && tempo < c.end);
+  if (i < 0) i = tempo >= TOTAL ? CUES.length - 1 : 0;
+  if (i !== atual) {
+    atual = i;
+    falas.forEach((el, k) => {
+      el.classList.toggle('agora', k === i);
+      el.classList.toggle('ja', k < i);
+      el.classList.toggle('proxima', k === i + 1 || k === i + 2);
+    });
+    const alvo = falas[i];
+    const y = alvo.offsetTop - window.innerHeight * 0.36;
+    fluxo.style.transition = 'transform .45s cubic-bezier(.25,.8,.3,1)';
+    fluxo.style.transform = `translateY(${-y}px)`;
+  }
+  prog.style.width = (tempo / TOTAL * 100) + '%';
+  tempoEl.innerHTML = `${fmt(tempo)} <b>/ ${fmt(TOTAL)}</b>`;
+}
+
+function quadro(agora) {
+  if (rodando) {
+    tempo += Math.min(.25, (agora - ultimo) / 1000) * ritmo;
+    if (tempo >= TOTAL) { tempo = TOTAL; parar(); }
+  }
+  ultimo = agora;
+  pintar();
+  requestAnimationFrame(quadro);
+}
+
+function comecar() {
+  let n = 3;
+  contagem.textContent = n;
+  contagem.classList.add('on');
+  const tique = setInterval(() => {
+    n -= 1;
+    if (n === 0) {
+      clearInterval(tique);
+      contagem.classList.remove('on');
+      rodando = true;
+      btnPlay.textContent = 'Pausar';
+    } else contagem.textContent = n;
+  }, 1000);
+}
+function parar() {
+  rodando = false;
+  btnPlay.textContent = tempo >= TOTAL ? 'Recomeçar' : 'Continuar';
+}
+function irPara(s) {
+  tempo = Math.max(0, Math.min(TOTAL, s));
+  atual = -1;
+  pintar();
+}
+
+btnPlay.addEventListener('click', () => {
+  if (rodando) return parar();
+  if (tempo >= TOTAL) irPara(0);
+  tempo === 0 ? comecar() : (rodando = true, btnPlay.textContent = 'Pausar');
+});
+$('#btnVoltar').addEventListener('click', () => { parar(); irPara(0); btnPlay.textContent = 'Começar'; });
+trilho.addEventListener('click', e => {
+  const r = trilho.getBoundingClientRect();
+  irPara((e.clientX - r.left) / r.width * TOTAL);
+});
+
+/* ritmo: quem lê mais devagar estica o tempo todo na mesma proporção */
+const ritmoEl = $('#ritmo');
+const mudaRitmo = d => {
+  ritmo = Math.min(1.3, Math.max(.7, +(ritmo + d).toFixed(2)));
+  ritmoEl.textContent = ritmo.toFixed(2).replace(/0$/, '') + '×';
+};
+$('#maisLento').addEventListener('click', () => mudaRitmo(-.05));
+$('#maisRapido').addEventListener('click', () => mudaRitmo(.05));
+
+/* tamanho do texto */
+let tam = 44;
+const mudaTam = d => {
+  tam = Math.min(96, Math.max(24, tam + d));
+  document.documentElement.style.setProperty('--tam', tam + 'px');
+  atual = -1;
+};
+$('#maior').addEventListener('click', () => mudaTam(6));
+$('#menor').addEventListener('click', () => mudaTam(-6));
+
+/* espelho, para quem usa vidro de teleprompter */
+$('#btnEspelho').addEventListener('click', e => {
+  const on = e.currentTarget.getAttribute('aria-pressed') === 'true';
+  e.currentTarget.setAttribute('aria-pressed', String(!on));
+  tela.classList.toggle('espelhado', !on);
+});
+
+/* ---- gravar a voz aqui mesmo ---- */
+const btnGravar = $('#btnGravar');
+let rec = null, pedacos = [];
+btnGravar.addEventListener('click', async () => {
+  if (rec && rec.state === 'recording') {
+    rec.stop();
+    return;
+  }
+  try {
+    const mic = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: false },
+    });
+    rec = new MediaRecorder(mic);
+    pedacos = [];
+    rec.ondataavailable = e => e.data.size && pedacos.push(e.data);
+    rec.onstop = () => {
+      mic.getTracks().forEach(t => t.stop());
+      const blob = new Blob(pedacos, { type: rec.mimeType || 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      aviso.innerHTML = `<a href="${url}" download="narracao.webm">baixar a narração gravada</a> · ` +
+        `<audio src="${url}" controls style="vertical-align:middle;height:30px"></audio>`;
+      btnGravar.setAttribute('aria-pressed', 'false');
+      btnGravar.textContent = '● Gravar voz';
+    };
+    rec.start();
+    btnGravar.setAttribute('aria-pressed', 'true');
+    btnGravar.textContent = '■ Parar gravação';
+    aviso.textContent = 'gravando…';
+    if (!rodando) { irPara(0); comecar(); }
+  } catch (e) {
+    aviso.textContent = 'não consegui abrir o microfone — autorize o acesso no navegador';
+  }
+});
+
+/* teclado: espaço toca, setas pulam, +/- muda o tamanho */
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'BUTTON') return;
+  if (e.code === 'Space') { e.preventDefault(); btnPlay.click(); }
+  if (e.code === 'ArrowRight') irPara(tempo + 5);
+  if (e.code === 'ArrowLeft') irPara(tempo - 5);
+  if (e.key === '+' || e.key === '=') mudaTam(6);
+  if (e.key === '-') mudaTam(-6);
+});
+
+pintar();
+requestAnimationFrame(a => { ultimo = a; requestAnimationFrame(quadro); });
+</script>
