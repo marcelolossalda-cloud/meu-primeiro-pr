@@ -258,7 +258,28 @@ $('#btnEspelho').addEventListener('click', e => {
 
 /* ---- gravar a voz aqui mesmo ---- */
 const btnGravar = $('#btnGravar');
-let rec = null, pedacos = [];
+let rec = null, pedacos = [], salvar = null;
+
+/* quando a página está publicada, o arquivo é entregue pelo próprio visualizador */
+if (window.claude && claude.use) {
+  claude.use('downloads').then(d => { salvar = d; }).catch(() => {});
+}
+
+async function entregar(blob, nome) {
+  if (salvar) {
+    try {
+      await salvar.save({ filename: nome, data: blob });
+      aviso.textContent = 'narração salva';
+      return;
+    } catch (e) {
+      if (e && e.code === 'declined') { aviso.textContent = 'gravação mantida aqui — clique de novo para salvar'; return; }
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = nome; a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
 btnGravar.addEventListener('click', async () => {
   if (rec && rec.state === 'recording') {
     rec.stop();
@@ -273,10 +294,22 @@ btnGravar.addEventListener('click', async () => {
     rec.ondataavailable = e => e.data.size && pedacos.push(e.data);
     rec.onstop = () => {
       mic.getTracks().forEach(t => t.stop());
-      const blob = new Blob(pedacos, { type: rec.mimeType || 'audio/webm' });
+      const tipo = rec.mimeType || 'audio/webm';
+      const blob = new Blob(pedacos, { type: tipo });
+      const nome = 'narracao.' + (tipo.includes('mp4') ? 'mp4' : 'webm');
       const url = URL.createObjectURL(blob);
-      aviso.innerHTML = `<a href="${url}" download="narracao.webm">baixar a narração gravada</a> · ` +
-        `<audio src="${url}" controls style="vertical-align:middle;height:30px"></audio>`;
+
+      aviso.textContent = '';
+      const ouvir = document.createElement('audio');
+      ouvir.src = url; ouvir.controls = true;
+      ouvir.style.cssText = 'vertical-align:middle;height:30px';
+      const baixar = document.createElement('button');
+      baixar.textContent = 'Salvar narração';
+      baixar.style.marginLeft = '10px';
+      baixar.addEventListener('click', () => entregar(blob, nome));
+      aviso.append(ouvir, baixar);
+
+      parar();
       btnGravar.setAttribute('aria-pressed', 'false');
       btnGravar.textContent = '● Gravar voz';
     };
