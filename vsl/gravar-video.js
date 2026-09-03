@@ -49,7 +49,10 @@ function inicioDoVideo(ff, arquivo) {
   const escureceu = luz.findIndex(v => v < 60);
   if (escureceu < 0) return null;
   const flash = luz.findIndex((v, i) => i > escureceu && v > 80);
-  return flash < 0 ? null : flash / 10 + FLASH;
+  if (flash >= 0) return flash / 10 + FLASH;
+  // sem flash: corta onde a página apareceu, com a folga que o script espera antes de tocar
+  console.log('flash não encontrado — cortando pelo início da página');
+  return escureceu / 10 + 2.5 + FLASH;
 }
 
 (async () => {
@@ -64,7 +67,7 @@ function inicioDoVideo(ff, arquivo) {
   // sobra só o quadro do vídeo: esconde por exclusão, para não quebrar
   // quando a página de vendas ganhar seções novas
   await page.addStyleTag({ content: `
-    body > *:not(.wrap){display:none!important}
+    body > *:not(.wrap):not(#flash){display:none!important}
     .wrap > *:not(.hero){display:none!important}
     .hero > *:not(.stage){display:none!important}
     body{overflow:hidden;background:#080605}
