@@ -20,14 +20,16 @@ import sys
 
 import numpy as np
 import pymupdf
-from PIL import Image
+from PIL import Image, ImageFilter
 from scipy import ndimage
 
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 SAIDA = RAIZ / 'imagens'
-ESCALA = 4      # ampliação final (o PDF só tem 480x270 por página)
+ESCALA = 5      # ampliação final (o PDF só tem 480x270 por página)
 MARGEM = 3      # folga em pixels ao redor do recorte
 INK = 248       # abaixo disso o pixel conta como tinta
+QUALIDADE = 86  # qualidade do WebP
+FUNDO = 246     # a partir daqui o pixel é candidato a fundo branco
 
 # (slug, página do PDF, seletor)
 #   ('c', i)      -> i-ésima embalagem da página
@@ -128,6 +130,40 @@ def aparar(m, caixa, proporcao=0.25):
     return [nx0, y0, nx1, y1]
 
 
+def limpar_fundo(im: Image.Image) -> Image.Image:
+    """Deixa o fundo branco puro.
+
+    Só clareia o branco ligado às bordas da imagem: assim o miolo claro dos
+    frascos brancos não vira buraco.
+    """
+    a = np.asarray(im.convert('RGB'))
+    lab, _ = ndimage.label(a.min(axis=2) >= FUNDO)
+    bordas = set(lab[0]) | set(lab[-1]) | set(lab[:, 0]) | set(lab[:, -1])
+    bordas.discard(0)
+    if not bordas:
+        return im
+    saida = a.copy()
+    saida[np.isin(lab, list(bordas))] = 255
+    return Image.fromarray(saida)
+
+
+def ampliar(im: Image.Image, escala: int) -> Image.Image:
+    """Amplia em passos de 2x com realce leve entre eles.
+
+    Ampliar de uma vez só deixa a arte lavada; em passos, com uma máscara de
+    nitidez fraca a cada passo, o texto do rótulo se mantém legível.
+    """
+    largura_final, altura_final = im.width * escala, im.height * escala
+    atual, fator = im, 1
+    while fator * 2 <= escala:
+        atual = atual.resize((atual.width * 2, atual.height * 2), Image.LANCZOS)
+        atual = atual.filter(ImageFilter.UnsharpMask(radius=1.2, percent=40, threshold=2))
+        fator *= 2
+    if (atual.width, atual.height) != (largura_final, altura_final):
+        atual = atual.resize((largura_final, altura_final), Image.LANCZOS)
+    return atual.filter(ImageFilter.UnsharpMask(radius=2, percent=55, threshold=3))
+
+
 def main(pdf: str) -> int:
     doc = pymupdf.open(pdf)
     SAIDA.mkdir(exist_ok=True)
@@ -154,8 +190,8 @@ def main(pdf: str) -> int:
         x0, y0, x1, y1 = aparar(m, caixa)
         corte = pagina.convert('RGB').crop((max(0, x0 - MARGEM), max(0, y0 - MARGEM),
                                             min(W, x1 + MARGEM), min(H, y1 + MARGEM)))
-        corte = corte.resize((corte.width * ESCALA, corte.height * ESCALA), Image.LANCZOS)
-        corte.save(SAIDA / f'{slug}.webp', quality=88, method=6)
+        corte = ampliar(limpar_fundo(corte), ESCALA)
+        corte.save(SAIDA / f'{slug}.webp', quality=QUALIDADE, method=6)
         print(f'{slug:42s} p{npag:02d}  {corte.width}x{corte.height}')
     print(f'\n{len(SPEC)} imagens em {SAIDA}')
     return 0
