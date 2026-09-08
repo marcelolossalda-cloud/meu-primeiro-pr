@@ -34,6 +34,8 @@ FUNDO = 246     # a partir daqui o pixel é candidato a fundo branco
 # (slug, página do PDF, seletor)
 #   ('c', i)      -> i-ésima embalagem da página
 #   ('col', i, n) -> i-ésima de n embalagens lado a lado
+#   ('dir', f)    -> só a parte direita da primeira embalagem, a partir da
+#                    fração f da largura (usado para tirar a caixa da Coloração)
 SPEC = [
     ('rx-shampoo-restauracao-profunda',       5,  ('c', 0)),
     ('rx-mascara-reconstrucao-profunda',      6,  ('c', 0)),
@@ -50,7 +52,7 @@ SPEC = [
     ('ox-20-volumes',                        19,  ('col', 1, 4)),
     ('ox-30-volumes',                        19,  ('col', 2, 4)),
     ('ox-40-volumes',                        19,  ('col', 3, 4)),
-    ('cx-coloracao',                         20,  ('c', 0)),
+    ('cx-coloracao',                         20,  ('dir', 0.64)),
     ('cx-luster-up-tonalize',                21,  ('c', 0)),
     ('lx-botox-matize',                      22,  ('c', 0)),
     ('vx-vegan-prime',                       23,  ('c', 0)),
@@ -180,6 +182,15 @@ def main(pdf: str) -> int:
         caixas = [c for c in caixas if c[2] / W < 0.70] or caixas
         if sel[0] == 'c':
             caixa = caixas[sel[1]]
+        elif sel[0] == 'dir':
+            x0, y0, x1, y1 = caixas[0]
+            x0 = x0 + int((x1 - x0) * sel[1])
+            # a caixa descartada pode ser mais alta que a bisnaga e deixar uma
+            # lasca no topo: pula as linhas em que a tinta é estreita demais
+            larguras = m[y0:y1, x0:x1].sum(axis=1)
+            while y0 < y1 and larguras[y0 - caixas[0][1]] < (x1 - x0) * 0.25:
+                y0 += 1
+            caixa = [x0, y0, x1, y1]
         else:
             colunas = faixas(m, caixas[0])
             if len(colunas) != sel[2]:
