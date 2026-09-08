@@ -1,0 +1,1065 @@
+<title>Catálogo aella Professional</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,400..900&display=swap">
+
+<style>
+/* ==========================================================================
+   Catálogo aella Professional
+   Todo o CSS está escopado em .aella-loja para não interferir no tema do site.
+   ========================================================================== */
+
+.aella-loja {
+  /* — cores claras — */
+  --al-tinta:      #0B0B0C;
+  --al-papel:      #F4F3F1;
+  --al-superficie: #FFFFFF;
+  --al-placa:      #FFFFFF;
+  --al-borda:      #E3E1DC;
+  --al-borda-forte:#CFCCC5;
+  --al-texto:      #17171A;
+  --al-suave:      #6C6A64;
+  --al-tinta-texto:#F6F5F2;
+  --al-sombra:     0 1px 2px rgba(11,11,12,.05), 0 8px 24px -12px rgba(11,11,12,.16);
+
+  /* — tipografia — */
+  --al-fonte: 'Archivo', 'Archivo Narrow', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --al-t-micro: .6875rem;
+  --al-t-mini:  .75rem;
+  --al-t-peq:   .8125rem;
+  --al-t-base:  .9375rem;
+  --al-t-med:   1.0625rem;
+  --al-t-gr:    1.375rem;
+  --al-t-xg:    2rem;
+
+  /* — ritmo — */
+  --al-gap: 1.25rem;
+  --al-raio: 3px;
+
+  color: var(--al-texto);
+  background: var(--al-papel);
+  font-family: var(--al-fonte);
+  font-size: var(--al-t-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  container-type: inline-size;
+}
+
+/* — cores escuras: a placa da foto continua clara, porque as fotos do
+     catálogo têm fundo branco e ficariam recortadas sobre fundo escuro — */
+.aella-loja[data-tema="escuro"],
+:root[data-theme="dark"] .aella-loja[data-tema="auto"] {
+  --al-tinta:      #000000;
+  --al-papel:      #121214;
+  --al-superficie: #1B1B1F;
+  --al-placa:      #ECECEE;
+  --al-borda:      #2C2C31;
+  --al-borda-forte:#3E3E45;
+  --al-texto:      #F2F1EE;
+  --al-suave:      #9B9992;
+  --al-tinta-texto:#F6F5F2;
+  --al-sombra:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .aella-loja[data-tema="auto"] {
+    --al-tinta:      #000000;
+    --al-papel:      #121214;
+    --al-superficie: #1B1B1F;
+    --al-placa:      #ECECEE;
+    --al-borda:      #2C2C31;
+    --al-borda-forte:#3E3E45;
+    --al-texto:      #F2F1EE;
+    --al-suave:      #9B9992;
+    --al-tinta-texto:#F6F5F2;
+    --al-sombra:     0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+
+/* — reset local —
+   :where() zera a especificidade para o reset nunca vencer as regras dos
+   componentes que vêm depois — */
+.aella-loja *,
+.aella-loja *::before,
+.aella-loja *::after { box-sizing: border-box; }
+:where(.aella-loja) :where(h2, h3, h4, p, ul, li, dl, dd, dt) { margin: 0; padding: 0; }
+:where(.aella-loja) :where(ul) { list-style: none; }
+:where(.aella-loja) :where(img) { display: block; max-width: 100%; height: auto; }
+:where(.aella-loja) :where(button) { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.aella-loja [hidden] { display: none !important; }
+.aella-loja :focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 2px; }
+
+/* — papéis tipográficos —
+   uma família variável em três larguras/pesos: condensada pesada nos títulos
+   (como o catálogo impresso), normal no texto corrido, caixa-alta nos rótulos — */
+.al-display {
+  font-stretch: 68%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -.005em;
+  line-height: .96;
+  text-wrap: balance;
+}
+.al-rotulo {
+  font-stretch: 100%;
+  font-weight: 700;
+  font-size: var(--al-t-micro);
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  color: var(--al-suave);
+}
+
+/* ————— faixa de marca ————— */
+.al-marca {
+  background: var(--al-tinta);
+  color: var(--al-tinta-texto);
+  padding: clamp(1.5rem, 4vw, 2.25rem) clamp(1.25rem, 4vw, 2.5rem);
+  display: grid;
+  gap: .85rem;
+}
+.al-marca .al-rotulo { color: rgba(246,245,242,.55); }
+.al-marca__nome {
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-stretch: 82%;
+  font-weight: 700;
+  letter-spacing: -.035em;
+  line-height: .9;
+  text-transform: lowercase;
+}
+.al-marca__nome span {
+  display: block;
+  font-size: .2em;
+  font-stretch: 100%; font-weight: 600;
+  letter-spacing: .42em;
+  text-transform: uppercase;
+  margin-top: .5em;
+  color: rgba(246,245,242,.7);
+}
+.al-marca__texto {
+  max-width: 58ch;
+  color: rgba(246,245,242,.78);
+  font-size: var(--al-t-base);
+}
+.al-marca__numeros {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: .35rem;
+  font-size: var(--al-t-micro);
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  font-weight: 700;
+  color: rgba(246,245,242,.55);
+}
+.al-marca__numeros b {
+  font-stretch: 68%; font-weight: 800;
+  font-size: 1.9em;
+  letter-spacing: 0;
+  color: var(--al-tinta-texto);
+  margin-right: .35em;
+  vertical-align: -.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ————— controles ————— */
+.al-controles {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: var(--al-papel);
+  border-bottom: 1px solid var(--al-borda);
+  padding: .875rem clamp(1.25rem, 4vw, 2.5rem);
+  display: grid;
+  gap: .75rem;
+}
+.al-busca {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  background: var(--al-superficie);
+  border: 1px solid var(--al-borda);
+  border-radius: var(--al-raio);
+  padding: .5rem .75rem;
+  max-width: 26rem;
+}
+.al-busca:focus-within { border-color: var(--al-texto); }
+.al-busca svg { flex: none; width: 15px; height: 15px; stroke: var(--al-suave); fill: none; stroke-width: 2; }
+.al-busca input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: var(--al-t-peq);
+  color: inherit;
+  background: none;
+  border: 0;
+  outline: none;
+  padding: 0;
+}
+.al-busca input::placeholder { color: var(--al-suave); }
+.al-busca input::-webkit-search-cancel-button { filter: grayscale(1); }
+
+.al-linhas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+.al-chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .3rem .7rem .3rem .35rem;
+  border: 1px solid var(--al-borda);
+  border-radius: 999px;
+  background: var(--al-superficie);
+  font-size: var(--al-t-peq);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: border-color .15s, background-color .15s, color .15s;
+}
+.al-chip--todos { padding-left: .8rem; }
+.al-chip:hover { border-color: var(--al-borda-forte); }
+.al-chip[aria-pressed="true"] {
+  background: var(--al-tinta);
+  border-color: var(--al-tinta);
+  color: var(--al-tinta-texto);
+}
+.al-chip__n {
+  font-size: var(--al-t-micro);
+  font-weight: 700;
+  color: var(--al-suave);
+  font-variant-numeric: tabular-nums;
+}
+.al-chip[aria-pressed="true"] .al-chip__n { color: rgba(246,245,242,.6); }
+
+/* monograma da linha — evocação das letras de assinatura de cada linha */
+.al-mono {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.55rem;
+  height: 1.55rem;
+  border-radius: 2px;
+  background: var(--c, var(--al-tinta));
+  color: #fff;
+  font-style: italic;
+  font-stretch: 88%;
+  font-weight: 800;
+  font-size: .74rem;
+  letter-spacing: -.02em;
+  line-height: 1;
+}
+.al-mono--claro { color: #0B0B0C; }
+
+/* ————— contagem ————— */
+.al-contagem {
+  padding: 1.25rem clamp(1.25rem, 4vw, 2.5rem) 0;
+  font-size: var(--al-t-micro);
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  font-weight: 700;
+  color: var(--al-suave);
+}
+
+/* ————— grade ————— */
+.al-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--al-gap);
+  padding: 1rem clamp(1.25rem, 4vw, 2.5rem) clamp(2rem, 5vw, 3rem);
+  align-items: start;
+}
+@container (min-width: 700px) {
+  .al-grade { grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); }
+}
+
+.al-card {
+  display: grid;
+  gap: .7rem;
+  text-align: left;
+  padding: 0 0 1rem;
+  background: var(--al-superficie);
+  border: 1px solid var(--al-borda);
+  border-radius: var(--al-raio);
+  overflow: hidden;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.al-card:hover,
+.al-card:focus-visible {
+  border-color: var(--c);
+  box-shadow: var(--al-sombra);
+  transform: translateY(-2px);
+}
+.al-card__placa {
+  display: block;
+  background: var(--al-placa);
+  border-bottom: 1px solid var(--al-borda);
+  aspect-ratio: 4 / 5;
+  padding: .9rem;
+}
+.al-card__placa img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+.al-card__linha {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  padding: 0 .85rem;
+  font-size: var(--al-t-micro);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  font-weight: 700;
+  color: var(--al-suave);
+}
+.al-card__linha .al-mono { width: 1.3rem; height: 1.3rem; font-size: .62rem; }
+.al-card__nome {
+  padding: 0 .85rem;
+  font-stretch: 74%;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: var(--al-t-med);
+  line-height: 1.06;
+  letter-spacing: -.005em;
+}
+.al-card__meta {
+  padding: 0 .85rem;
+  font-size: var(--al-t-mini);
+  color: var(--al-suave);
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem .5rem;
+  font-variant-numeric: tabular-nums;
+}
+.al-card__meta span:not(:last-child)::after { content: ' ·'; color: var(--al-borda-forte); }
+
+.al-vazio {
+  padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 4rem;
+  color: var(--al-suave);
+  max-width: 46ch;
+}
+
+/* ————— rodapé ————— */
+.al-rodape {
+  border-top: 1px solid var(--al-borda);
+  padding: 1.75rem clamp(1.25rem, 4vw, 2.5rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: var(--al-t-mini);
+  color: var(--al-suave);
+}
+.al-rodape a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.al-rodape a:hover { color: var(--al-texto); }
+.al-cta {
+  display: inline-block;
+  background: var(--al-tinta);
+  color: var(--al-tinta-texto);
+  padding: .6rem 1.1rem;
+  border-radius: var(--al-raio);
+  font-size: var(--al-t-peq);
+  font-weight: 700;
+  text-decoration: none;
+}
+.al-cta:hover { opacity: .88; color: var(--al-tinta-texto); }
+
+/* ————— ficha do produto ————— */
+.al-ficha {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: clamp(0px, 3vw, 2rem);
+  background: rgba(11,11,12,.62);
+  backdrop-filter: blur(3px);
+}
+.al-ficha__painel {
+  position: relative;
+  width: min(58rem, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--al-superficie);
+  border-radius: var(--al-raio);
+  display: grid;
+  grid-template-columns: 1fr;
+}
+@container (min-width: 760px) {
+  .al-ficha__painel { grid-template-columns: 15.5rem 1fr; }
+}
+.al-ficha__placa {
+  display: block;
+  background: var(--al-placa);
+  padding: 2rem 1.5rem;
+  aspect-ratio: 3 / 4;
+}
+.al-ficha__placa img {
+  width: 100%;
+  height: 100%;
+  max-height: 24rem;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+.al-ficha__corpo {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  display: grid;
+  gap: 1.1rem;
+  align-content: start;
+}
+.al-ficha__linha { display: flex; align-items: center; gap: .5rem; }
+.al-ficha__linha button {
+  font-size: var(--al-t-micro);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  font-weight: 700;
+  color: var(--al-suave);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.al-ficha__linha button:hover { color: var(--al-texto); }
+.al-ficha__nome {
+  font-stretch: 70%;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.5rem, 4vw, var(--al-t-xg));
+  line-height: 1.02;
+  letter-spacing: -.01em;
+  text-wrap: balance;
+}
+.al-ficha__sub {
+  font-size: var(--al-t-peq);
+  color: var(--al-suave);
+  margin-top: .3rem;
+}
+.al-ficha__desc { max-width: 62ch; }
+
+.al-fichas-tec {
+  background: var(--al-tinta);
+  color: var(--al-tinta-texto);
+  border-radius: var(--al-raio);
+  padding: 1rem 1.1rem;
+  display: grid;
+  gap: .5rem;
+}
+.al-fichas-tec .al-rotulo { color: rgba(246,245,242,.5); }
+.al-fichas-tec h4 {
+  font-stretch: 72%;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: var(--al-t-gr);
+  line-height: 1;
+}
+.al-fichas-tec ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem .75rem;
+  font-size: var(--al-t-mini);
+  color: rgba(246,245,242,.8);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.al-fichas-tec li:not(:last-child)::after { content: ' •'; color: var(--c); margin-left: .5rem; }
+
+.al-especs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 1px;
+  background: var(--al-borda);
+  border: 1px solid var(--al-borda);
+  border-radius: var(--al-raio);
+  overflow: hidden;
+}
+.al-especs div { background: var(--al-superficie); padding: .7rem .8rem; display: grid; gap: .2rem; }
+.al-especs dd, .al-especs p { margin: 0; font-weight: 700; font-size: var(--al-t-base); font-variant-numeric: tabular-nums; }
+
+.al-selos { display: flex; flex-wrap: wrap; gap: .4rem; }
+.al-selos li {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: var(--al-t-mini);
+  font-weight: 600;
+  border: 1px solid var(--al-borda);
+  border-radius: 999px;
+  padding: .25rem .7rem .25rem .55rem;
+}
+.al-selos svg { width: 13px; height: 13px; flex: none; stroke: var(--c); fill: none; stroke-width: 2.5; }
+
+.al-beneficios { display: grid; gap: .5rem; }
+.al-beneficios ul { display: flex; flex-wrap: wrap; gap: .35rem; }
+.al-beneficios li {
+  font-size: var(--al-t-mini);
+  border: 1px solid var(--al-borda);
+  border-radius: 999px;
+  padding: .2rem .6rem;
+  color: var(--al-suave);
+}
+
+.al-fechar {
+  position: absolute;
+  top: .55rem;
+  right: .55rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--al-superficie);
+  border: 1px solid var(--al-borda);
+  font-size: 1.05rem;
+  line-height: 1;
+  color: var(--al-texto);
+}
+.al-fechar:hover { background: var(--al-papel); }
+
+@media (prefers-reduced-motion: reduce) {
+  .aella-loja *, .aella-loja *::before, .aella-loja *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+  .al-card:hover, .al-card:focus-visible { transform: none; }
+}
+</style>
+
+<div class="aella-loja" data-tema="auto">
+
+  <header class="al-marca">
+    <p class="al-rotulo">Catálogo de produtos</p>
+    <h2 class="al-marca__nome">aella<span>professional</span></h2>
+    <p class="al-marca__texto">A Aella nasceu do sonho de transformar as pessoas através da beleza. Produtos de altíssima qualidade, com formulações de ponta e ativos que deixam os cabelos com o resultado ideal que o profissional busca.</p>
+    <p class="al-marca__numeros"><span><b id="al-total">0</b> produtos</span><span><b id="al-nlinhas">0</b> linhas</span></p>
+  </header>
+
+  <div class="al-controles">
+    <label class="al-busca">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+      <input type="search" id="al-busca" autocomplete="off" placeholder="Buscar por produto, ativo ou tecnologia" aria-label="Buscar produto">
+    </label>
+    <div class="al-linhas" id="al-linhas" role="group" aria-label="Filtrar por linha"></div>
+  </div>
+
+  <p class="al-contagem" id="al-contagem" role="status"></p>
+  <div class="al-grade" id="al-grade"></div>
+  <p class="al-vazio" id="al-vazio" hidden>Nenhum produto encontrado com esse termo. Tente pelo nome do produto, por um ativo (por exemplo <em>pantenol</em>) ou por uma tecnologia.</p>
+
+  <footer class="al-rodape">
+    <p>Marca <strong>aella professional</strong> &middot; <a href="https://www.instagram.com/aellaprofessional/" target="_blank" rel="noopener">@aellaprofessional</a> &middot; <a href="https://www.aellaprofessional.com.br" target="_blank" rel="noopener">aellaprofessional.com.br</a></p>
+    <p id="al-rodape-cta"></p>
+  </footer>
+
+  <div class="al-ficha" id="al-ficha" role="dialog" aria-modal="true" aria-labelledby="al-ficha-nome" hidden></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ————— configuração —————
+     Para exibir um botão de contato (WhatsApp, e-mail, formulário), preencha a
+     url abaixo. Deixando em branco, nenhum botão é exibido.
+     Exemplo: url: 'https://wa.me/5551999999999'                              */
+  var CONTATO = { rotulo: 'Falar com a gente', url: '' };
+
+  /* Pasta ou endereço onde estão as imagens dos produtos. */
+  var CAMINHO_IMAGENS = 'imagens/';
+  var IMAGENS_EMBUTIDAS = {}; /* {{IMAGENS}} */
+
+/* ==========================================================================
+   CATÁLOGO AELLA PROFESSIONAL — dados dos produtos
+   Transcritos do catálogo em PDF da marca.
+   Para editar um produto, altere os campos abaixo. Nada mais precisa mudar.
+   ========================================================================== */
+
+const LINHAS = {
+  rx: { nome: 'Reconstrução',  cor: '#E1002F', resumo: 'Restitui a fibra capilar desgastada por química, coloração, descoloração e alisamentos.' },
+  fx: { nome: 'Finalização',   cor: '#00A98F', resumo: 'Finaliza e complementa os processos feitos pelo profissional. Também pode ser usada pelo cliente em casa.' },
+  nx: { nome: 'Nutrição',      cor: '#F2B705', resumo: 'Devolve "peso" ao cabelo com carga maior de nutrientes, óleos graxos, manteigas e anti-frizz.' },
+  dx: { nome: 'Descolorante',  cor: '#2E5FD9', resumo: 'Pós descolorantes com ativos nobres, para clarear a melanina natural ou artificial hidratando os fios.' },
+  ox: { nome: 'Oxidante',      cor: '#4C8DE0', resumo: 'Emulsões reveladoras para ativar a coloração oxidante e o pó descolorante.' },
+  cx: { nome: 'Coloração',     cor: '#1A1A1C', resumo: 'Portfólio de 40 cores de coloração e 7 tons de tonalizante, com fórmula exclusiva.' },
+  lx: { nome: 'Liss',          cor: '#EE7623', resumo: 'Reposição de massa, redução de volume e alinhamento das cutículas.' },
+  vx: { nome: 'Tratamento',    cor: '#35B44A', resumo: 'Tratamento restaurador vegano para cabelos rebeldes, volumosos e com frizz.' },
+  hc: { nome: 'Home Care',     cor: '#7E4CA6', resumo: 'O profissionalismo do salão levado para a casa do cliente.' }
+};
+
+const PRODUTOS = [
+  {
+    slug: 'rx-shampoo-restauracao-profunda', linha: 'rx',
+    nome: 'Shampoo de Restauração Profunda',
+    volume: '970 ml',
+    descricao: 'Shampoo hidratante e reparador, limpa os fios de forma equilibrada, removendo as impurezas enquanto auxilia a reparar e restaurar a fibra capilar. Elaborado com Pantenol e Blend de Aminoácidos, possui ação revitalizante, hidratante e reparadora dos fios, deixando-os maleáveis e com brilho. Livre de sal (cloreto de sódio), corantes e parabenos.',
+    tecnologia: 'Amino Treatment',
+    ativos: ['Complexo de aminoácidos', 'Pantenol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'rx-mascara-reconstrucao-profunda', linha: 'rx',
+    nome: 'Máscara de Reconstrução Profunda',
+    volume: '970 g',
+    descricao: 'Máscara de hidratação intensa, deixa os fios extremamente macios e sedosos, facilitando o pentear e o desembaraçar. Elaborada com Pantenol, Blend de Aminoácidos e Óleo de Ojon, promove ação hidratante, reparadora e nutritiva, proporciona fios sedosos, maleáveis e mais fáceis de desembaraçar, mantendo os cabelos saudáveis e com brilho intenso. Livre de corantes e parabenos.',
+    tecnologia: 'Amino Ojon Treatment',
+    ativos: ['Complexo de aminoácidos', 'Pantenol', 'Óleo de Ojon'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'rx-leave-in-hidra-frizz', linha: 'rx',
+    nome: 'Leave-in Multifuncional Hidra Frizz',
+    volume: '135 ml',
+    descricao: 'Leave-in finalizador indicado para todos os tipos de cabelos, hidrata, facilita o pentear, combate o frizz, restaura o brilho e a maciez. Elaborado com Pantenol, Blend de Aminoácidos e Óleo de Amla e Girassol, possui propriedades hidratantes e restauradoras, conferindo cabelos revitalizados, macios e com brilho absoluto. Contém protetor térmico e filtro solar.',
+    beneficios: ['Hidratação intensa', 'Brilho, maciez e sedosidade', 'Redução de volume', 'Reparação', 'Melhora a penteabilidade', 'Antifrizz', 'Revitalização', 'Desembaraça', 'Proteção térmica', 'Filtro solar'],
+    tecnologia: 'Amino Ojon Treatment',
+    ativos: ['Complexo de aminoácidos', 'Pantenol', 'Óleo de Amla e Girassol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'rx-liquid-mask', linha: 'rx',
+    nome: 'Liquid Mask',
+    subtitulo: 'Potencializador de tratamento',
+    volume: '135 ml',
+    descricao: 'Máscara líquida ultra concentrada e com ação instantânea nutritiva, hidratante e emoliente, desenvolvida para todos os tipos de cabelos. Elaborada com Óleos de Argan, Jojoba e Amla, promove hidratação profunda, desembaraço, ação nutritiva e antifrizz. Proporciona sedosidade, maciez e brilho intenso aos cabelos. Livre de parabenos.',
+    tecnologia: "4 Oil's Blend",
+    ativos: ['Óleo de jojoba', 'Argan', 'Amla', 'Girassol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'fx-reconstrutor-essencial', linha: 'fx',
+    nome: 'Reconstrutor Essencial',
+    volume: '250 ml',
+    descricao: 'Fluido finalizador e hidratante de uso essencial, promove proteção e brilho intenso aos cabelos. Elaborado com Ômega Plus e Pantenol, possui propriedades hidratantes e protetoras, conferindo cabelos revitalizados, macios e com brilho absoluto. Contém protetor térmico e filtro solar. Livre de parabenos.',
+    tecnologia: 'Amino Treatment',
+    ativos: ['Complexo de aminoácidos', 'Pantenol', 'Ômega Plus', 'Filtro solar capilar'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'fx-perfect-liss', linha: 'fx',
+    nome: 'Perfect Liss',
+    volume: '135 ml',
+    descricao: 'Fluido termoativado com efeito prolongador do liso e também do efeito dos cachos temporários, reduz o frizz com maciez e brilho intenso aos cabelos. Elaborado com Proteínas de Colágeno e Seda e Pantenol, possuem ação reparadora e hidratante. Facilita o deslizamento da escova sobre os fios e realinha as cutículas, diminuindo o frizz e deixando os cabelos macios e maleáveis. Protege os cabelos do calor do secador e da chapinha. Contém filtro solar. Livre de parabenos.',
+    tecnologia: 'Protein Complex',
+    ativos: ['Pantenol', 'Proteína da seda', 'Colágeno'],
+    selos: ['Não testado em animais', 'Livre de parabenos e corante'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'fx-serum', linha: 'fx',
+    nome: 'Sérum',
+    volume: '60 ml',
+    descricao: 'Sérum hidratante e doador de brilho desenvolvido com Ômega Plus, promove ação de reposição lipídica rica em ômegas. Sela e fortalece as pontas ressecadas, promove brilho, maciez e vitalidade aos fios. O uso regular do produto previne a formação de pontas duplas. Contém filtro solar. Livre de parabenos.',
+    tecnologia: "5 Oil's",
+    ativos: ['Complexo Ômega Plus', 'Filtro solar capilar'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'nx-shampoo-nutricao-intensiva', linha: 'nx',
+    nome: 'Shampoo de Nutrição Intensiva',
+    volume: '970 ml',
+    descricao: 'Shampoo desembaraçante e nutritivo, indicado para todos os tipos de cabelo, limpa gentilmente, deixando-os mais saudáveis, sem ressecar. Elaborado com Fito Extratos de Frutas Vermelhas e Pantenol, que possuem ação revitalizante e hidratante, proporcionando maleabilidade, leveza, toque sedoso e brilho renovado. Livre de sal (cloreto de sódio), corantes e parabenos.',
+    tecnologia: 'Nutrition Force',
+    ativos: ['Complexo de cereja', 'Morango', 'Pitanga', 'Pantenol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'nx-mascara-nutricao', linha: 'nx',
+    nome: 'Máscara de Nutrição',
+    volume: '250 g',
+    descricao: 'Máscara de nutrição intensa, promove reposição lipídica rica em ômegas e combate o ressecamento dos fios, deixando os cabelos mais saudáveis, leves e com movimento. Elaborada com Ômega Plus, Proteína do Trigo, Pantenol e Fito Extratos de Frutas Vermelhas, possui ação emoliente, reparadora e nutritiva, alinha os fios e facilita o processo de desembaraçamento, resultando em cabelos macios, sedosos e com brilho intenso. Livre de parabenos.',
+    tecnologia: 'Nutrition Force',
+    ativos: ['Complexo frutas vermelhas', 'Pantenol', 'Ômega Plus', 'Proteína do trigo'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'dx-po-descolorante-blue', linha: 'dx',
+    nome: 'Pó Descolorante Blue',
+    volume: '500 g',
+    descricao: 'O Pó Descolorante Blue Aella clareia os fios de forma uniforme e neutraliza tons alaranjados durante o processo. Perfeito para quem busca um loiro incrível. Possui fórmula exclusiva com Óleo de Avelã, Óleo de Coco e Extrato de Aloe Vera, que protegem a integridade da fibra capilar durante o clareamento, e tecnologia Dust Free, que não levanta pó e facilita o preparo com oxidante. Pode ser usado em todas as técnicas de clareamento dos fios, além de garantir um loiro bonito e saudável.',
+    tecnologia: 'Blonde Platinum',
+    ativos: ['Óleo de avelã', 'Óleo de coco', 'Extrato de aloe vera'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'dx-po-descolorante-white', linha: 'dx',
+    nome: 'Pó Descolorante White',
+    volume: '500 g',
+    descricao: 'Fórmula desenvolvida com ativos de tratamento e proteção que preservam a integridade da fibra capilar durante a descoloração. Rápido e eficaz, é suavemente perfumado, não levanta pó (Dust Free) e se dispersa facilmente na água oxigenada, formando uma emulsão cremosa com excelente desempenho nos processos de clareamento, reflexos ou mechas, sem danificar o fio. É elaborado com Pantenol, Silicone e Óleo de Argan, que agem como um poderoso hidratante de efeito prolongado e também promovem um filme protetor que atenua de forma notável a ação de produtos agressivos e irritantes sobre a pele.',
+    tecnologia: 'Hidra Flash',
+    ativos: ['Pantenol', 'Silicone', 'Óleo de argan'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'ox-06-volumes', linha: 'ox',
+    nome: 'Emulsão Reveladora 06 Volumes',
+    volume: '900 ml',
+    descricao: 'Emulsão cremosa oxidante suavemente perfumada contendo peróxido de hidrogênio. Indicada para ativar a coloração oxidante e o pó descolorante. Sua cremosidade e consistência facilitam a mistura com a massa da coloração e a dispersão do pó descolorante, devendo ser utilizada na proporção indicada no modo de usar tanto da coloração oxidante como do pó descolorante. Confere proteção e tratamento cosmético simultâneo, de hidratação e emoliência, enquanto potencializa a ação da coloração e do descolorante. Fórmula enriquecida com Proteína do Leite, proporciona maior resistência, flexibilidade e maciez aos cabelos.',
+    ativos: ['Proteína do leite'],
+    selos: ['Livre de corante e parabenos', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'ox-20-volumes', linha: 'ox',
+    nome: 'Emulsão Reveladora 20 Volumes',
+    volume: '900 ml',
+    descricao: 'Emulsão cremosa oxidante suavemente perfumada contendo peróxido de hidrogênio. Indicada para ativar a coloração oxidante e o pó descolorante. Sua cremosidade e consistência facilitam a mistura com a massa da coloração e a dispersão do pó descolorante, devendo ser utilizada na proporção indicada no modo de usar tanto da coloração oxidante como do pó descolorante. Confere proteção e tratamento cosmético simultâneo, de hidratação e emoliência, enquanto potencializa a ação da coloração e do descolorante. Fórmula enriquecida com Proteína do Leite, proporciona maior resistência, flexibilidade e maciez aos cabelos.',
+    ativos: ['Proteína do leite'],
+    selos: ['Livre de corante e parabenos', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'ox-30-volumes', linha: 'ox',
+    nome: 'Emulsão Reveladora 30 Volumes',
+    volume: '900 ml',
+    descricao: 'Emulsão cremosa oxidante suavemente perfumada contendo peróxido de hidrogênio. Indicada para ativar a coloração oxidante e o pó descolorante. Sua cremosidade e consistência facilitam a mistura com a massa da coloração e a dispersão do pó descolorante, devendo ser utilizada na proporção indicada no modo de usar tanto da coloração oxidante como do pó descolorante. Confere proteção e tratamento cosmético simultâneo, de hidratação e emoliência, enquanto potencializa a ação da coloração e do descolorante. Fórmula enriquecida com Proteína do Leite, proporciona maior resistência, flexibilidade e maciez aos cabelos.',
+    ativos: ['Proteína do leite'],
+    selos: ['Livre de corante e parabenos', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'ox-40-volumes', linha: 'ox',
+    nome: 'Emulsão Reveladora 40 Volumes',
+    volume: '900 ml',
+    descricao: 'Emulsão cremosa oxidante suavemente perfumada contendo peróxido de hidrogênio. Indicada para ativar a coloração oxidante e o pó descolorante. Sua cremosidade e consistência facilitam a mistura com a massa da coloração e a dispersão do pó descolorante, devendo ser utilizada na proporção indicada no modo de usar tanto da coloração oxidante como do pó descolorante. Confere proteção e tratamento cosmético simultâneo, de hidratação e emoliência, enquanto potencializa a ação da coloração e do descolorante. Fórmula enriquecida com Proteína do Leite, proporciona maior resistência, flexibilidade e maciez aos cabelos.',
+    ativos: ['Proteína do leite'],
+    selos: ['Livre de corante e parabenos', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'cx-coloracao', linha: 'cx',
+    nome: 'Coloração Cx',
+    subtitulo: '40 cores · 7 tonalizantes',
+    volume: '60 g',
+    descricao: 'Contamos com um portfólio de 40 cores de coloração para atender todas as necessidades que o mercado procura. São desenvolvidas com uma fórmula exclusiva e com tecnologia de ponta. Nos tonalizantes possuímos 7 tons diferentes.',
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '72 unidades'
+  },
+  {
+    slug: 'cx-luster-up-tonalize', linha: 'cx',
+    nome: 'Luster Up Tonalize',
+    subtitulo: 'Emulsão tonalizante e hidratante',
+    volume: '900 ml',
+    descricao: 'Possui formulação suave e hidratante que preserva a estrutura dos fios sem danificá-los. Permite revitalizar e intensificar a beleza da cor, contribuindo para sua uniformidade e durabilidade. Ação antioxidante e antiporosidade, para uma melhor fixação e retenção dos pigmentos sobre os fios, garantindo um resultado perfeito e duradouro, com brilho excepcional. Ativos combinados: Óleo de girassol, rico em ômega 9, possui ação antioxidante que protege a fibra contra os agentes externos e melhora a permeação dos pigmentos nos cabelos durante e pós-processo de coloração. Pro Soy, tecnologia exclusiva com alto poder de hidratação e emoliência, protege os fios contra o ressecamento com ação formadora de filme, para uma perfeita manutenção e beleza da cor.',
+    tecnologia: 'Luster Up',
+    ativos: ['Óleo de girassol', 'Pro Soy'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'lx-botox-matize', linha: 'lx',
+    nome: 'Botox Matize',
+    subtitulo: 'Para todos os tipos de cabelo',
+    volume: '970 g',
+    descricao: 'Tratamento para reposição de massa capilar, redução de volume e alinhamento das cutículas para todos os tipos de cabelos, especialmente para cabelos loiros, coloridos e com mechas. Elimina o frizz, previne pontas duplas e sela as cutículas dos fios. Prolonga o efeito liso com a combinação de vitaminas e ácidos graxos, que mantêm as cutículas dos fios seladas e protege dos danos diários. Além de disciplinar o cabelo, o Botox Matize intensifica o brilho, hidrata, platina e nutre.',
+    tecnologia: 'Amino Repair',
+    ativos: ['Complexo de aminoácidos', 'Óleo de café verde', 'Manteiga de karité'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '6 unidades'
+  },
+  {
+    slug: 'vx-vegan-prime', linha: 'vx',
+    nome: 'Vegan Prime',
+    volume: '970 ml',
+    descricao: 'Tratamento restaurador para todos os tipos de cabelos com Blend de Manteigas, Ácidos Tânicos e Nanoqueratina. Alinha, hidrata, nutre e restaura os cabelos, enquanto sela as cutículas e reduz o frizz. Promove brilho e maciez incomparáveis. Sua fórmula catiônica penetra na fibra capilar, nutrindo intensamente os cabelos rebeldes, volumosos e com frizz.',
+    tecnologia: 'Amino Repair',
+    ativos: ['Complexo de aminoácidos', 'Óleo de café verde', 'Manteiga de karité'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '8 unidades'
+  },
+  {
+    slug: 'hc-shampoo-restauracao-profunda', linha: 'hc',
+    nome: 'Shampoo de Restauração Profunda',
+    volume: '250 ml',
+    descricao: 'Shampoo hidratante e reparador, limpa os fios de forma equilibrada, removendo as impurezas enquanto auxilia a reparar e restaurar a fibra capilar. Elaborado com Pantenol e Blend de Aminoácidos, possui ação revitalizante, hidratante e reparadora dos fios, deixando-os maleáveis e com brilho. Livre de sal (cloreto de sódio), corantes e parabenos.',
+    tecnologia: 'Amino Treatment',
+    ativos: ['Complexo de aminoácidos', 'Pantenol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-condicionador-restauracao-profunda', linha: 'hc',
+    nome: 'Condicionador de Restauração Profunda',
+    volume: '250 ml',
+    descricao: 'Condicionador hidratante, indicado para todos os tipos de cabelos, promove ação desembaraçante e facilita o cuidado diário dos cabelos. Elaborado com Pantenol, Blend de Aminoácidos e Óleo de Ojon, ativos hidratantes, nutritivos e reparadores, resultando em cabelos macios, brilhantes, com mais vida e movimento. Para ser aplicado pós tratamentos: ajuda a desembaraçar e alinhar as cutículas, aumentando o brilho e a emoliência dos fios. Livre de corantes e parabenos.',
+    tecnologia: 'Amino Ojon Treatment',
+    ativos: ['Complexo de aminoácidos', 'Pantenol', 'Óleo de Ojon'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-shampoo-liss', linha: 'hc',
+    nome: 'Shampoo Liss',
+    volume: '250 ml',
+    descricao: 'Shampoo hidratante desenvolvido especialmente para auxiliar a diminuir o frizz e o controle do volume dos cabelos. Elaborado com Pantenol e Proteína da Seda, possui ação emoliente, hidratante e reparadora, proporciona maleabilidade, maciez e sedosidade aos fios. Livre de sal (cloreto de sódio) e parabenos.',
+    tecnologia: 'Defense Frizz',
+    ativos: ['Proteína da seda', 'Pantenol'],
+    selos: ['Livre de corantes e parabenos', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-condicionador-liss', linha: 'hc',
+    nome: 'Condicionador Liss',
+    volume: '250 ml',
+    descricao: 'Condicionador hidratante desenvolvido especialmente para auxiliar a diminuir o frizz e o controle do volume dos cabelos. Elaborado com Pantenol e Proteína da Seda, possui ação emoliente, hidratante e reparadora, promove brilho, desembaraço e maciez aos cabelos. Livre de corantes e parabenos.',
+    tecnologia: 'Defense Frizz',
+    ativos: ['Proteína da seda', 'Pantenol'],
+    selos: ['Livre de corantes e parabenos', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-shampoo-matize', linha: 'hc',
+    nome: 'Shampoo Matize',
+    volume: '250 ml',
+    descricao: 'Shampoo hidratante matizador desenvolvido especialmente para os cabelos loiros, descoloridos e com mechas ou luzes, atua auxiliando a neutralizar as tonalidades amareladas indesejadas, mantendo o tom bege e platinado por mais tempo. Elaborado com Fito Complexo Nutritivo e Pantenol, promove ação nutritiva e revitalizante, proporcionando cabelos saudáveis, com toque sedoso e brilho renovado. Livre de sal (cloreto de sódio) e parabenos.',
+    tecnologia: 'Blond Protection',
+    ativos: ['Complexo de açaí', 'Acerola', 'Uva', 'Pantenol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-condicionador-matize', linha: 'hc',
+    nome: 'Condicionador Matize',
+    volume: '250 ml',
+    descricao: 'Condicionador hidratante desenvolvido especialmente para cabelos loiros, descoloridos e com mechas, deixa os cabelos com brilho intenso e mantém a tonalidade platinada por mais tempo, neutralizando os tons amarelados indesejados. Elaborado com Fito Complexo Nutritivo e Pantenol, promovendo nutrição e hidratação, mantendo os fios alinhados e com brilho intenso. Livre de parabenos.',
+    tecnologia: 'Blond Protection',
+    ativos: ['Complexo de açaí', 'Acerola', 'Uva', 'Pantenol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-mascara-matize', linha: 'hc',
+    nome: 'Máscara Matize',
+    volume: '250 g',
+    descricao: 'Máscara hidratante e matizadora, atua na neutralização dos tons amarelados dos cabelos loiros descoloridos, com mechas ou luzes, reforça a durabilidade e a tonalidade dos fios, promovendo loiros bege e platinados. Elaborada com Fitocomplexo Nutritivo com Açaí, Acerola e Uva e Pantenol, possui ação hidratante e nutritiva, proporciona desembaraço, maciez, sedosidade e brilho intenso aos cabelos. Livre de parabenos.',
+    tecnologia: 'Blond Protection',
+    ativos: ['Complexo de açaí', 'Acerola', 'Uva', 'Pantenol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-shampoo-pos-quimica', linha: 'hc',
+    nome: 'Shampoo Pós-Química',
+    volume: '250 ml',
+    descricao: 'Shampoo desenvolvido especialmente para cabelos quimicamente tratados, limpa suavemente os fios enquanto auxilia a resgatar a vitalidade, a leveza e o brilho natural dos cabelos. Elaborado com Proteína do Trigo e Pantenol, ativos com ação reparadora, condicionante e protetora, proporcionando cabelos maleáveis, sedosos e com brilho renovado. Livre de sal (cloreto de sódio), corantes e parabenos.',
+    tecnologia: 'Repair Protein',
+    ativos: ['Proteína do trigo', 'Pantenol'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  },
+  {
+    slug: 'hc-condicionador-pos-quimica', linha: 'hc',
+    nome: 'Condicionador Pós-Química',
+    volume: '250 ml',
+    descricao: 'Condicionador desenvolvido especialmente para cabelos quimicamente tratados, hidrata os fios sem deixar os cabelos pesados, enquanto repara e auxilia a resgatar a vitalidade, a leveza e o brilho natural dos cabelos. Elaborado com Proteína do Trigo, Pantenol e Óleo de Macadâmia, ativos com ação reparadora, condicionante e protetora, proporcionando cabelos maleáveis, sedosos, macios e com brilho intenso. Livre de corantes e parabenos.',
+    tecnologia: 'Oil Repair Protein',
+    ativos: ['Proteína do trigo', 'Pantenol', 'Óleo de macadâmia'],
+    selos: ['Vegano', 'Não testado em animais'],
+    caixaMaster: '12 unidades'
+  }
+];
+
+  /* ————— utilidades ————— */
+  function semAcento(s) {
+    return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function imagem(slug) {
+    return IMAGENS_EMBUTIDAS[slug] || CAMINHO_IMAGENS + slug + '.webp';
+  }
+  function codigo(linha) {
+    return linha === 'hc' ? 'HC' : linha.charAt(0).toUpperCase() + linha.charAt(1);
+  }
+  /* a linha Nx é amarela: o monograma pede texto escuro para manter contraste */
+  function monograma(linha, classe) {
+    var l = LINHAS[linha];
+    var claro = linha === 'nx' ? ' al-mono--claro' : '';
+    return '<span class="al-mono' + claro + (classe || '') + '" style="--c:' + l.cor + '">' + codigo(linha) + '</span>';
+  }
+
+  var raiz     = document.querySelector('.aella-loja');
+  var grade    = document.getElementById('al-grade');
+  var linhasEl = document.getElementById('al-linhas');
+  var contagem = document.getElementById('al-contagem');
+  var vazio    = document.getElementById('al-vazio');
+  var busca    = document.getElementById('al-busca');
+  var ficha    = document.getElementById('al-ficha');
+
+  var linhaAtiva = 'todos';
+  var termo = '';
+  var gatilho = null;
+
+  /* índice de busca: nome, linha, descrição, tecnologia e ativos */
+  PRODUTOS.forEach(function (p) {
+    p._busca = semAcento([
+      p.nome, p.subtitulo || '', LINHAS[p.linha].nome, codigo(p.linha),
+      p.descricao, p.tecnologia || '', (p.ativos || []).join(' '), (p.selos || []).join(' ')
+    ].join(' '));
+  });
+
+  document.getElementById('al-total').textContent = PRODUTOS.length;
+  document.getElementById('al-nlinhas').textContent = Object.keys(LINHAS).length;
+
+  /* ————— filtros por linha ————— */
+  function montarFiltros() {
+    var html = '<button class="al-chip al-chip--todos" type="button" data-linha="todos" aria-pressed="true">' +
+               'Todos <span class="al-chip__n">' + PRODUTOS.length + '</span></button>';
+    Object.keys(LINHAS).forEach(function (id) {
+      var n = PRODUTOS.filter(function (p) { return p.linha === id; }).length;
+      html += '<button class="al-chip" type="button" data-linha="' + id + '" aria-pressed="false">' +
+              monograma(id) + '<span>' + esc(LINHAS[id].nome) + '</span>' +
+              '<span class="al-chip__n">' + n + '</span></button>';
+    });
+    linhasEl.innerHTML = html;
+  }
+
+  function definirLinha(id) {
+    linhaAtiva = id;
+    Array.prototype.forEach.call(linhasEl.children, function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.linha === id));
+    });
+    render();
+  }
+
+  linhasEl.addEventListener('click', function (e) {
+    var b = e.target.closest('.al-chip');
+    if (b) definirLinha(b.dataset.linha);
+  });
+
+  busca.addEventListener('input', function () {
+    termo = semAcento(busca.value.trim());
+    render();
+  });
+
+  /* ————— grade ————— */
+  function filtrados() {
+    return PRODUTOS.filter(function (p) {
+      if (linhaAtiva !== 'todos' && p.linha !== linhaAtiva) return false;
+      if (termo && p._busca.indexOf(termo) === -1) return false;
+      return true;
+    });
+  }
+
+  function render() {
+    var lista = filtrados();
+    grade.innerHTML = lista.map(function (p) {
+      var l = LINHAS[p.linha];
+      var meta = ['<span>' + esc(p.volume) + '</span>'];
+      if (p.tecnologia) meta.push('<span>' + esc(p.tecnologia) + '</span>');
+      return '<button class="al-card" type="button" data-slug="' + p.slug + '" style="--c:' + l.cor + '">' +
+        '<span class="al-card__placa"><img src="' + imagem(p.slug) + '" alt="Embalagem do produto ' +
+          esc(p.nome) + ', linha ' + esc(l.nome) + ' da aella professional" loading="lazy" decoding="async"></span>' +
+        '<span class="al-card__linha">' + monograma(p.linha) + esc(l.nome) + '</span>' +
+        '<span class="al-card__nome">' + esc(p.nome) + '</span>' +
+        '<span class="al-card__meta">' + meta.join('') + '</span>' +
+      '</button>';
+    }).join('');
+
+    vazio.hidden = lista.length > 0;
+    var alvo = linhaAtiva === 'todos' ? 'no catálogo' : 'na linha ' + LINHAS[linhaAtiva].nome;
+    contagem.textContent = lista.length === 1
+      ? '1 produto ' + alvo
+      : lista.length + ' produtos ' + alvo;
+  }
+
+  grade.addEventListener('click', function (e) {
+    var c = e.target.closest('.al-card');
+    if (c) abrirFicha(c.dataset.slug, c);
+  });
+
+  /* ————— ficha do produto ————— */
+  function abrirFicha(slug, origem) {
+    var p = PRODUTOS.filter(function (x) { return x.slug === slug; })[0];
+    if (!p) return;
+    var l = LINHAS[p.linha];
+    gatilho = origem || null;
+
+    var especs = [['Volume', p.volume], ['Caixa master', p.caixaMaster]];
+    var visto = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 13 4 4L19 7"></path></svg>';
+
+    var html =
+      '<div class="al-ficha__painel" style="--c:' + l.cor + '">' +
+        '<button class="al-fechar" type="button" data-fechar aria-label="Fechar">&times;</button>' +
+        '<div class="al-ficha__placa"><img src="' + imagem(p.slug) + '" alt="Embalagem do produto ' +
+          esc(p.nome) + '"></div>' +
+        '<div class="al-ficha__corpo">' +
+          '<div class="al-ficha__linha">' + monograma(p.linha) +
+            '<button type="button" data-linha="' + p.linha + '">Linha ' + esc(l.nome) + ' &rarr;</button>' +
+          '</div>' +
+          '<div>' +
+            '<h3 class="al-ficha__nome" id="al-ficha-nome">' + esc(p.nome) + '</h3>' +
+            (p.subtitulo ? '<p class="al-ficha__sub">' + esc(p.subtitulo) + '</p>' : '') +
+          '</div>' +
+          '<p class="al-ficha__desc">' + esc(p.descricao) + '</p>' +
+          (p.beneficios ? '<div class="al-beneficios"><p class="al-rotulo">' + p.beneficios.length +
+            ' benefícios em um único produto</p><ul><li>' +
+            p.beneficios.map(esc).join('</li><li>') + '</li></ul></div>' : '') +
+          (p.tecnologia || p.ativos ?
+            '<div class="al-fichas-tec" style="--c:' + l.cor + '">' +
+              '<p class="al-rotulo">Tecnologia</p>' +
+              (p.tecnologia ? '<h4>' + esc(p.tecnologia) + '</h4>' : '') +
+              (p.ativos ? '<ul><li>' + p.ativos.map(esc).join('</li><li>') + '</li></ul>' : '') +
+            '</div>' : '') +
+          '<dl class="al-especs">' + especs.map(function (e) {
+            return '<div><dt class="al-rotulo">' + esc(e[0]) + '</dt><dd>' + esc(e[1]) + '</dd></div>';
+          }).join('') + '</dl>' +
+          ((p.selos || []).length ? '<ul class="al-selos">' + p.selos.map(function (s) {
+            return '<li>' + visto + esc(s) + '</li>';
+          }).join('') + '</ul>' : '') +
+          (CONTATO.url ? '<p><a class="al-cta" href="' + esc(CONTATO.url) + '" target="_blank" rel="noopener">' +
+            esc(CONTATO.rotulo) + '</a></p>' : '') +
+        '</div>' +
+      '</div>';
+
+    ficha.innerHTML = html;
+    ficha.hidden = false;
+    document.body.style.overflow = 'hidden';
+    ficha.querySelector('[data-fechar]').focus();
+  }
+
+  function fecharFicha() {
+    ficha.hidden = true;
+    ficha.innerHTML = '';
+    document.body.style.overflow = '';
+    if (gatilho && document.contains(gatilho)) gatilho.focus();
+    gatilho = null;
+  }
+
+  ficha.addEventListener('click', function (e) {
+    if (e.target === ficha || e.target.closest('[data-fechar]')) { fecharFicha(); return; }
+    var b = e.target.closest('[data-linha]');
+    if (b) { fecharFicha(); definirLinha(b.dataset.linha); raiz.scrollIntoView({ block: 'start' }); }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (ficha.hidden) return;
+    if (e.key === 'Escape') { fecharFicha(); return; }
+    if (e.key !== 'Tab') return;
+    var foco = ficha.querySelectorAll('button, a[href], input');
+    if (!foco.length) return;
+    var primeiro = foco[0], ultimo = foco[foco.length - 1];
+    if (e.shiftKey && document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+  });
+
+  if (CONTATO.url) {
+    document.getElementById('al-rodape-cta').innerHTML =
+      '<a class="al-cta" href="' + esc(CONTATO.url) + '" target="_blank" rel="noopener">' + esc(CONTATO.rotulo) + '</a>';
+  }
+
+  montarFiltros();
+  render();
+})();
+</script>
