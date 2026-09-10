@@ -7,6 +7,7 @@ resolução e, para vários produtos, já recortadas com transparência. Então:
   ('img', xref, recorte)  usa a imagem embutida de número xref, aplicando a
                           máscara de transparência sobre fundo branco;
   ('pag', n, recorte)     renderiza a página n a 220 dpi e recorta a região.
+  ('par', (a, b), None)   duas imagens embutidas lado a lado, com um respiro entre elas.
 
 Recortes são frações (x0, y0, x1, y1) da largura e altura. As fotos são
 salvas em imagens/<slug>.webp.
@@ -27,32 +28,35 @@ LADO_MAXIMO = 1100
 QUALIDADE = 84
 
 SPEC = [
-    ('white-repair-po',           ('pag', 2,  (0.16, 0.20, 0.80, 0.70))),
-    ('agua-oxigenada',            ('pag', 3,  (0.02, 0.55, 0.56, 0.99))),
-    ('golden',                    ('img', 4886, (0.55, 0.10, 1.00, 1.00))),
+    # Fotos inteiras, como estão no PDF. Onde a página corta a foto, a imagem
+    # embutida costuma guardar o que ficou fora — por isso usamos o objeto e não
+    # a página renderizada. Só o BTX perde a faixa vazia do topo.
+    ('white-repair-po',           ('img', 3346, None)),
+    ('agua-oxigenada',            ('img', 3394, None)),
+    ('golden',                    ('img', 4886, None)),
     ('original-alinhamento',      ('img', 3602, (0.50, 0.00, 1.00, 1.00))),
     ('original-anti-residuos',    ('img', 3602, (0.00, 0.00, 0.52, 1.00))),
-    ('original-homecare',         ('pag', 5,  (0.36, 0.48, 0.96, 0.99))),
-    ('pro-gold',                  ('pag', 7,  (0.58, 0.66, 0.82, 1.00))),
-    ('btx',                       ('pag', 8,  (0.26, 0.56, 0.74, 1.00))),
-    ('reparagy-profissional',     ('pag', 9,  (0.10, 0.68, 0.78, 1.00))),
-    ('reparagy-homecare',         ('pag', 10, (0.46, 0.53, 0.90, 0.94))),
-    ('reparagy-bb-cream',         ('pag', 11, (0.22, 0.62, 0.72, 1.00))),
-    ('nescuihair-profissional',   ('pag', 13, (0.20, 0.55, 1.00, 1.00))),
-    ('nescuihair-homecare',       ('pag', 14, (0.28, 0.72, 0.74, 0.97))),
+    ('original-homecare',         ('img', 3619, None)),
+    ('pro-gold',                  ('img', 3704, None)),
+    ('btx',                       ('img', 1553, (0.10, 0.52, 0.90, 1.00))),
+    ('reparagy-profissional',     ('img', 3852, None)),
+    ('reparagy-homecare',         ('img', 3978, None)),
+    ('reparagy-bb-cream',         ('img', 4025, None)),
+    ('nescuihair-profissional',   ('img', 4187, None)),
+    ('nescuihair-homecare',       ('img', 4292, None)),
     ('nescuihair-bb-cream',       ('img', 4173, None)),
-    ('blond-repair-profissional', ('pag', 15, (0.36, 0.36, 0.78, 0.92))),
-    ('blond-repair-homecare',     ('pag', 16, (0.20, 0.70, 0.68, 1.00))),
-    ('hydration',                 ('pag', 21, (0.66, 0.46, 1.00, 0.96))),
-    ('hydration-kit',             ('pag', 20, (0.30, 0.70, 0.74, 1.00))),
+    ('blond-repair-profissional', ('img', 4322, None)),
+    ('blond-repair-homecare',     ('img', 4353, None)),
+    ('hydration',                 ('img', 4730, None)),
+    ('hydration-kit',             ('img', 4612, None)),
     ('bruma-repair',              ('img', 5034, None)),
     ('strawberry',                ('img', 4544, None)),
     ('oil-repair',                ('img', 5368, None)),
     ('love-in-shine',             ('img', 5167, None)),
     ('curl-revival',              ('img', 5473, None)),
-    ('herbal',                    ('pag', 30, (0.52, 0.42, 0.94, 0.90))),
-    ('clean-repair',              ('pag', 31, (0.42, 0.40, 0.90, 0.95))),
-    ('collors',                   ('pag', 33, (0.60, 0.72, 1.00, 1.00))),
+    ('herbal',                    ('img', 5568, None)),
+    ('clean-repair',              ('par', (5680, 5686), None)),   # shampoo e condicionador lado a lado
+    ('collors',                   ('img', 5721, None)),
 ]
 
 
@@ -85,6 +89,11 @@ def main(pdf):
         if tipo == 'pag':
             pix = doc[ref - 1].get_pixmap(dpi=220)
             im = Image.open(io.BytesIO(pix.tobytes('png'))).convert('RGB')
+        elif tipo == 'par':
+            a, b = (imagem_embutida(doc, x) for x in ref)
+            alt = max(a.height, b.height); folga = int(alt * 0.06)
+            im = Image.new('RGB', (a.width + b.width + folga, alt), (255, 255, 255))
+            im.paste(a, (0, alt - a.height)); im.paste(b, (a.width + folga, alt - b.height))
         else:
             im = imagem_embutida(doc, ref)
         if caixa:

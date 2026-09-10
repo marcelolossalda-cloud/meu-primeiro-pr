@@ -21,7 +21,7 @@ tem preço, carrinho nem checkout.
 O visitante pode filtrar por linha, buscar por nome, ativo ou tecnologia, e abrir
 a ficha de cada produto com resumo, descrição completa, volume, caixa master,
 selos e a tecnologia com os ativos. O rodapé traz onde a distribuição atende:
-a loja física em São Borja e as cidades de atendimento mensal.
+a loja física em São Borja e as cidades de atendimento mensal (Itaqui e Santiago; São Luiz Gonzaga aparece só no catálogo Ghoodess).
 
 ## Colocar no site (Hostinger Website Builder)
 
