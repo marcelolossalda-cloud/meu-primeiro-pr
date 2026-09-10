@@ -41,12 +41,13 @@ aparecerem, veja as alternativas abaixo.
 
 ### Publicar pela extensão do navegador
 
-O arquivo **`publicar.html`** (gerado junto com os outros) é um painel local:
-abra-o no navegador, deixe a aba aberta e, em outra aba, entre no editor do
-Hostinger. Ele tem um botão **Copiar código** para cada marca e o **comando**
-pronto para uma extensão de navegador que execute tarefas (por exemplo, o
-Claude no Chrome): copie o comando, cole na extensão e ela faz os passos
-acima. O código nunca é digitado, só copiado e colado, então chega inteiro.
+Cada marca tem o seu **`publicar.html`** (`loja/publicar.html` para a Aella,
+`loja/ghoodess/publicar.html` para a Ghoodess), gerado junto com os outros
+arquivos. É um painel local: abra-o no navegador, deixe a aba aberta e, em
+outra aba, entre no editor do Hostinger. Ele tem o botão **Copiar código** e o
+**comando** pronto para uma extensão de navegador que execute tarefas (por
+exemplo, o Claude no Chrome) publicar aquela marca, e só ela, na página certa.
+O código nunca é digitado, só copiado e colado, então chega inteiro.
 
 ### Se as fotos não carregarem
 

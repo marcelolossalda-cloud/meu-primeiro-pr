@@ -85,29 +85,29 @@ def main() -> int:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# publicar.html: painel local com o código das marcas e o comando para a
-# extensão do navegador executar a publicação no Hostinger.
-MARCAS_PUBLICAR = [
-    # (id, nome, pasta, nome da página no editor do Hostinger)
-    ('ghoodess', 'Ghoodess', LOJA / 'ghoodess', 'Ghoodess'),
-    ('aella', 'aella Professional', LOJA, 'Loja'),
-]
+# publicar.html: painel local, um por marca, com o código do catálogo e o
+# comando para a extensão do navegador executar a publicação no Hostinger.
+MARCAS_PUBLICAR = {
+    # pasta relativa a loja/ -> (id, nome, nome da página no editor do Hostinger)
+    '.':        ('aella',    'aella Professional', 'Loja'),
+    'ghoodess': ('ghoodess', 'Ghoodess',           'Ghoodess'),
+}
 
 COMANDO_PUBLICAR = (
-    'Você vai publicar catálogos de produtos no meu site, que é feito no Hostinger Website Builder. '
-    'Eu já estou logado no editor. O código de cada catálogo está na aba "Publicar catálogos", que tem um '
-    'botão "Copiar código" para cada marca. Não digite o código: sempre copie pelo botão e cole com Ctrl+V.\n\n'
-    'Faça para cada marca, nesta ordem: {marcas}.\n\n'
-    '1. Na aba "Publicar catálogos", clique no botão "Copiar código" da marca e espere o botão mostrar "Copiado".\n'
-    '2. Vá para a aba do editor do Hostinger (builder.hostinger.com) e abra a página da marca: {paginas}.\n'
+    'Você vai publicar o catálogo de produtos da marca {nome} no meu site, que é feito no Hostinger '
+    'Website Builder. Eu já estou logado no editor. Publique somente essa marca, e somente na página '
+    '"{pagina}". O código do catálogo está na aba "Publicar catálogo {nome}", que tem um botão '
+    '"Copiar código". Não digite o código: copie pelo botão e cole com Ctrl+V.\n\n'
+    '1. Na aba "Publicar catálogo {nome}", clique no botão "Copiar código" e espere ele mostrar "Copiado".\n'
+    '2. Vá para a aba do editor do Hostinger (builder.hostinger.com) e abra a página "{pagina}".\n'
     '3. Clique em "Adicionar elemento" e escolha "Incorporar código" (Embed code). Arraste o elemento para a '
     'página, numa área vazia abaixo do que já existe.\n'
     '4. Clique na caixa de texto do elemento, cole com Ctrl+V e confirme em "Incorporar código".\n'
     '5. Estique o elemento pela borda de baixo até uns 3.000 px de altura, para o catálogo caber.\n'
     '6. Clique em "Atualizar site" no canto superior direito e confirme a publicação.\n\n'
-    'Regras: não altere nem apague nenhum outro elemento das páginas; não edite o código; se algum botão ou '
-    'tela não bater com o que descrevi, pare e me diga exatamente o que apareceu, em vez de improvisar. '
-    'No fim, me diga quais páginas foram publicadas.'
+    'Regras: não mexa em nenhuma outra página; não altere nem apague nenhum outro elemento da página '
+    '"{pagina}"; não edite o código; se algum botão ou tela não bater com o que descrevi, pare e me diga '
+    'exatamente o que apareceu, em vez de improvisar. No fim, confirme que a página "{pagina}" foi publicada.'
 )
 
 BLOCO_MARCA = (
@@ -123,26 +123,23 @@ BLOCO_MARCA = (
 def gerar_publicar() -> None:
     import html
     modelo_p = LOJA / 'scripts' / 'publicar.template.html'
-    if not modelo_p.exists():
+    chave = RAIZ.relative_to(LOJA).as_posix() or '.'
+    if not modelo_p.exists() or chave not in MARCAS_PUBLICAR:
         return
+    mid, nome, pagina = MARCAS_PUBLICAR[chave]
+    codigo = (RAIZ / 'embed-hostinger.html').read_text(encoding='utf-8')
     modelo = modelo_p.read_text(encoding='utf-8')
-    blocos, nomes, paginas = [], [], []
-    for mid, nome, pasta, pagina in MARCAS_PUBLICAR:
-        arq = pasta / 'embed-hostinger.html'
-        if not arq.exists():
-            continue
-        codigo = arq.read_text(encoding='utf-8')
-        nomes.append(nome)
-        paginas.append('"%s" para a %s' % (pagina, nome))
-        # dentro de <textarea> as entidades são decodificadas: escapar garante
-        # que o valor copiado seja idêntico, byte a byte, ao arquivo
-        blocos.append(BLOCO_MARCA.format(nome=html.escape(nome), pagina=html.escape(pagina), id=mid,
-                                         kb=round(len(codigo.encode('utf-8')) / 1024),
-                                         codigo=html.escape(codigo, quote=False)))
-    comando = COMANDO_PUBLICAR.format(marcas=' e depois '.join(nomes), paginas='; '.join(paginas))
-    saida = modelo.replace('{{COMANDO}}', html.escape(comando, quote=False)).replace('{{MARCAS}}', '\n\n'.join(blocos))
-    (LOJA / 'publicar.html').write_text(saida, encoding='utf-8')
-    print('publicar.html          %6.0f KB  (%s)' % ((LOJA / 'publicar.html').stat().st_size / 1024, ', '.join(nomes)))
+    # dentro de <textarea> as entidades são decodificadas: escapar garante que o
+    # valor copiado seja idêntico, byte a byte, ao arquivo
+    bloco = BLOCO_MARCA.format(nome=html.escape(nome), pagina=html.escape(pagina), id=mid,
+                               kb=round(len(codigo.encode('utf-8')) / 1024),
+                               codigo=html.escape(codigo, quote=False))
+    comando = COMANDO_PUBLICAR.format(nome=nome, pagina=pagina)
+    saida = (modelo.replace('{{TITULO}}', 'Publicar catálogo ' + html.escape(nome))
+                   .replace('{{NOME}}', html.escape(nome)).replace('{{PAGINA}}', html.escape(pagina))
+                   .replace('{{COMANDO}}', html.escape(comando, quote=False)).replace('{{MARCAS}}', bloco))
+    (RAIZ / 'publicar.html').write_text(saida, encoding='utf-8')
+    print('publicar.html          %6.0f KB  (só %s, página "%s")' % ((RAIZ / 'publicar.html').stat().st_size / 1024, nome, pagina))
 
 
 if __name__ == '__main__':

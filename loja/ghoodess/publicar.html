@@ -1,0 +1,916 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publicar catálogo Ghoodess</title>
+<style>
+  :root { color-scheme: light; --tinta: #1c1c1e; --suave: #6b6b70; --borda: #dcdcdf; --fundo: #f6f6f7; --painel: #fff; --acento: #8a6d3b; --ok: #2e7d4f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--tinta); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 60rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; display: grid; gap: 1.5rem; }
+  h1 { font-size: 1.6rem; margin: 0; letter-spacing: -.01em; }
+  h2 { font-size: 1.1rem; margin: 0; }
+  p { margin: 0; }
+  .nota { color: var(--suave); font-size: .9rem; max-width: 62ch; }
+  section { background: var(--painel); border: 1px solid var(--borda); border-radius: 8px; padding: 1.25rem; display: grid; gap: .9rem; }
+  .linha { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+  .etiqueta { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--acento); font-weight: 700; }
+  button { font: inherit; font-weight: 600; padding: .55rem 1rem; border-radius: 6px; border: 1px solid var(--acento); background: var(--acento); color: #fff; cursor: pointer; }
+  button.leve { background: transparent; color: var(--acento); }
+  button[data-estado="ok"] { background: var(--ok); border-color: var(--ok); color: #fff; }
+  button[data-estado="erro"] { background: #b3261e; border-color: #b3261e; }
+  textarea { width: 100%; min-height: 9rem; font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border: 1px solid var(--borda); border-radius: 6px; padding: .75rem; background: #fafafa; color: var(--tinta); resize: vertical; white-space: pre; }
+  textarea.comando { min-height: 17rem; white-space: pre-wrap; font: 14px/1.5 system-ui, sans-serif; }
+  details summary { cursor: pointer; color: var(--suave); font-size: .9rem; }
+  ol { margin: 0; padding-left: 1.3rem; display: grid; gap: .25rem; }
+  .meta { font-size: .85rem; color: var(--suave); }
+  kbd { font: inherit; font-size: .85em; border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 4px; padding: 0 .35em; background: #fff; }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>Publicar o catálogo Ghoodess no Hostinger</h1>
+    <p class="nota">Este arquivo é local. Ele guarda o código do catálogo Ghoodess e o comando para a extensão do navegador publicar na página <strong>Ghoodess</strong> do site, e em nenhuma outra. Deixe esta aba aberta, logado no editor do Hostinger em outra aba.</p>
+  </div>
+
+  <section>
+    <p class="etiqueta">Comando para a extensão do navegador</p>
+    <p class="nota">Cole este texto na extensão (por exemplo, o Claude no Chrome) com esta aba e a aba do editor do Hostinger abertas.</p>
+    <textarea class="comando" id="comando" readonly>Você vai publicar o catálogo de produtos da marca Ghoodess no meu site, que é feito no Hostinger Website Builder. Eu já estou logado no editor. Publique somente essa marca, e somente na página "Ghoodess". O código do catálogo está na aba "Publicar catálogo Ghoodess", que tem um botão "Copiar código". Não digite o código: copie pelo botão e cole com Ctrl+V.
+
+1. Na aba "Publicar catálogo Ghoodess", clique no botão "Copiar código" e espere ele mostrar "Copiado".
+2. Vá para a aba do editor do Hostinger (builder.hostinger.com) e abra a página "Ghoodess".
+3. Clique em "Adicionar elemento" e escolha "Incorporar código" (Embed code). Arraste o elemento para a página, numa área vazia abaixo do que já existe.
+4. Clique na caixa de texto do elemento, cole com Ctrl+V e confirme em "Incorporar código".
+5. Estique o elemento pela borda de baixo até uns 3.000 px de altura, para o catálogo caber.
+6. Clique em "Atualizar site" no canto superior direito e confirme a publicação.
+
+Regras: não mexa em nenhuma outra página; não altere nem apague nenhum outro elemento da página "Ghoodess"; não edite o código; se algum botão ou tela não bater com o que descrevi, pare e me diga exatamente o que apareceu, em vez de improvisar. No fim, confirme que a página "Ghoodess" foi publicada.</textarea>
+    <div class="linha"><button type="button" data-copiar="comando">Copiar comando</button></div>
+  </section>
+
+  <section>
+    <p class="etiqueta">Marca</p>
+    <div class="linha"><h2>Ghoodess</h2><span class="meta">página <strong>Ghoodess</strong> no editor &middot; 49 KB</span></div>
+    <div class="linha"><button type="button" data-copiar="codigo-ghoodess">Copiar código &middot; Ghoodess</button></div>
+    <details><summary>Ver o código</summary><textarea id="codigo-ghoodess" readonly spellcheck="false">&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
+&lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;
+&lt;link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500&amp;family=Montserrat:wght@400;500;600&amp;display=swap"&gt;
+
+&lt;style&gt;
+/* ==========================================================================
+   Catálogo Ghoodess
+   Cinza-prata, dourado e tipografia geométrica leve, como o catálogo impresso.
+   Todo o CSS está escopado em .ghoodess-loja para não interferir no tema do site.
+   ========================================================================== */
+
+.ghoodess-loja {
+  /* — cores claras (a paleta do catálogo) — */
+  --gh-papel:       #E7E8E9;
+  --gh-hero-a:      #F5F5F6;
+  --gh-superficie:  #F7F7F8;
+  --gh-placa-a:     #F5F5F6;
+  --gh-placa-b:     #E1E2E4;
+  --gh-borda:       #D8D9DB;
+  --gh-borda-forte: #C2C3C6;
+  --gh-texto:       #2B2B2E;
+  --gh-suave:       #6E6E73;
+  --gh-ouro:        #B9A074;
+  --gh-ouro-claro:  #D9C9A3;
+  --gh-ouro-escuro: #8A7245;
+  --gh-ouro-grad:   linear-gradient(115deg, #8A7245 0%, #D9C9A3 42%, #B9A074 68%, #E6D8B4 100%);
+  --gh-sombra:      0 1px 2px rgba(43,43,46,.05), 0 12px 32px -16px rgba(43,43,46,.22);
+
+  /* — tipografia — */
+  --gh-display: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+  --gh-texto-fonte: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --gh-t-micro: .6875rem;
+  --gh-t-mini:  .75rem;
+  --gh-t-peq:   .8125rem;
+  --gh-t-base:  .9375rem;
+  --gh-t-med:   1.0625rem;
+  --gh-t-gr:    1.5rem;
+  --gh-t-xg:    2.25rem;
+
+  --gh-gap: 1.25rem;
+  --gh-raio: 2px;
+
+  color: var(--gh-texto);
+  background: var(--gh-papel);
+  font-family: var(--gh-texto-fonte);
+  font-size: var(--gh-t-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  container-type: inline-size;
+}
+
+/* — tema escuro: a placa da foto continua clara, porque as fotos têm fundo
+     branco ou cinza-prata e ficariam recortadas sobre fundo escuro — */
+.ghoodess-loja[data-tema="escuro"],
+:root[data-theme="dark"] .ghoodess-loja[data-tema="auto"] {
+  --gh-papel:       #1C1C1F;
+  --gh-hero-a:      #26262A;
+  --gh-superficie:  #26262A;
+  --gh-placa-a:     #EDEDEF;
+  --gh-placa-b:     #D9DADC;
+  --gh-borda:       #35353A;
+  --gh-borda-forte: #4A4A50;
+  --gh-texto:       #F1F0EC;
+  --gh-suave:       #A3A29C;
+  --gh-ouro-escuro: #D9C9A3;
+  --gh-sombra:      0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ghoodess-loja[data-tema="auto"] {
+    --gh-papel:       #1C1C1F;
+  --gh-hero-a:      #26262A;
+    --gh-superficie:  #26262A;
+    --gh-placa-a:     #EDEDEF;
+    --gh-placa-b:     #D9DADC;
+    --gh-borda:       #35353A;
+    --gh-borda-forte: #4A4A50;
+    --gh-texto:       #F1F0EC;
+    --gh-suave:       #A3A29C;
+    --gh-ouro-escuro: #D9C9A3;
+    --gh-sombra:      0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
+  }
+}
+
+/* — reset local, com :where() para nunca vencer as regras de componente — */
+.ghoodess-loja *, .ghoodess-loja *::before, .ghoodess-loja *::after { box-sizing: border-box; }
+:where(.ghoodess-loja) :where(h2, h3, h4, p, ul, li, dl, dd, dt, table) { margin: 0; padding: 0; }
+:where(.ghoodess-loja) :where(ul) { list-style: none; }
+:where(.ghoodess-loja) :where(img) { display: block; max-width: 100%; height: auto; }
+:where(.ghoodess-loja) :where(button) { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.ghoodess-loja [hidden] { display: none !important; }
+.ghoodess-loja :focus-visible { outline: 2px solid var(--gh-ouro); outline-offset: 3px; }
+
+/* — papéis tipográficos — */
+.gh-display {
+  font-family: var(--gh-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.gh-rotulo {
+  font-family: var(--gh-display);
+  font-weight: 500;
+  font-size: var(--gh-t-micro);
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: var(--gh-ouro-escuro);
+}
+.gh-ouro {                      /* texto em dourado metálico, como os títulos do catálogo */
+  background: var(--gh-ouro-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ————— faixa de marca ————— */
+.gh-marca {
+  padding: clamp(2rem, 6vw, 3.5rem) clamp(1.25rem, 4vw, 2.5rem) clamp(1.75rem, 5vw, 2.75rem);
+  text-align: center;
+  display: grid;
+  justify-items: center;
+  gap: .9rem;
+  background: linear-gradient(180deg, var(--gh-hero-a) 0%, var(--gh-papel) 100%);
+  border-bottom: 1px solid var(--gh-borda);
+}
+.gh-marca__nome {
+  font-family: var(--gh-display);
+  font-weight: 300;
+  font-size: clamp(2.25rem, 8vw, 4rem);
+  letter-spacing: .32em;
+  margin-right: -.32em;         /* compensa o espaçamento da última letra */
+  text-transform: uppercase;
+  line-height: 1;
+}
+.gh-marca__filete { width: 3.5rem; height: 1px; background: var(--gh-ouro); }
+.gh-marca__texto { max-width: 52ch; color: var(--gh-suave); font-size: var(--gh-t-peq); line-height: 1.7; }
+.gh-marca__numeros {
+  display: flex;
+  gap: 2rem;
+  margin-top: .25rem;
+  font-family: var(--gh-display);
+  font-weight: 500;
+  font-size: var(--gh-t-micro);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gh-suave);
+}
+.gh-marca__numeros b { font-weight: 300; font-size: 1.9em; letter-spacing: .04em; color: var(--gh-texto); margin-right: .3em; vertical-align: -.08em; font-variant-numeric: tabular-nums; }
+
+/* ————— controles ————— */
+.gh-controles {
+  position: sticky; top: 0; z-index: 5;
+  background: var(--gh-papel);
+  border-bottom: 1px solid var(--gh-borda);
+  padding: .9rem clamp(1.25rem, 4vw, 2.5rem);
+  display: grid; gap: .75rem;
+}
+.gh-busca {
+  display: flex; align-items: center; gap: .6rem;
+  background: var(--gh-superficie);
+  border: 1px solid var(--gh-borda);
+  border-radius: var(--gh-raio);
+  padding: .55rem .8rem;
+  max-width: 26rem;
+}
+.gh-busca:focus-within { border-color: var(--gh-ouro); }
+.gh-busca svg { flex: none; width: 15px; height: 15px; stroke: var(--gh-ouro-escuro); fill: none; stroke-width: 1.8; }
+.gh-busca input { flex: 1; min-width: 0; font: inherit; font-size: var(--gh-t-peq); color: inherit; background: none; border: 0; outline: none; padding: 0; }
+.gh-busca input::placeholder { color: var(--gh-suave); }
+
+.gh-linhas { display: flex; flex-wrap: wrap; gap: .4rem; }
+.gh-chip {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .38rem .85rem .38rem .7rem;
+  border: 1px solid var(--gh-borda);
+  border-radius: 999px;
+  background: var(--gh-superficie);
+  font-family: var(--gh-display);
+  font-weight: 400;
+  font-size: var(--gh-t-peq);
+  letter-spacing: .04em;
+  white-space: nowrap;
+  transition: border-color .15s, color .15s;
+}
+.gh-chip:hover { border-color: var(--gh-borda-forte); }
+.gh-chip[aria-pressed="true"] { border-color: var(--gh-ouro); color: var(--gh-ouro-escuro); font-weight: 500; box-shadow: inset 0 0 0 1px var(--gh-ouro); }
+.gh-chip__n { font-size: var(--gh-t-micro); color: var(--gh-suave); font-variant-numeric: tabular-nums; }
+.gh-ponto { flex: none; width: .55rem; height: .55rem; border-radius: 50%; background: var(--c, var(--gh-ouro)); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+
+/* ————— contagem ————— */
+.gh-contagem { padding: 1.25rem clamp(1.25rem, 4vw, 2.5rem) 0; }
+
+/* ————— grade ————— */
+.gh-grade {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gh-gap);
+  padding: 1rem clamp(1.25rem, 4vw, 2.5rem) clamp(2rem, 5vw, 3rem);
+  align-items: start;
+}
+@container (min-width: 700px) { .gh-grade { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@container (min-width: 940px) { .gh-grade { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+
+.gh-card {
+  display: grid; gap: .55rem;
+  text-align: left;
+  padding: 0 0 1rem;
+  background: var(--gh-superficie);
+  border: 1px solid var(--gh-borda);
+  border-radius: var(--gh-raio);
+  overflow: hidden;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.gh-card:hover, .gh-card:focus-visible { border-color: var(--gh-ouro-claro); box-shadow: var(--gh-sombra); transform: translateY(-2px); }
+.gh-card__placa {
+  display: block;
+  aspect-ratio: 4 / 5;
+  padding: .9rem;
+  background: linear-gradient(180deg, var(--gh-placa-a), var(--gh-placa-b));
+  border-bottom: 1px solid var(--gh-borda);
+}
+.gh-card__placa img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.gh-card__familia {
+  display: flex; align-items: center; gap: .45rem;
+  padding: .3rem .85rem 0;
+  font-family: var(--gh-display);
+  font-weight: 500;
+  font-size: var(--gh-t-micro);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gh-ouro-escuro);
+}
+.gh-card__familia &gt; span { min-width: 0; overflow-wrap: anywhere; }
+.gh-card__nome {
+  padding: 0 .85rem;
+  font-weight: 600;
+  font-size: var(--gh-t-peq);
+  line-height: 1.3;
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+.gh-card__resumo {
+  padding: 0 .85rem;
+  font-size: var(--gh-t-mini); line-height: 1.5; color: var(--gh-suave);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.gh-card__meta {
+  padding: 0 .85rem;
+  font-size: var(--gh-t-mini); color: var(--gh-suave);
+  display: flex; flex-wrap: wrap; gap: .3rem .5rem;
+  font-variant-numeric: tabular-nums;
+}
+.gh-card__meta span:not(:last-child)::after { content: ' ·'; color: var(--gh-ouro); }
+.gh-card__meta span { min-width: 0; overflow-wrap: anywhere; }
+
+/* em contêiner estreito os três cards ficam pequenos: tudo mais compacto */
+@container (max-width: 520px) {
+  .ghoodess-loja { --gh-gap: .6rem; }
+  .gh-grade { padding-left: .85rem; padding-right: .85rem; }
+  .gh-card { gap: .35rem; padding-bottom: .65rem; }
+  .gh-card__placa { padding: .45rem; }
+  .gh-card__familia, .gh-card__nome, .gh-card__meta { padding-left: .55rem; padding-right: .55rem; }
+  .gh-card__familia { letter-spacing: .1em; font-size: .6rem; }
+  .gh-card__resumo { display: none; }
+  .gh-card__nome { font-size: var(--gh-t-mini); }
+  .gh-card__meta { font-size: var(--gh-t-micro); }
+}
+
+.gh-vazio { padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 4rem; color: var(--gh-suave); max-width: 46ch; }
+
+/* ————— rodapé ————— */
+.gh-rodape {
+  border-top: 1px solid var(--gh-borda);
+  padding: 2rem clamp(1.25rem, 4vw, 2.5rem) 2.25rem;
+  display: grid; grid-template-columns: 1fr; gap: 1.75rem 3rem;
+  font-size: var(--gh-t-peq); color: var(--gh-suave);
+}
+@container (min-width: 700px) {
+  .gh-rodape { grid-template-columns: 1fr auto; align-items: end; }
+  .gh-rodape__marca { justify-items: end; text-align: right; }
+}
+.gh-rodape a { color: inherit; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--gh-ouro); }
+.gh-rodape a:hover { color: var(--gh-texto); }
+.gh-rodape__onde { display: grid; gap: 1.1rem; }
+.gh-rodape__cidade { font-family: var(--gh-display); font-weight: 300; font-size: var(--gh-t-gr); letter-spacing: .12em; text-transform: uppercase; line-height: 1.1; color: var(--gh-texto); text-wrap: balance; }
+.gh-rodape__cidade small { display: block; margin-top: .4rem; font-weight: 500; font-size: var(--gh-t-micro); letter-spacing: .16em; color: var(--gh-ouro-escuro); }
+.gh-rodape__cidade--rota { font-size: var(--gh-t-med); }
+.gh-rodape__end { margin-top: .45rem; }
+.gh-rodape__end a { color: var(--gh-texto); }
+.gh-rodape__marca { display: grid; gap: .35rem; justify-items: start; }
+.gh-rodape__marca p:empty { display: none; }
+.gh-rodape__wordmark { font-family: var(--gh-display); font-weight: 300; letter-spacing: .3em; text-transform: uppercase; font-size: var(--gh-t-med); }
+.gh-cta {
+  display: inline-block;
+  border: 1px solid var(--gh-ouro);
+  color: var(--gh-ouro-escuro);
+  padding: .6rem 1.2rem;
+  border-radius: var(--gh-raio);
+  font-family: var(--gh-display); font-weight: 500; font-size: var(--gh-t-peq); letter-spacing: .1em; text-transform: uppercase;
+  text-decoration: none;
+}
+.gh-cta:hover { background: var(--gh-ouro); color: #fff; }
+
+/* ————— ficha do produto ————— */
+.gh-ficha {
+  position: fixed; inset: 0; z-index: 999;
+  display: grid; place-items: center;
+  padding: clamp(0px, 3vw, 2rem);
+  background: rgba(43,43,46,.55);
+  backdrop-filter: blur(4px);
+}
+.gh-ficha__painel {
+  position: relative;
+  width: min(60rem, 100%);
+  max-height: 100%;
+  overflow-y: auto; overscroll-behavior: contain;
+  background: var(--gh-superficie);
+  border-radius: var(--gh-raio);
+  display: grid; grid-template-columns: 1fr;
+}
+@container (min-width: 760px) { .gh-ficha__painel { grid-template-columns: 17rem 1fr; } }
+.gh-ficha__placa {
+  display: block;
+  padding: 2rem 1.5rem;
+  aspect-ratio: 3 / 4;
+  background: linear-gradient(180deg, var(--gh-placa-a), var(--gh-placa-b));
+}
+.gh-ficha__placa img { width: 100%; height: 100%; max-height: 26rem; object-fit: contain; mix-blend-mode: multiply; }
+.gh-ficha__corpo { padding: clamp(1.25rem, 3vw, 2.25rem); display: grid; gap: 1.1rem; align-content: start; }
+.gh-ficha__topo { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.gh-ficha__topo button {
+  font-family: var(--gh-display); font-weight: 500; font-size: var(--gh-t-micro); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--gh-suave); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--gh-ouro);
+}
+.gh-ficha__topo button:hover { color: var(--gh-texto); }
+.gh-ficha__familia { font-family: var(--gh-display); font-weight: 300; font-size: var(--gh-t-xg); letter-spacing: .1em; text-transform: uppercase; line-height: 1.05; text-wrap: balance; }
+.gh-ficha__nome { font-family: var(--gh-display); font-weight: 500; font-size: var(--gh-t-med); letter-spacing: .1em; text-transform: uppercase; margin-top: .35rem; }
+.gh-ficha__sub { font-size: var(--gh-t-peq); color: var(--gh-suave); margin-top: .25rem; }
+.gh-ficha__resumo { font-weight: 500; font-size: var(--gh-t-med); line-height: 1.45; max-width: 48ch; text-wrap: pretty; }
+.gh-ficha__desc { max-width: 64ch; color: var(--gh-texto); }
+
+.gh-bloco { display: grid; gap: .55rem; }
+.gh-bloco__titulo { font-family: var(--gh-display); font-weight: 500; font-size: var(--gh-t-peq); letter-spacing: .14em; text-transform: uppercase; }
+.gh-beneficios { columns: 2; column-gap: 1.5rem; font-size: var(--gh-t-peq); }
+.gh-beneficios li { break-inside: avoid; padding-left: .9rem; position: relative; line-height: 1.5; margin-bottom: .2rem; }
+.gh-beneficios li::before { content: '·'; position: absolute; left: 0; color: var(--gh-ouro); font-weight: 700; }
+@container (max-width: 520px) { .gh-beneficios { columns: 1; } }
+
+.gh-pilulas { display: flex; flex-wrap: wrap; gap: .35rem; }
+.gh-pilulas li { font-size: var(--gh-t-mini); border: 1px solid var(--gh-borda); border-radius: 999px; padding: .22rem .65rem; color: var(--gh-suave); }
+.gh-pilulas--ouro li { border-color: var(--gh-ouro-claro); color: var(--gh-ouro-escuro); }
+
+.gh-especs {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 1px; background: var(--gh-borda); border: 1px solid var(--gh-borda); border-radius: var(--gh-raio); overflow: hidden;
+}
+.gh-especs div { background: var(--gh-superficie); padding: .7rem .8rem; display: grid; gap: .2rem; }
+.gh-especs dd { font-weight: 600; font-size: var(--gh-t-base); font-variant-numeric: tabular-nums; }
+
+.gh-tabela { width: 100%; border-collapse: collapse; font-size: var(--gh-t-peq); }
+.gh-tabela th, .gh-tabela td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--gh-borda); vertical-align: top; }
+.gh-tabela th { font-family: var(--gh-display); font-weight: 500; font-size: var(--gh-t-micro); letter-spacing: .14em; text-transform: uppercase; color: var(--gh-ouro-escuro); }
+.gh-tabela-rolagem { overflow-x: auto; }
+.gh-aviso { font-size: var(--gh-t-mini); color: var(--gh-suave); border-left: 2px solid var(--gh-ouro); padding-left: .75rem; }
+
+.gh-fechar {
+  position: absolute; top: .6rem; right: .6rem; width: 2.1rem; height: 2.1rem;
+  display: grid; place-items: center; border-radius: 50%;
+  background: var(--gh-superficie); border: 1px solid var(--gh-borda);
+  font-size: 1.05rem; line-height: 1; color: var(--gh-texto);
+}
+.gh-fechar:hover { border-color: var(--gh-ouro); color: var(--gh-ouro-escuro); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ghoodess-loja *, .ghoodess-loja *::before, .ghoodess-loja *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  .gh-card:hover, .gh-card:focus-visible { transform: none; }
+}
+/* contêiner estreito: chips numa linha só, rolável, em vez de cinco linhas na barra fixa */
+@container (max-width: 520px) {
+  .gh-linhas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .2rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .gh-linhas::-webkit-scrollbar { display: none; }
+  .gh-chip { flex: none; white-space: nowrap; }
+}
+&lt;/style&gt;
+
+&lt;div class="ghoodess-loja" lang="pt-BR" data-tema="auto"&gt;
+
+  &lt;header class="gh-marca"&gt;
+    &lt;p class="gh-rotulo"&gt;Catálogo de produtos&lt;/p&gt;
+    &lt;h2 class="gh-marca__nome gh-ouro"&gt;Ghoodess&lt;/h2&gt;
+    &lt;span class="gh-marca__filete" aria-hidden="true"&gt;&lt;/span&gt;
+    &lt;p class="gh-marca__texto"&gt;Linha profissional completa: descoloração e coloração, alinhamento, tratamento e finalização, com as versões home care para a cliente continuar o cuidado em casa.&lt;/p&gt;
+    &lt;p class="gh-marca__numeros"&gt;&lt;span&gt;&lt;b id="gh-total"&gt;0&lt;/b&gt; produtos&lt;/span&gt;&lt;span&gt;&lt;b id="gh-nlinhas"&gt;0&lt;/b&gt; categorias&lt;/span&gt;&lt;/p&gt;
+  &lt;/header&gt;
+
+  &lt;div class="gh-controles"&gt;
+    &lt;label class="gh-busca"&gt;
+      &lt;svg viewBox="0 0 24 24" aria-hidden="true"&gt;&lt;circle cx="11" cy="11" r="7"&gt;&lt;/circle&gt;&lt;path d="m20 20-3.5-3.5"&gt;&lt;/path&gt;&lt;/svg&gt;
+      &lt;input type="search" id="gh-busca" autocomplete="off" placeholder="Buscar por produto, linha ou ativo" aria-label="Buscar produto"&gt;
+    &lt;/label&gt;
+    &lt;div class="gh-linhas" id="gh-linhas" role="group" aria-label="Filtrar por categoria"&gt;&lt;/div&gt;
+  &lt;/div&gt;
+
+  &lt;p class="gh-contagem gh-rotulo" id="gh-contagem" role="status"&gt;&lt;/p&gt;
+  &lt;div class="gh-grade" id="gh-grade"&gt;&lt;/div&gt;
+  &lt;p class="gh-vazio" id="gh-vazio" hidden&gt;Nenhum produto encontrado com esse termo. Tente pelo nome da linha (por exemplo &lt;em&gt;Reparagy&lt;/em&gt;), por um ativo (&lt;em&gt;argan&lt;/em&gt;) ou por uma necessidade (&lt;em&gt;frizz&lt;/em&gt;).&lt;/p&gt;
+
+  &lt;footer class="gh-rodape"&gt;
+    &lt;div class="gh-rodape__onde"&gt;
+      &lt;p class="gh-rotulo"&gt;Onde atendemos&lt;/p&gt;
+      &lt;div&gt;
+        &lt;p class="gh-rodape__cidade"&gt;São Borja&lt;small&gt;Loja física&lt;/small&gt;&lt;/p&gt;
+        &lt;p class="gh-rodape__end"&gt;&lt;a href="https://www.google.com/maps/search/?api=1&amp;amp;query=Rua+General+Marques%2C+654+-+Centro%2C+S%C3%A3o+Borja+-+RS" target="_blank" rel="noopener"&gt;Rua General Marques, 654 &amp;middot; Centro &amp;middot; São Borja/RS&lt;/a&gt;&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+        &lt;p class="gh-rodape__cidade gh-rodape__cidade--rota"&gt;Itaqui &amp;middot; Santiago &amp;middot; São Luiz Gonzaga&lt;small&gt;Atendimento presencial uma vez por mês&lt;/small&gt;&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="gh-rodape__marca"&gt;
+      &lt;p class="gh-rodape__wordmark gh-ouro"&gt;Ghoodess&lt;/p&gt;
+      &lt;p&gt;Distribuidor autorizado&lt;/p&gt;
+      &lt;p id="gh-rodape-cta"&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/footer&gt;
+
+  &lt;div class="gh-ficha" id="gh-ficha" role="dialog" aria-modal="true" aria-labelledby="gh-ficha-nome" hidden&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+(function () {
+  'use strict';
+
+  /* ————— configuração —————
+     Para exibir um botão de contato (WhatsApp, e-mail, formulário), preencha a
+     url abaixo. Deixando em branco, nenhum botão é exibido.
+     Exemplo: url: 'https://wa.me/5555999999999'                              */
+  var CONTATO = { rotulo: 'Falar com a gente', url: '' };
+
+  /* Pasta ou endereço onde estão as imagens dos produtos. */
+  var CAMINHO_IMAGENS = 'https://raw.githubusercontent.com/marcelolossalda-cloud/meu-primeiro-pr/f9355b7e77328fd9294649be010bacc8926f3d5e/loja/ghoodess/imagens/';
+  var IMAGENS_EMBUTIDAS = {}; /* {{IMAGENS}} */
+
+/* ==========================================================================
+   CATÁLOGO GHOODESS — dados dos produtos
+   Descrições e benefícios transcritos do catálogo 2026 da marca (texto do
+   próprio PDF). Para editar um produto, altere os campos abaixo.
+
+     familia    nome da linha impresso na embalagem (Original, Reparagy…)
+     resumo     linha curta que aparece no card e abre a ficha
+     descricao  texto completo, exibido na ficha
+   ========================================================================== */
+
+const LINHAS = {
+  desc:  { nome: 'Descoloração &amp; Oxidação',  cor: '#97A0A4',
+           resumo: 'Pó descolorante, água oxigenada e acidificante para clarear com segurança e fechar o processo químico.' },
+  alin:  { nome: 'Alinhamento',              cor: '#A095A3',
+           resumo: 'Sistemas profissionais de alinhamento capilar, redução de volume e limpeza preparatória.' },
+  trat:  { nome: 'Tratamento',               cor: '#C3A6A8',
+           resumo: 'Nutrição, reconstrução, hidratação e matização, em versão profissional e home care.' },
+  fin:   { nome: 'Finalização',              cor: '#C8AD80',
+           resumo: 'Protetor térmico, óleo, ativador de cachos e perfume capilar para o acabamento do dia a dia.' },
+  couro: { nome: 'Couro Cabeludo &amp; Limpeza', cor: '#A8C7B7',
+           resumo: 'Loção e cápsulas contra a queda, e shampoo e condicionador neutros de uso diário.' },
+  cor:   { nome: 'Coloração',                cor: '#E0A283',
+           resumo: 'Coloração creme profissional com cores intensas e tratamento durante o processo.' }
+};
+
+const PRODUTOS = [
+  {
+    slug: 'white-repair-po', linha: 'desc', familia: 'White Repair',
+    nome: 'Pó Descolorante White Repair', volume: '500 g', uso: 'Profissional',
+    resumo: 'Alto poder de clareamento com complexo de 9 óleos e tecnologia aceleradora.',
+    descricao: 'Desenvolvido para oferecer alto poder de clareamento com segurança. Possui complexo de 9 óleos que protegem a fibra capilar durante a descoloração, além de tecnologia aceleradora que reduz o tempo de exposição dos fios.',
+    ativos: ['Colágeno', 'Elastina', 'Complexo de 9 óleos']
+  },
+  {
+    slug: 'agua-oxigenada', linha: 'desc', familia: 'White Repair',
+    nome: 'Água Oxigenada', subtitulo: '05 · 20 · 30 · 40 volumes', uso: 'Profissional',
+    resumo: 'Emulsão estabilizada com lanolina, para coloração e descoloração com oxidação segura.',
+    descricao: 'Fórmula estabilizada e balanceada com lanolina, ideal para processos de coloração e descoloração. Garante oxidação segura, mistura homogênea e resultados precisos.',
+    ativos: ['Lanolina'],
+    variantes: ['05 volumes', '20 volumes', '30 volumes', '40 volumes']
+  },
+  {
+    slug: 'golden', linha: 'desc', familia: 'Golden',
+    nome: 'Golden Acidificante', volume: '500 ml', uso: 'Profissional',
+    resumo: 'Neutraliza o pH alcalino e estabiliza a fibra depois da descoloração.',
+    descricao: 'Produto desenvolvido para estabilizar a ação do pó descolorante e neutralizar o pH alcalino após processos químicos. Sua fórmula com proteína do trigo, ácido láctico e silicones nobres reduz a porosidade, facilita o desembaraço e devolve maciez e brilho aos fios.',
+    beneficios: ['Neutraliza o pH alcalino', 'Reduz a porosidade', 'Facilita o desembaraço', 'Maciez e brilho imediatos', 'Estabiliza a fibra capilar', 'Ideal pós-descoloração'],
+    ativos: ['Proteína do trigo', 'Ácido láctico', 'Silicones nobres']
+  },
+  {
+    slug: 'original-alinhamento', linha: 'alin', familia: 'Original',
+    nome: 'Original Alinhamento Capilar', volume: '1000 ml', uso: 'Profissional',
+    resumo: 'Blend de ácidos que alinha 100% dos fios, com brilho e vitalidade. Compatível com todas as químicas.',
+    descricao: 'Sistema profissional elaborado com blend de ácidos que promove alinhamento total dos fios, brilho intenso e vitalidade. Compatível com todas as químicas, com segurança no processo.',
+    beneficios: ['Alinha 100%', 'Blend de ácidos', 'Brilho intenso', 'Compatível com todas as químicas'],
+    ativos: ['Ácido láctico', 'Ácido hialurônico', 'Keratina', 'Argan', 'Cálamo', 'Aminoácidos']
+  },
+  {
+    slug: 'original-anti-residuos', linha: 'alin', familia: 'Original',
+    nome: 'Original Shampoo Anti-Resíduos', volume: '1000 ml', uso: 'Profissional',
+    resumo: 'Limpeza profunda que prepara os fios para o alinhamento.',
+    descricao: 'Promove limpeza profunda preparando os fios para o alinhamento capilar. Pode ser usado em conjunto com o Alinhamento Original ou separadamente.',
+    beneficios: ['Limpeza profunda', 'Prepara para o alinhamento', 'Uso combinado ou isolado'],
+    ativos: ['Ácido láctico', 'Ácido hialurônico']
+  },
+  {
+    slug: 'original-homecare', linha: 'alin', familia: 'Original',
+    nome: 'Original Home Care', subtitulo: 'Shampoo, alinhamento e máscara', uso: 'Home care',
+    resumo: 'A manutenção do alinhamento Original em casa: shampoo, alinhamento e máscara.',
+    descricao: 'Versão home care da linha Original, para manter o resultado do alinhamento entre as visitas ao salão. Conjunto de shampoo, alinhamento e máscara.',
+    ativos: ['Keratina', 'Serine', 'Macadâmia']
+  },
+  {
+    slug: 'pro-gold', linha: 'alin', familia: 'Pro Gold',
+    nome: 'Pro Gold Alinhamento Líquido', volume: '500 ml', uso: 'Profissional',
+    resumo: 'Alinhamento líquido de alto rendimento, baixa fumaça e cor roxa: ideal também para loiros.',
+    descricao: 'Alinhamento líquido desenvolvido para proporcionar fios alinhados, disciplinados e com brilho intenso. Sua fórmula com ácido láctico e aloe vera garante alto rendimento, menor emissão de fumaça e segurança no processo. Possui cor roxa, sendo ideal também para cabelos loiros, além de ser compatível com outras químicas.',
+    beneficios: ['Alinhamento eficaz dos fios', 'Alto rendimento por ser líquido', 'Baixa emissão de fumaça', 'Indicado para cabelos loiros', 'Compatível com outras químicas', 'Uso exclusivamente profissional'],
+    ativos: ['Ácido láctico', 'Aloe vera']
+  },
+  {
+    slug: 'btx', linha: 'alin', familia: 'BTX',
+    nome: 'BTX Redutor de Volume', volume: '500 g', uso: 'Profissional',
+    resumo: 'Textura cremosa que alinha, trata e disciplina. Cor roxa, indicado também para loiros.',
+    descricao: 'Desenvolvido para alinhar, tratar e disciplinar os fios. Sua textura cremosa proporciona aplicação uniforme, enquanto a fórmula com aloe vera e ácido láctico promove hidratação, maciez e controle do frizz. Possui cor roxa, sendo indicado também para cabelos loiros.',
+    beneficios: ['Redução de volume', 'Alinhamento dos fios', 'Hidratação e maciez', 'Controle do frizz', 'Indicado para cabelos loiros', 'Uso profissional'],
+    ativos: ['Aloe vera', 'Ácido láctico']
+  },
+  {
+    slug: 'reparagy-profissional', linha: 'trat', familia: 'Reparagy',
+    nome: 'Reparagy Profissional', subtitulo: 'Shampoo, máscara e BB cream', uso: 'Profissional',
+    resumo: 'Nutrição profunda para cabelos extremamente secos e ressecados.',
+    descricao: 'Linha desenvolvida para cabelos extremamente secos e ressecados. O Reparagy promove nutrição intensa, devolvendo maciez, brilho e vitalidade aos fios. Suas fórmulas ricas em ativos de alto desempenho tratam profundamente a fibra capilar, sendo ideal para uso profissional e home care.',
+    beneficios: ['Fortalece a fibra capilar', 'Fios mais saudáveis e sedosos', 'Recupera maciez e brilho', 'Ideal para cabelos secos e porosos', 'Nutrição profunda']
+  },
+  {
+    slug: 'reparagy-homecare', linha: 'trat', familia: 'Reparagy',
+    nome: 'Reparagy Home Care', subtitulo: 'Shampoo, condicionador, máscara e BB cream', uso: 'Home care',
+    resumo: 'A nutrição intensa do Reparagy para continuar em casa.',
+    descricao: 'Versão home care da linha Reparagy, desenvolvida para cabelos extremamente secos e ressecados. Promove nutrição intensa, devolvendo maciez, brilho e vitalidade aos fios no cuidado diário.',
+    beneficios: ['Fortalece a fibra capilar', 'Fios mais saudáveis e sedosos', 'Recupera maciez e brilho', 'Nutrição profunda']
+  },
+  {
+    slug: 'reparagy-bb-cream', linha: 'trat', familia: 'Reparagy',
+    nome: 'Reparagy BB Cream', volume: '200 ml · 100 ml', uso: 'Profissional e home care',
+    resumo: 'Tratamento multifuncional instantâneo: nutre, alinha e protege.',
+    descricao: 'Tratamento multifuncional desenvolvido para nutrir, alinhar e proteger os fios instantaneamente. Sua fórmula com óleos, proteínas e aminoácidos atua na cutícula e no córtex capilar, auxiliando na reparação dos danos causados por agressões físicas, químicas, térmicas e ambientais.',
+    beneficios: ['Tratamento instantâneo', 'Nutre e revitaliza os fios', 'Ação reparadora profunda', 'Protege contra danos externos', 'Alinha e reduz o frizz', 'Brilho e maciez imediatos', 'Proteção térmica'],
+    ativos: ['Óleos', 'Proteínas', 'Aminoácidos']
+  },
+  {
+    slug: 'nescuihair-profissional', linha: 'trat', familia: 'Nescuihair',
+    nome: 'Nescuihair Tratamento Profissional', subtitulo: 'Shampoo, máscara e BB cream', volume: '1000 ml', uso: 'Profissional',
+    resumo: 'Limpeza suave e tratamento nutritivo, vegano, com fragrância de morango.',
+    descricao: 'Linha desenvolvida para proporcionar limpeza suave e tratamento nutritivo, com fragrância irresistível de morango. Suas fórmulas veganas e antialérgicas promovem maciez, brilho e vitalidade desde as primeiras aplicações, sendo indicadas para todos os tipos de cabelo.',
+    beneficios: ['Limpeza suave sem agredir', 'Hidratação e nutrição dos fios', 'Fórmula vegana e antialérgica', 'Brilho e maciez imediatos', 'Fragrância de morango', 'Ideal para uso diário'],
+    selos: ['Vegano', 'Antialérgico']
+  },
+  {
+    slug: 'nescuihair-homecare', linha: 'trat', familia: 'Nescuihair',
+    nome: 'Nescuihair Home Care', subtitulo: 'Shampoo, BB cream e máscara', uso: 'Home care',
+    resumo: 'O tratamento Nescuihair em tamanho para casa, com fragrância de morango.',
+    descricao: 'Versão home care da linha Nescuihair: limpeza suave e tratamento nutritivo com fragrância de morango. Fórmulas veganas e antialérgicas, indicadas para todos os tipos de cabelo.',
+    beneficios: ['Limpeza suave sem agredir', 'Hidratação e nutrição dos fios', 'Fórmula vegana e antialérgica', 'Ideal para uso diário'],
+    selos: ['Vegano', 'Antialérgico']
+  },
+  {
+    slug: 'blond-repair-profissional', linha: 'trat', familia: 'Blond Repair',
+    nome: 'Blond Repair Platinum Profissional', subtitulo: 'Shampoo e máscara matizadora', volume: '1000 ml', uso: 'Profissional',
+    resumo: 'Tratamento intenso e neutralização eficaz para loiros, descoloridos e com mechas.',
+    descricao: 'Linha desenvolvida especialmente para cabelos loiros, descoloridos ou com mechas. O Blond Repair Profissional oferece tratamento intenso e neutralização eficaz, enquanto o Blond Repair home care mantém a cor, o brilho e a saúde dos fios no dia a dia. Fórmulas de alta performance que tratam profundamente sem comprometer o tom do loiro.',
+    beneficios: ['Matizado perfeito', 'Tratamento intenso', 'Não compromete o tom do loiro']
+  },
+  {
+    slug: 'blond-repair-homecare', linha: 'trat', familia: 'Blond Repair',
+    nome: 'Blond Repair Home Care', subtitulo: 'Shampoo e máscara', volume: '300 ml', uso: 'Home care',
+    resumo: 'Mantém a cor, o brilho e a saúde do loiro no dia a dia.',
+    descricao: 'Versão home care da linha Blond Repair, para cabelos loiros, descoloridos ou com mechas. Mantém a cor, o brilho e a saúde dos fios no dia a dia, sem comprometer o tom do loiro.',
+    beneficios: ['Mantém a cor', 'Brilho no dia a dia', 'Não compromete o tom do loiro']
+  },
+  {
+    slug: 'hydration-kit', linha: 'trat', familia: 'Hydration',
+    nome: 'Hydration Dose Tripla', subtitulo: '+ escova anti frizz', uso: 'Profissional e home care',
+    resumo: 'Kit de hidratação inteligente com lipídios e vitamina E, de absorção rápida.',
+    descricao: 'Transforme cabelos opacos, ressecados e sem vida em fios profundamente hidratados, macios e com brilho extraordinário. Hydration é um tratamento inovador desenvolvido com lipídios e Vitamina E, ativos que ajudam a repor nutrientes essenciais, restaurar a maciez e devolver a saúde dos cabelos desde a primeira aplicação. Sua tecnologia líquida promove absorção rápida, proporcionando resultados imediatos sem pesar os fios.',
+    ativos: ['Lipídios', 'Vitamina E']
+  },
+  {
+    slug: 'hydration', linha: 'trat', familia: 'Hydration',
+    nome: 'Hydration Máscara Líquida', volume: '200 ml', uso: 'Profissional e home care',
+    resumo: 'Hidratação instantânea que vira máscara cremosa em contato com a água.',
+    descricao: 'Máscara líquida desenvolvida para proporcionar hidratação instantânea e profunda. Sua fórmula com vitamina E e lipídios recupera a integridade da fibra capilar, deixando os fios mais fortes, macios e brilhantes. Ao entrar em contato com a água, transforma-se em máscara cremosa, oferecendo rendimento superior às máscaras tradicionais.',
+    beneficios: ['Hidratação imediata', 'Alto rendimento', 'Praticidade no uso', 'Maciez e brilho', 'Fortalecimento dos fios', 'Ideal para profissional e home care'],
+    ativos: ['Vitamina E', 'Lipídios']
+  },
+  {
+    slug: 'bruma-repair', linha: 'trat', familia: 'Bruma Repair',
+    nome: 'Bruma Repair Spray Aminoácidos', volume: '200 ml', uso: 'Profissional e home care',
+    resumo: 'Reconstrução imediata com queratina, elastina, colágeno e proteína da seda.',
+    descricao: 'Reconstrutor desenvolvido para restaurar a força e a resistência dos fios sensibilizados. Sua fórmula com queratina, elastina, colágeno, proteína da seda e Hydration NMF atua no córtex capilar, protegendo contra danos oxidativos e auxiliando na preservação da cor.',
+    beneficios: ['Reconstrução imediata', 'Fortalecimento dos fios', 'Proteção antioxidante', 'Prevenção do desbotamento'],
+    ativos: ['Queratina', 'Elastina', 'Colágeno', 'Proteína da seda', 'Hydration NMF']
+  },
+  {
+    slug: 'strawberry', linha: 'fin', familia: 'Strawberry',
+    nome: 'Strawberry BB Cream', subtitulo: 'Reconstrutor e protetor térmico', volume: '200 ml', uso: 'Profissional e home care',
+    resumo: 'Finalizador em creme que reconstrói e protege do calor. Dez benefícios em um só produto.',
+    descricao: 'Finalizador em creme desenvolvido para reconstruir e proteger os fios contra o calor do secador e da chapinha. Sua fórmula com ceramidas, proteína do algodão e silicones promove maciez e brilho, sendo ideal para uso profissional na bancada e também para o dia a dia da cliente. Excelente também para finalizar cabelos cacheados, pois possui alto poder nutritivo.',
+    beneficios: ['Proteção térmica', 'Reconstrução', 'Antifrizz', 'Maciez e brilho', 'Finaliza cabelos cacheados'],
+    ativos: ['Ceramidas', 'Proteína do algodão', 'Silicones', 'Aloe vera', 'Proteínas']
+  },
+  {
+    slug: 'nescuihair-bb-cream', linha: 'fin', familia: 'Nescuihair',
+    nome: 'Nescuihair BB Cream', volume: '200 ml · 100 ml', uso: 'Profissional e home care',
+    resumo: 'Finalizador leve com proteção térmica e fragrância de morango.',
+    descricao: 'Finalizador leve desenvolvido para proteger os fios contra o calor do secador e da chapinha, além das agressões externas do dia a dia. Auxilia no controle do frizz, promove brilho natural e deixa os cabelos alinhados e sedosos, com fragrância suave de morango.',
+    beneficios: ['Proteção térmica', 'Controle do frizz', 'Brilho e maciez', 'Não pesa nos fios', 'Fragrância de morango', 'Ideal para finalização diária']
+  },
+  {
+    slug: 'oil-repair', linha: 'fin', familia: 'Oil Repair',
+    nome: 'Oil Repair Óleo Finalizador', subtitulo: 'Argan oil', volume: '08 ml · 60 ml', uso: 'Profissional e home care',
+    resumo: 'Óleo de argan que repara, protege do calor e reduz pontas duplas.',
+    descricao: 'Óleo finalizador desenvolvido para reparar, proteger e proporcionar brilho intenso aos fios. Enriquecido com óleo de argan e silicones nobres de origem vegetal, auxilia na redução das pontas duplas, no controle do frizz e na proteção térmica, podendo ser utilizado em cabelos úmidos ou secos.',
+    beneficios: ['Reparação da fibra capilar', 'Proteção térmica', 'Redução das pontas duplas', 'Brilho intenso', 'Ação anti-frizz', 'Toque leve e sedoso'],
+    ativos: ['Óleo de argan', 'Silicones vegetais']
+  },
+  {
+    slug: 'love-in-shine', linha: 'fin', familia: 'Love in Shine',
+    nome: 'Love in Shine Perfume Capilar', subtitulo: '3 fragrâncias, 3 experiências', volume: '50 ml', uso: 'Home care',
+    resumo: 'Perfuma, neutraliza odores e realça o brilho, com toque leve e secagem rápida.',
+    descricao: 'Perfume capilar desenvolvido para perfumar delicadamente os fios, neutralizar odores e realçar a suavidade e o brilho natural do cabelo. Possui textura leve, secagem rápida e brilho que proporciona um acabamento sofisticado, deixando os fios radiantes e perfumados ao longo do dia.',
+    beneficios: ['Perfuma e neutraliza', 'Brilho sofisticado', 'Toque leve e secagem rápida', 'Não pesa nos fios', 'Realça o brilho natural do cabelo', 'Ideal para finalização diária']
+  },
+  {
+    slug: 'curl-revival', linha: 'fin', familia: 'Curl Revival',
+    nome: 'Curl Revival Ativador de Cachos', volume: '500 ml', uso: 'Profissional e home care',
+    resumo: 'Define, modela e nutre os cachos com óleo de coco e manteiga de karité.',
+    descricao: 'Ativador desenvolvido para definir, modelar e nutrir os cachos, proporcionando hidratação, controle do frizz e volume na medida certa. Sua fórmula com óleo de coco e manteiga de karité devolve maciez, brilho e movimento natural, mantendo os cachos lindos por muito mais tempo.',
+    beneficios: ['Definição dos cachos', 'Hidratação e nutrição', 'Redução do frizz', 'Brilho e maciez', 'Volume controlado', 'Uso profissional e home care'],
+    ativos: ['Óleo de coco', 'Manteiga de karité']
+  },
+  {
+    slug: 'herbal', linha: 'couro', familia: 'Herbal',
+    nome: 'Herbal Loção + Cápsula', uso: 'Profissional e home care',
+    resumo: 'Tratamento completo contra queda, alopecias e caspa: loção no couro cabeludo e cápsulas de vitaminas.',
+    descricao: 'Tratamento desenvolvido para auxiliar no combate à queda capilar, alopecias e caspas. A loção atua no couro cabeludo com extratos vegetais calmantes e anti-inflamatórios, enquanto as cápsulas fornecem vitaminas e minerais essenciais para o fortalecimento e crescimento saudável dos fios.',
+    beneficios: ['Auxilia no combate à queda', 'Equilibra o couro cabeludo', 'Estimula o crescimento', 'Ação calmante e anti-inflamatória', 'Fortalece os fios', 'Tratamento completo'],
+    ativos: ['Arnica', 'Confrei', 'Alecrim', 'Própolis', 'Jaborandi', 'Aloe vera']
+  },
+  {
+    slug: 'clean-repair', linha: 'couro', familia: 'Clean Repair',
+    nome: 'Clean Repair Shampoo Neutro + Condicionador', volume: '2500 ml', uso: 'Profissional',
+    resumo: 'Limpeza suave e equilibrada com broto de bambu e proteína do trigo, para todos os tipos de cabelo.',
+    descricao: 'Linha desenvolvida para promover limpeza suave e equilibrada do couro cabeludo e dos fios, sem agredir a fibra capilar. Sua fórmula com broto de bambu e proteína do trigo auxilia na elasticidade, na hidratação e na penteabilidade, garantindo cabelos macios, alinhados e saudáveis no dia a dia.',
+    beneficios: ['Limpeza delicada e eficaz', 'Mantém a umidade dos fios', 'Neutraliza resíduos alcalinos', 'Facilita o desembaraço', 'Maciez e elasticidade', 'Uso profissional'],
+    ativos: ['Broto de bambu', 'Proteína do trigo']
+  },
+  {
+    slug: 'collors', linha: 'cor', familia: 'Collors',
+    nome: 'Ghoodess Collors Coloração Creme', volume: '60 g', uso: 'Profissional',
+    resumo: 'Cores intensas e fiéis à cartela, com hidratação durante o processo.',
+    descricao: 'A Ghoodess Collors é uma coloração creme profissional de alta performance, desenvolvida para entregar cores intensas, fiéis à cartela e com brilho superior, ao mesmo tempo em que trata e protege a fibra capilar durante o processo químico.',
+    beneficios: ['Cores intensas e duradouras', 'Excelente cobertura de fios brancos', 'Hidratação durante o processo de coloração', 'Abertura de cutícula equilibrada', 'Tecnologia profissional de alto desempenho', 'Conforto ao couro cabeludo', 'Resultado uniforme da raiz às pontas'],
+    cartela: ['Naturais', 'Acinzentados', 'Dourados', 'Marrons', 'Corretores', 'Acobreados', 'Vermelhos', 'Beges', 'Mate', 'Pérolas'],
+    modoDeUso: [
+      ['Coloração', '1 : 1½ (60 g de coloração para 90 ml de oxidante)', '40 a 45 minutos'],
+      ['Tonalizante', '1 : 2 (60 g de coloração para 120 ml de oxidante)', '20 a 40 minutos'],
+      ['Super reforçador de clareamento', '1 : 3 (60 g de coloração para 180 ml de oxidante 40 volumes)', '45 a 55 minutos']
+    ],
+    aviso: 'Siga as instruções de preparação e respeite o tempo de pausa de cada procedimento. Realize teste de mechas e prova de toque.'
+  }
+];
+
+  function semAcento(s) { return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  function esc(s) {
+    return String(s).replace(/[&amp;&lt;&gt;"']/g, function (c) {
+      return { '&amp;': '&amp;amp;', '&lt;': '&amp;lt;', '&gt;': '&amp;gt;', '"': '&amp;quot;', "'": '&amp;#39;' }[c];
+    });
+  }
+  function imagem(slug) { return IMAGENS_EMBUTIDAS[slug] || CAMINHO_IMAGENS + slug + '.webp'; }
+  function ponto(linha) { return '&lt;i class="gh-ponto" style="--c:' + LINHAS[linha].cor + '" aria-hidden="true"&gt;&lt;/i&gt;'; }
+  function lista(classe, itens) { return '&lt;ul class="' + classe + '"&gt;&lt;li&gt;' + itens.map(esc).join('&lt;/li&gt;&lt;li&gt;') + '&lt;/li&gt;&lt;/ul&gt;'; }
+
+  var raiz = document.querySelector('.ghoodess-loja');
+  var grade = document.getElementById('gh-grade');
+  var linhasEl = document.getElementById('gh-linhas');
+  var contagem = document.getElementById('gh-contagem');
+  var vazio = document.getElementById('gh-vazio');
+  var busca = document.getElementById('gh-busca');
+  var ficha = document.getElementById('gh-ficha');
+
+  var linhaAtiva = 'todos', termo = '', gatilho = null;
+
+  PRODUTOS.forEach(function (p) {
+    p._busca = semAcento([
+      p.nome, p.familia, p.subtitulo || '', LINHAS[p.linha].nome, p.resumo || '', p.descricao,
+      (p.beneficios || []).join(' '), (p.ativos || []).join(' '), (p.selos || []).join(' '),
+      (p.variantes || []).join(' '), (p.cartela || []).join(' '), p.uso || ''
+    ].join(' '));
+  });
+
+  document.getElementById('gh-total').textContent = PRODUTOS.length;
+  document.getElementById('gh-nlinhas').textContent = Object.keys(LINHAS).length;
+
+  function montarFiltros() {
+    var html = '&lt;button class="gh-chip" type="button" data-linha="todos" aria-pressed="true"&gt;Todos &lt;span class="gh-chip__n"&gt;' + PRODUTOS.length + '&lt;/span&gt;&lt;/button&gt;';
+    Object.keys(LINHAS).forEach(function (id) {
+      var n = PRODUTOS.filter(function (p) { return p.linha === id; }).length;
+      html += '&lt;button class="gh-chip" type="button" data-linha="' + id + '" aria-pressed="false"&gt;' +
+              ponto(id) + '&lt;span&gt;' + esc(LINHAS[id].nome) + '&lt;/span&gt;&lt;span class="gh-chip__n"&gt;' + n + '&lt;/span&gt;&lt;/button&gt;';
+    });
+    linhasEl.innerHTML = html;
+  }
+  function definirLinha(id) {
+    linhaAtiva = id;
+    Array.prototype.forEach.call(linhasEl.children, function (b) { b.setAttribute('aria-pressed', String(b.dataset.linha === id)); });
+    render();
+  }
+  linhasEl.addEventListener('click', function (e) { var b = e.target.closest('.gh-chip'); if (b) definirLinha(b.dataset.linha); });
+  busca.addEventListener('input', function () { termo = semAcento(busca.value.trim()); render(); });
+
+  function filtrados() {
+    return PRODUTOS.filter(function (p) {
+      if (linhaAtiva !== 'todos' &amp;&amp; p.linha !== linhaAtiva) return false;
+      if (termo &amp;&amp; p._busca.indexOf(termo) === -1) return false;
+      return true;
+    });
+  }
+  function render() {
+    var itens = filtrados();
+    grade.innerHTML = itens.map(function (p) {
+      var meta = [];
+      if (p.volume) meta.push('&lt;span&gt;' + esc(p.volume) + '&lt;/span&gt;');
+      if (p.uso) meta.push('&lt;span&gt;' + esc(p.uso) + '&lt;/span&gt;');
+      return '&lt;button class="gh-card" type="button" data-slug="' + p.slug + '"&gt;' +
+        '&lt;span class="gh-card__placa"&gt;&lt;img src="' + imagem(p.slug) + '" alt="' + esc(p.nome) + ', da Ghoodess" loading="lazy" decoding="async"&gt;&lt;/span&gt;' +
+        '&lt;span class="gh-card__familia"&gt;' + ponto(p.linha) + '&lt;span&gt;' + esc(p.familia) + '&lt;/span&gt;&lt;/span&gt;' +
+        '&lt;span class="gh-card__nome"&gt;' + esc(p.nome) + '&lt;/span&gt;' +
+        (p.resumo ? '&lt;span class="gh-card__resumo"&gt;' + esc(p.resumo) + '&lt;/span&gt;' : '') +
+        (meta.length ? '&lt;span class="gh-card__meta"&gt;' + meta.join('') + '&lt;/span&gt;' : '') +
+      '&lt;/button&gt;';
+    }).join('');
+    vazio.hidden = itens.length &gt; 0;
+    var onde = linhaAtiva === 'todos' ? 'no catálogo' : 'em ' + LINHAS[linhaAtiva].nome;
+    contagem.textContent = (itens.length === 1 ? '1 produto ' : itens.length + ' produtos ') + onde;
+  }
+  grade.addEventListener('click', function (e) { var c = e.target.closest('.gh-card'); if (c) abrirFicha(c.dataset.slug, c); });
+
+  function abrirFicha(slug, origem) {
+    var p = PRODUTOS.filter(function (x) { return x.slug === slug; })[0];
+    if (!p) return;
+    gatilho = origem || null;
+    var especs = [];
+    if (p.volume) especs.push(['Volume', p.volume]);
+    if (p.uso) especs.push(['Uso', p.uso]);
+
+    var html =
+      '&lt;div class="gh-ficha__painel"&gt;' +
+        '&lt;button class="gh-fechar" type="button" data-fechar aria-label="Fechar"&gt;&amp;times;&lt;/button&gt;' +
+        '&lt;div class="gh-ficha__placa"&gt;&lt;img src="' + imagem(p.slug) + '" alt="' + esc(p.nome) + '"&gt;&lt;/div&gt;' +
+        '&lt;div class="gh-ficha__corpo"&gt;' +
+          '&lt;div class="gh-ficha__topo"&gt;' + ponto(p.linha) +
+            '&lt;button type="button" data-linha="' + p.linha + '"&gt;' + esc(LINHAS[p.linha].nome) + ' &amp;rarr;&lt;/button&gt;&lt;/div&gt;' +
+          '&lt;div&gt;' +
+            '&lt;p class="gh-ficha__familia"&gt;' + esc(p.familia) + '&lt;/p&gt;' +
+            '&lt;h3 class="gh-ficha__nome gh-ouro" id="gh-ficha-nome"&gt;' + esc(p.nome) + '&lt;/h3&gt;' +
+            (p.subtitulo ? '&lt;p class="gh-ficha__sub"&gt;' + esc(p.subtitulo) + '&lt;/p&gt;' : '') +
+          '&lt;/div&gt;' +
+          (p.resumo ? '&lt;p class="gh-ficha__resumo"&gt;' + esc(p.resumo) + '&lt;/p&gt;' : '') +
+          '&lt;p class="gh-ficha__desc"&gt;' + esc(p.descricao) + '&lt;/p&gt;' +
+          (p.beneficios ? '&lt;div class="gh-bloco"&gt;&lt;p class="gh-bloco__titulo gh-ouro"&gt;Benefícios&lt;/p&gt;' + lista('gh-beneficios', p.beneficios) + '&lt;/div&gt;' : '') +
+          (p.ativos ? '&lt;div class="gh-bloco"&gt;&lt;p class="gh-rotulo"&gt;Ativos&lt;/p&gt;' + lista('gh-pilulas gh-pilulas--ouro', p.ativos) + '&lt;/div&gt;' : '') +
+          (p.variantes ? '&lt;div class="gh-bloco"&gt;&lt;p class="gh-rotulo"&gt;Opções&lt;/p&gt;' + lista('gh-pilulas', p.variantes) + '&lt;/div&gt;' : '') +
+          (p.selos ? lista('gh-pilulas', p.selos) : '') +
+          (p.cartela ? '&lt;div class="gh-bloco"&gt;&lt;p class="gh-rotulo"&gt;Famílias da cartela&lt;/p&gt;' + lista('gh-pilulas gh-pilulas--ouro', p.cartela) + '&lt;/div&gt;' : '') +
+          (p.modoDeUso ? '&lt;div class="gh-bloco"&gt;&lt;p class="gh-bloco__titulo gh-ouro"&gt;Modo de uso&lt;/p&gt;&lt;div class="gh-tabela-rolagem"&gt;&lt;table class="gh-tabela"&gt;' +
+            '&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Procedimento&lt;/th&gt;&lt;th&gt;Proporção&lt;/th&gt;&lt;th&gt;Tempo de pausa&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;' +
+            p.modoDeUso.map(function (l) { return '&lt;tr&gt;&lt;td&gt;' + l.map(esc).join('&lt;/td&gt;&lt;td&gt;') + '&lt;/td&gt;&lt;/tr&gt;'; }).join('') +
+            '&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;' + (p.aviso ? '&lt;p class="gh-aviso"&gt;' + esc(p.aviso) + '&lt;/p&gt;' : '') + '&lt;/div&gt;' : '') +
+          (especs.length ? '&lt;dl class="gh-especs"&gt;' + especs.map(function (e) {
+            return '&lt;div&gt;&lt;dt class="gh-rotulo"&gt;' + esc(e[0]) + '&lt;/dt&gt;&lt;dd&gt;' + esc(e[1]) + '&lt;/dd&gt;&lt;/div&gt;'; }).join('') + '&lt;/dl&gt;' : '') +
+          (CONTATO.url ? '&lt;p&gt;&lt;a class="gh-cta" href="' + esc(CONTATO.url) + '" target="_blank" rel="noopener"&gt;' + esc(CONTATO.rotulo) + '&lt;/a&gt;&lt;/p&gt;' : '') +
+        '&lt;/div&gt;' +
+      '&lt;/div&gt;';
+    ficha.innerHTML = html; ficha.hidden = false;
+    document.body.style.overflow = 'hidden';
+    ficha.querySelector('[data-fechar]').focus();
+  }
+  function fecharFicha() {
+    ficha.hidden = true; ficha.innerHTML = ''; document.body.style.overflow = '';
+    if (gatilho &amp;&amp; document.contains(gatilho)) gatilho.focus();
+    gatilho = null;
+  }
+  ficha.addEventListener('click', function (e) {
+    if (e.target === ficha || e.target.closest('[data-fechar]')) { fecharFicha(); return; }
+    var b = e.target.closest('[data-linha]');
+    if (b) { fecharFicha(); definirLinha(b.dataset.linha); raiz.scrollIntoView({ block: 'start' }); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (ficha.hidden) return;
+    if (e.key === 'Escape') { fecharFicha(); return; }
+    if (e.key !== 'Tab') return;
+    var foco = ficha.querySelectorAll('button, a[href], input');
+    if (!foco.length) return;
+    var primeiro = foco[0], ultimo = foco[foco.length - 1];
+    if (e.shiftKey &amp;&amp; document.activeElement === primeiro) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey &amp;&amp; document.activeElement === ultimo) { e.preventDefault(); primeiro.focus(); }
+  });
+
+  if (CONTATO.url) {
+    document.getElementById('gh-rodape-cta').innerHTML = '&lt;a class="gh-cta" href="' + esc(CONTATO.url) + '" target="_blank" rel="noopener"&gt;' + esc(CONTATO.rotulo) + '&lt;/a&gt;';
+  }
+  montarFiltros(); render();
+})();
+&lt;/script&gt;</textarea></details>
+  </section>
+
+  <section>
+    <h2>Se for fazer à mão</h2>
+    <ol>
+      <li>No editor do Hostinger, abra a página <strong>Ghoodess</strong>.</li>
+      <li><strong>Adicionar elemento</strong> → <strong>Incorporar código</strong>.</li>
+      <li>Clique em <strong>Copiar código</strong> aqui em cima, depois clique na caixa do elemento e cole com <kbd>Ctrl</kbd>+<kbd>V</kbd>. Confirme em <strong>Incorporar código</strong>.</li>
+      <li>Estique o elemento para ficar bem alto (uns 3.000 px).</li>
+      <li><strong>Atualizar site</strong>.</li>
+    </ol>
+    <p class="nota">As fotos são carregadas do GitHub por um endereço fixo, então não precisa subir imagem nenhuma. Se o conteúdo mudar, gere este arquivo de novo com <code>python3 loja/scripts/gerar.py</code> e repita a colagem.</p>
+  </section>
+</main>
+<script>
+(function () {
+  function marcar(botao, estado, texto) {
+    var original = botao.dataset.rotulo || (botao.dataset.rotulo = botao.textContent);
+    botao.dataset.estado = estado; botao.textContent = texto;
+    setTimeout(function () { botao.dataset.estado = ''; botao.textContent = original; }, 2500);
+  }
+  function copiarFallback(area) {
+    var det = area.closest('details'); if (det) det.open = true;
+    area.focus(); area.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    window.getSelection().removeAllRanges(); return ok;
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-copiar]'); if (!b) return;
+    var area = document.getElementById(b.dataset.copiar);
+    var texto = area.value;
+    var pronto = function () { marcar(b, 'ok', 'Copiado ✓ (' + Math.round(texto.length / 1024) + ' KB)'); };
+    var falhou = function () { marcar(b, 'erro', 'Não copiou. Selecione o texto e use Ctrl+C.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(pronto, function () { copiarFallback(area) ? pronto() : falhou(); });
+    } else { copiarFallback(area) ? pronto() : falhou(); }
+  });
+})();
+</script>
+</body>
+</html>

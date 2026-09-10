@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Publicar catálogos</title>
+<title>{{TITULO}}</title>
 <style>
   :root { color-scheme: light; --tinta: #1c1c1e; --suave: #6b6b70; --borda: #dcdcdf; --fundo: #f6f6f7; --painel: #fff; --acento: #8a6d3b; --ok: #2e7d4f; }
   * { box-sizing: border-box; }
@@ -31,13 +31,13 @@
 <body>
 <main>
   <div>
-    <h1>Publicar catálogos no Hostinger</h1>
-    <p class="nota">Este arquivo é local. Ele guarda o código de cada catálogo e o comando para a extensão do navegador fazer a publicação. Deixe esta aba aberta, logado no editor do Hostinger em outra aba.</p>
+    <h1>Publicar o catálogo {{NOME}} no Hostinger</h1>
+    <p class="nota">Este arquivo é local. Ele guarda o código do catálogo {{NOME}} e o comando para a extensão do navegador publicar na página <strong>{{PAGINA}}</strong> do site, e em nenhuma outra. Deixe esta aba aberta, logado no editor do Hostinger em outra aba.</p>
   </div>
 
   <section>
     <p class="etiqueta">Comando para a extensão do navegador</p>
-    <p class="nota">Cole este texto na extensão (por exemplo, o Claude no Chrome) com esta aba e a aba do editor do Hostinger abertas. Para publicar só uma marca, apague o trecho da outra.</p>
+    <p class="nota">Cole este texto na extensão (por exemplo, o Claude no Chrome) com esta aba e a aba do editor do Hostinger abertas.</p>
     <textarea class="comando" id="comando" readonly>{{COMANDO}}</textarea>
     <div class="linha"><button type="button" data-copiar="comando">Copiar comando</button></div>
   </section>
@@ -47,9 +47,9 @@
   <section>
     <h2>Se for fazer à mão</h2>
     <ol>
-      <li>No editor do Hostinger, abra a página da marca.</li>
+      <li>No editor do Hostinger, abra a página <strong>{{PAGINA}}</strong>.</li>
       <li><strong>Adicionar elemento</strong> → <strong>Incorporar código</strong>.</li>
-      <li>Clique em <strong>Copiar código</strong> da marca aqui em cima, depois clique na caixa do elemento e cole com <kbd>Ctrl</kbd>+<kbd>V</kbd>. Confirme em <strong>Incorporar código</strong>.</li>
+      <li>Clique em <strong>Copiar código</strong> aqui em cima, depois clique na caixa do elemento e cole com <kbd>Ctrl</kbd>+<kbd>V</kbd>. Confirme em <strong>Incorporar código</strong>.</li>
       <li>Estique o elemento para ficar bem alto (uns 3.000 px).</li>
       <li><strong>Atualizar site</strong>.</li>
     </ol>
