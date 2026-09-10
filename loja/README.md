@@ -39,6 +39,15 @@ são carregadas direto deste repositório no GitHub, e não vão dentro do códi
 Pronto. Se o Hostinger reclamar do tamanho do código, ou se as fotos não
 aparecerem, veja as alternativas abaixo.
 
+### Publicar pela extensão do navegador
+
+O arquivo **`publicar.html`** (gerado junto com os outros) é um painel local:
+abra-o no navegador, deixe a aba aberta e, em outra aba, entre no editor do
+Hostinger. Ele tem um botão **Copiar código** para cada marca e o **comando**
+pronto para uma extensão de navegador que execute tarefas (por exemplo, o
+Claude no Chrome): copie o comando, cole na extensão e ela faz os passos
+acima. O código nunca é digitado, só copiado e colado, então chega inteiro.
+
 ### Se as fotos não carregarem
 
 O `embed-hostinger.html` busca as fotos em
