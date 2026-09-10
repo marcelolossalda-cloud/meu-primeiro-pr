@@ -1,3 +1,17 @@
+# Catálogos de produtos
+
+Duas marcas, cada uma com sua página:
+
+| Pasta | Marca | Produtos |
+| --- | --- | --- |
+| `loja/` (esta) | **aella professional** | 28 produtos em 9 linhas |
+| `loja/ghoodess/` | **Ghoodess** | 26 produtos em 6 categorias |
+
+As duas páginas têm a mesma mecânica (filtro, busca, ficha por produto) e cada
+uma segue a identidade visual do próprio catálogo. O gerador é compartilhado:
+`python3 scripts/gerar.py` gera a Aella e `python3 scripts/gerar.py ghoodess`
+gera a Ghoodess. Abaixo, o catálogo da Aella; o da Ghoodess tem README próprio.
+
 # Catálogo aella Professional
 
 Página de catálogo com os **28 produtos** das **9 linhas** da aella professional,
