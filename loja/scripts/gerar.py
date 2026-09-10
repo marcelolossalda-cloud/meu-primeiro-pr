@@ -19,9 +19,23 @@ RAIZ = LOJA / sys.argv[1] if len(sys.argv) > 1 else LOJA
 # De onde o site carrega as fotos no embed-hostinger.html: a pasta imagens/ do
 # catálogo, neste repositório, na branch em que ele está publicado. Se o
 # catálogo for parar na branch main, troque o nome da branch aqui.
-REPO_RAW = ('https://raw.githubusercontent.com/marcelolossalda-cloud/meu-primeiro-pr/'
-            'claude/product-store-page-7o5bm4/')
-IMAGENS_URL = REPO_RAW + RAIZ.relative_to(LOJA.parent).as_posix() + '/imagens/'
+# De onde o site carrega as fotos nos embeds. O endereço aponta para o commit
+# exato em que as fotos foram gravadas pela última vez, e não para uma branch:
+# assim continua funcionando mesmo depois de integrar na main e apagar a branch
+# de trabalho. Se as fotos mudarem, commite-as antes de rodar este script.
+import subprocess
+REPO_RAW = 'https://raw.githubusercontent.com/marcelolossalda-cloud/meu-primeiro-pr/'
+
+def ref_das_imagens(pasta: pathlib.Path) -> str:
+    sujo = subprocess.run(['git', 'status', '--porcelain', '--', str(pasta)], capture_output=True, text=True).stdout.strip()
+    if sujo:
+        raise SystemExit(f'há fotos alteradas e não commitadas em {pasta}; commite antes de gerar os embeds')
+    sha = subprocess.run(['git', 'log', '-1', '--format=%H', '--', str(pasta)], capture_output=True, text=True).stdout.strip()
+    if not sha:
+        raise SystemExit(f'nenhum commit encontrado para {pasta}')
+    return sha
+
+IMAGENS_URL = REPO_RAW + ref_das_imagens(RAIZ / 'imagens') + '/' + RAIZ.relative_to(LOJA.parent).as_posix() + '/imagens/'
 
 
 def main() -> int:
