@@ -13,6 +13,7 @@
 .ghoodess-loja {
   /* — cores claras (a paleta do catálogo) — */
   --gh-papel:       #E7E8E9;
+  --gh-hero-a:      #F5F5F6;
   --gh-superficie:  #F7F7F8;
   --gh-placa-a:     #F5F5F6;
   --gh-placa-b:     #E1E2E4;
@@ -54,6 +55,7 @@
 .ghoodess-loja[data-tema="escuro"],
 :root[data-theme="dark"] .ghoodess-loja[data-tema="auto"] {
   --gh-papel:       #1C1C1F;
+  --gh-hero-a:      #26262A;
   --gh-superficie:  #26262A;
   --gh-placa-a:     #EDEDEF;
   --gh-placa-b:     #D9DADC;
@@ -67,6 +69,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .ghoodess-loja[data-tema="auto"] {
     --gh-papel:       #1C1C1F;
+  --gh-hero-a:      #26262A;
     --gh-superficie:  #26262A;
     --gh-placa-a:     #EDEDEF;
     --gh-placa-b:     #D9DADC;
@@ -119,7 +122,7 @@
   display: grid;
   justify-items: center;
   gap: .9rem;
-  background: linear-gradient(180deg, var(--gh-placa-a) 0%, var(--gh-papel) 100%);
+  background: linear-gradient(180deg, var(--gh-hero-a) 0%, var(--gh-papel) 100%);
   border-bottom: 1px solid var(--gh-borda);
 }
 .gh-marca__nome {
@@ -374,6 +377,12 @@
   .ghoodess-loja *, .ghoodess-loja *::before, .ghoodess-loja *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
   .gh-card:hover, .gh-card:focus-visible { transform: none; }
 }
+/* contêiner estreito: chips numa linha só, rolável, em vez de cinco linhas na barra fixa */
+@container (max-width: 520px) {
+  .gh-linhas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .2rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .gh-linhas::-webkit-scrollbar { display: none; }
+  .gh-chip { flex: none; white-space: nowrap; }
+}
 </style>
 
 <div class="ghoodess-loja" lang="pt-BR" data-tema="auto">
@@ -411,7 +420,7 @@
     </div>
     <div class="gh-rodape__marca">
       <p class="gh-rodape__wordmark gh-ouro">Ghoodess</p>
-      <p>Distribuidor autorizado</p>
+      <p>Distribuidor</p>
       <p id="gh-rodape-cta"></p>
     </div>
   </footer>

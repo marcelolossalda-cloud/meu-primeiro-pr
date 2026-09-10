@@ -307,6 +307,7 @@
 .al-card__linha {
   display: flex;
   align-items: center;
+  min-width: 0;
   gap: .45rem;
   padding: 0 .85rem;
   font-size: var(--al-t-micro);
@@ -316,6 +317,8 @@
   color: var(--al-suave);
 }
 .al-card__linha .al-mono { width: 1.3rem; height: 1.3rem; font-size: .62rem; }
+/* o nome da linha é uma palavra só e não quebra: precisa poder encolher */
+.al-card__linha-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .al-card__nome {
   padding: 0 .85rem;
   hyphens: auto;
@@ -583,6 +586,20 @@
     animation-duration: .01ms !important;
   }
   .al-card:hover, .al-card:focus-visible { transform: none; }
+}
+/* cards entre ~150 e 180 px (5 colunas até 1060 px): nome da linha menor */
+@container (max-width: 1060px) {
+  .al-card__linha-nome { font-size: .625rem; letter-spacing: .06em; }
+}
+/* cards menores que isso (3 e 4 colunas): só o monograma */
+@container (max-width: 800px) {
+  .al-card__linha-nome { display: none; }
+}
+/* contêiner estreito: chips numa linha só, rolável, em vez de cinco linhas na barra fixa */
+@container (max-width: 520px) {
+  .al-linhas { flex-wrap: nowrap; overflow-x: auto; padding-bottom: .2rem; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .al-linhas::-webkit-scrollbar { display: none; }
+  .al-chip { flex: none; white-space: nowrap; }
 }
 </style>
 
