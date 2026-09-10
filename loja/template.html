@@ -43,6 +43,7 @@
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   container-type: inline-size;
+  position: relative;
 }
 
 /* — cores escuras: a placa da foto continua clara, porque as fotos do
@@ -601,6 +602,12 @@
   .al-linhas::-webkit-scrollbar { display: none; }
   .al-chip { flex: none; white-space: nowrap; }
 }
+/* Dentro de um bloco "Incorporar código" o conteúdo vai num iframe que o site
+   estica até caber inteiro. Ali a "tela" do iframe tem milhares de pixels e
+   quem rola é a página de fora, então uma ficha centralizada em position:fixed
+   cai longe do card clicado. Nesse caso ancoramos a ficha ao card. */
+.al-ficha--ancorada { position: absolute; align-items: start; }
+.al-ficha--ancorada .al-ficha__painel { max-height: 42rem; }
 </style>
 
 <div class="aella-loja" lang="pt-BR" data-tema="auto">
@@ -669,6 +676,12 @@
     return String(s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
+  }
+  /* Verdadeiro quando estamos num iframe esticado para caber todo o conteúdo:
+     a rolagem é da página de fora, não daqui. */
+  function ancorarNoCard() {
+    try { return window.self !== window.top && window.innerHeight > 1100; }
+    catch (e) { return window.innerHeight > 1100; }
   }
   function imagem(slug) {
     return IMAGENS_EMBUTIDAS[slug] || CAMINHO_IMAGENS + slug + '.webp';
@@ -822,13 +835,22 @@
 
     ficha.innerHTML = html;
     ficha.hidden = false;
-    document.body.style.overflow = 'hidden';
+    if (ancorarNoCard() && origem) {
+      ficha.classList.add('al-ficha--ancorada');
+      var painel = ficha.firstElementChild;
+      var alvo = origem.getBoundingClientRect().top - raiz.getBoundingClientRect().top;
+      var limite = raiz.offsetHeight - painel.offsetHeight - 16;
+      painel.style.marginTop = Math.max(8, Math.min(alvo - 16, limite)) + 'px';
+    } else {
+      document.body.style.overflow = 'hidden';
+    }
     ficha.querySelector('[data-fechar]').focus();
   }
 
   function fecharFicha() {
     ficha.hidden = true;
     ficha.innerHTML = '';
+    ficha.classList.remove('al-ficha--ancorada');
     document.body.style.overflow = '';
     if (gatilho && document.contains(gatilho)) gatilho.focus();
     gatilho = null;

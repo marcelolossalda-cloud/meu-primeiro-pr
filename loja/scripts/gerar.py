@@ -8,6 +8,7 @@
 
 Uso:  python3 scripts/gerar.py            (catálogo aella, na pasta loja/)
       python3 scripts/gerar.py ghoodess   (catálogo ghoodess, em loja/ghoodess/)
+      python3 scripts/gerar.py combinado  (página Loja com todas as marcas)
 """
 import base64
 import pathlib
@@ -35,10 +36,11 @@ def ref_das_imagens(pasta: pathlib.Path) -> str:
         raise SystemExit(f'nenhum commit encontrado para {pasta}')
     return sha
 
-IMAGENS_URL = REPO_RAW + ref_das_imagens(RAIZ / 'imagens') + '/' + RAIZ.relative_to(LOJA.parent).as_posix() + '/imagens/'
 
 
 def main() -> int:
+    if len(sys.argv) > 1 and sys.argv[1] == 'combinado':
+        return gerar_combinado()
     template = (RAIZ / 'template.html').read_text(encoding='utf-8')
     dados = (RAIZ / 'dados.js').read_text(encoding='utf-8')
 
@@ -50,6 +52,7 @@ def main() -> int:
     pagina = template.replace('/* {{DADOS}} */', dados.rstrip())
     (RAIZ / 'loja.html').write_text(pagina, encoding='utf-8')
 
+    url_imgs = imagens_url()
     sem_titulo = lambda html: '\n'.join(l for l in html.splitlines() if not l.startswith('<title>'))
 
     # — embed para o Hostinger: código leve, fotos servidas pelo GitHub —
@@ -57,7 +60,7 @@ def main() -> int:
     if marcador not in pagina:
         print('template.html não tem a linha CAMINHO_IMAGENS esperada', file=sys.stderr)
         return 1
-    hostinger = sem_titulo(pagina.replace(marcador, "var CAMINHO_IMAGENS = '%s';" % IMAGENS_URL))
+    hostinger = sem_titulo(pagina.replace(marcador, "var CAMINHO_IMAGENS = '%s';" % url_imgs))
     (RAIZ / 'embed-hostinger.html').write_text(hostinger, encoding='utf-8')
 
     # — versão autocontida: imagens viram data URI —
@@ -78,7 +81,7 @@ def main() -> int:
     print('[%s]' % RAIZ.name)
     print('loja.html               %6.0f KB  (+ pasta imagens/, %.0f KB)'
           % (kb('loja.html'), sum(i.stat().st_size for i in imagens) / 1024))
-    print('embed-hostinger.html    %6.0f KB  (fotos vindas de %s)' % (kb('embed-hostinger.html'), IMAGENS_URL))
+    print('embed-hostinger.html    %6.0f KB  (fotos vindas de %s)' % (kb('embed-hostinger.html'), url_imgs))
     print('embed-autocontido.html  %6.0f KB  (%d fotos embutidas)' % (kb('embed-autocontido.html'), len(imagens)))
     gerar_publicar()
     return 0
@@ -120,6 +123,10 @@ BLOCO_MARCA = (
 )
 
 
+def imagens_url() -> str:
+    return REPO_RAW + ref_das_imagens(RAIZ / 'imagens') + '/' + RAIZ.relative_to(LOJA.parent).as_posix() + '/imagens/'
+
+
 def gerar_publicar() -> None:
     import html
     modelo_p = LOJA / 'scripts' / 'publicar.template.html'
@@ -140,6 +147,65 @@ def gerar_publicar() -> None:
                    .replace('{{COMANDO}}', html.escape(comando, quote=False)).replace('{{MARCAS}}', bloco))
     (RAIZ / 'publicar.html').write_text(saida, encoding='utf-8')
     print('publicar.html          %6.0f KB  (só %s, página "%s")' % ((RAIZ / 'publicar.html').stat().st_size / 1024, nome, pagina))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Página única com as marcas, para a aba Loja do site.
+COMBINADO = LOJA / 'todas-marcas'
+MARCAS_COMBINADAS = [
+    # (id, nome da aba, pasta da marca) — para acrescentar uma marca, some uma
+    # linha aqui depois de gerar a pasta dela.
+    ('aella', 'aella Professional', LOJA),
+    ('ghoodess', 'Ghoodess', LOJA / 'ghoodess'),
+]
+
+
+def gerar_combinado() -> int:
+    import html
+    modelo_p = LOJA / 'scripts' / 'combinado.template.html'
+    if not modelo_p.exists():
+        print('falta scripts/combinado.template.html', file=sys.stderr)
+        return 1
+    abas, paineis, nomes = [], [], []
+    for mid, nome, pasta in MARCAS_COMBINADAS:
+        arq = pasta / 'embed-hostinger.html'
+        if not arq.exists():
+            print('falta %s — gere a marca antes' % arq, file=sys.stderr)
+            return 1
+        nomes.append(nome)
+        abas.append('<button class="lm-aba" type="button" role="tab" data-alvo="marca-%s" '
+                    'aria-selected="false" tabindex="-1">%s</button>' % (mid, html.escape(nome)))
+        paineis.append('  <div id="marca-%s" role="tabpanel" aria-label="%s">\n%s\n  </div>'
+                       % (mid, html.escape(nome), arq.read_text(encoding='utf-8')))
+    saida = (modelo_p.read_text(encoding='utf-8')
+             .replace('{{ABAS}}', '\n      '.join(abas))
+             .replace('{{PAINEIS}}', '\n'.join(paineis)))
+    COMBINADO.mkdir(exist_ok=True)
+    (COMBINADO / 'embed-hostinger.html').write_text(saida, encoding='utf-8')
+    print('todas-marcas/embed-hostinger.html  %6.0f KB  (%s)'
+          % ((COMBINADO / 'embed-hostinger.html').stat().st_size / 1024, ', '.join(nomes)))
+    gerar_publicar_combinado(nomes)
+    return 0
+
+
+def gerar_publicar_combinado(nomes) -> None:
+    import html
+    modelo_p = LOJA / 'scripts' / 'publicar.template.html'
+    if not modelo_p.exists():
+        return
+    codigo = (COMBINADO / 'embed-hostinger.html').read_text(encoding='utf-8')
+    lista = ', '.join(nomes[:-1]) + ' e ' + nomes[-1] if len(nomes) > 1 else nomes[0]
+    nome, pagina = 'Loja (%s)' % lista, 'Loja'
+    bloco = BLOCO_MARCA.format(nome=html.escape(nome), pagina=html.escape(pagina), id='todas',
+                               kb=round(len(codigo.encode('utf-8')) / 1024),
+                               codigo=html.escape(codigo, quote=False))
+    comando = COMANDO_PUBLICAR.format(nome=nome, pagina=pagina)
+    saida = (modelo_p.read_text(encoding='utf-8')
+             .replace('{{TITULO}}', 'Publicar catálogo Loja')
+             .replace('{{NOME}}', html.escape(nome)).replace('{{PAGINA}}', html.escape(pagina))
+             .replace('{{COMANDO}}', html.escape(comando, quote=False)).replace('{{MARCAS}}', bloco))
+    (COMBINADO / 'publicar.html').write_text(saida, encoding='utf-8')
+    print('todas-marcas/publicar.html         %6.0f KB' % ((COMBINADO / 'publicar.html').stat().st_size / 1024))
 
 
 if __name__ == '__main__':

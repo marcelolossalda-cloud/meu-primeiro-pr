@@ -47,6 +47,7 @@
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   container-type: inline-size;
+  position: relative;
 }
 
 /* — tema escuro: a placa da foto continua clara, porque as fotos têm fundo
@@ -382,6 +383,12 @@
   .gh-linhas::-webkit-scrollbar { display: none; }
   .gh-chip { flex: none; white-space: nowrap; }
 }
+/* Dentro de um bloco "Incorporar código" o conteúdo vai num iframe que o site
+   estica até caber inteiro. Ali a "tela" do iframe tem milhares de pixels e
+   quem rola é a página de fora, então uma ficha centralizada em position:fixed
+   cai longe do card clicado. Nesse caso ancoramos a ficha ao card. */
+.gh-ficha--ancorada { position: absolute; align-items: start; }
+.gh-ficha--ancorada .gh-ficha__painel { max-height: 42rem; }
 </style>
 
 <div class="ghoodess-loja" lang="pt-BR" data-tema="auto">
@@ -680,6 +687,13 @@ const PRODUTOS = [
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+  /* Verdadeiro quando estamos num iframe esticado para caber todo o conteúdo:
+     a rolagem é da página de fora, não daqui. */
+  function ancorarNoCard() {
+    try { return window.self !== window.top && window.innerHeight > 1100; }
+    catch (e) { return window.innerHeight > 1100; }
+  }
+
   function imagem(slug) { return IMAGENS_EMBUTIDAS[slug] || CAMINHO_IMAGENS + slug + '.webp'; }
   function ponto(linha) { return '<i class="gh-ponto" style="--c:' + LINHAS[linha].cor + '" aria-hidden="true"></i>'; }
   function lista(classe, itens) { return '<ul class="' + classe + '"><li>' + itens.map(esc).join('</li><li>') + '</li></ul>'; }
@@ -786,11 +800,20 @@ const PRODUTOS = [
         '</div>' +
       '</div>';
     ficha.innerHTML = html; ficha.hidden = false;
-    document.body.style.overflow = 'hidden';
+    if (ancorarNoCard() && origem) {
+      ficha.classList.add('gh-ficha--ancorada');
+      var painel = ficha.firstElementChild;
+      var alvo = origem.getBoundingClientRect().top - raiz.getBoundingClientRect().top;
+      var limite = raiz.offsetHeight - painel.offsetHeight - 16;
+      painel.style.marginTop = Math.max(8, Math.min(alvo - 16, limite)) + 'px';
+    } else {
+      document.body.style.overflow = 'hidden';
+    }
     ficha.querySelector('[data-fechar]').focus();
   }
   function fecharFicha() {
-    ficha.hidden = true; ficha.innerHTML = ''; document.body.style.overflow = '';
+    ficha.hidden = true; ficha.innerHTML = ''; ficha.classList.remove('gh-ficha--ancorada');
+    document.body.style.overflow = '';
     if (gatilho && document.contains(gatilho)) gatilho.focus();
     gatilho = null;
   }

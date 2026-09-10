@@ -53,7 +53,7 @@ Regras: não mexa em nenhuma outra página; não altere nem apague nenhum outro 
 
   <section>
     <p class="etiqueta">Marca</p>
-    <div class="linha"><h2>Ghoodess</h2><span class="meta">página <strong>Ghoodess</strong> no editor &middot; 49 KB</span></div>
+    <div class="linha"><h2>Ghoodess</h2><span class="meta">página <strong>Ghoodess</strong> no editor &middot; 50 KB</span></div>
     <div class="linha"><button type="button" data-copiar="codigo-ghoodess">Copiar código &middot; Ghoodess</button></div>
     <details><summary>Ver o código</summary><textarea id="codigo-ghoodess" readonly spellcheck="false">&lt;link rel="preconnect" href="https://fonts.googleapis.com"&gt;
 &lt;link rel="preconnect" href="https://fonts.gstatic.com" crossorigin&gt;
@@ -104,6 +104,7 @@ Regras: não mexa em nenhuma outra página; não altere nem apague nenhum outro 
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   container-type: inline-size;
+  position: relative;
 }
 
 /* — tema escuro: a placa da foto continua clara, porque as fotos têm fundo
@@ -439,6 +440,12 @@ Regras: não mexa em nenhuma outra página; não altere nem apague nenhum outro 
   .gh-linhas::-webkit-scrollbar { display: none; }
   .gh-chip { flex: none; white-space: nowrap; }
 }
+/* Dentro de um bloco "Incorporar código" o conteúdo vai num iframe que o site
+   estica até caber inteiro. Ali a "tela" do iframe tem milhares de pixels e
+   quem rola é a página de fora, então uma ficha centralizada em position:fixed
+   cai longe do card clicado. Nesse caso ancoramos a ficha ao card. */
+.gh-ficha--ancorada { position: absolute; align-items: start; }
+.gh-ficha--ancorada .gh-ficha__painel { max-height: 42rem; }
 &lt;/style&gt;
 
 &lt;div class="ghoodess-loja" lang="pt-BR" data-tema="auto"&gt;
@@ -737,6 +744,13 @@ const PRODUTOS = [
       return { '&amp;': '&amp;amp;', '&lt;': '&amp;lt;', '&gt;': '&amp;gt;', '"': '&amp;quot;', "'": '&amp;#39;' }[c];
     });
   }
+  /* Verdadeiro quando estamos num iframe esticado para caber todo o conteúdo:
+     a rolagem é da página de fora, não daqui. */
+  function ancorarNoCard() {
+    try { return window.self !== window.top &amp;&amp; window.innerHeight &gt; 1100; }
+    catch (e) { return window.innerHeight &gt; 1100; }
+  }
+
   function imagem(slug) { return IMAGENS_EMBUTIDAS[slug] || CAMINHO_IMAGENS + slug + '.webp'; }
   function ponto(linha) { return '&lt;i class="gh-ponto" style="--c:' + LINHAS[linha].cor + '" aria-hidden="true"&gt;&lt;/i&gt;'; }
   function lista(classe, itens) { return '&lt;ul class="' + classe + '"&gt;&lt;li&gt;' + itens.map(esc).join('&lt;/li&gt;&lt;li&gt;') + '&lt;/li&gt;&lt;/ul&gt;'; }
@@ -843,11 +857,20 @@ const PRODUTOS = [
         '&lt;/div&gt;' +
       '&lt;/div&gt;';
     ficha.innerHTML = html; ficha.hidden = false;
-    document.body.style.overflow = 'hidden';
+    if (ancorarNoCard() &amp;&amp; origem) {
+      ficha.classList.add('gh-ficha--ancorada');
+      var painel = ficha.firstElementChild;
+      var alvo = origem.getBoundingClientRect().top - raiz.getBoundingClientRect().top;
+      var limite = raiz.offsetHeight - painel.offsetHeight - 16;
+      painel.style.marginTop = Math.max(8, Math.min(alvo - 16, limite)) + 'px';
+    } else {
+      document.body.style.overflow = 'hidden';
+    }
     ficha.querySelector('[data-fechar]').focus();
   }
   function fecharFicha() {
-    ficha.hidden = true; ficha.innerHTML = ''; document.body.style.overflow = '';
+    ficha.hidden = true; ficha.innerHTML = ''; ficha.classList.remove('gh-ficha--ancorada');
+    document.body.style.overflow = '';
     if (gatilho &amp;&amp; document.contains(gatilho)) gatilho.focus();
     gatilho = null;
   }

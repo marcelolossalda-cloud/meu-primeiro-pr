@@ -160,3 +160,14 @@ catálogo não afirme. Algumas observações:
 O rodapé credita a marca com o Instagram e o site oficial. O endereço e o
 telefone da fábrica, que aparecem na última página do PDF, **não** foram
 incluídos.
+
+## Página Loja com todas as marcas
+
+`loja/todas-marcas/embed-hostinger.html` reúne os catálogos numa página só, com
+uma barra de abas em cima para escolher a marca. É o arquivo da **aba Loja**.
+As páginas por marca continuam existindo, para quem quiser uma aba dedicada
+(a Ghoodess usa `loja/ghoodess/embed-hostinger.html` na aba Ghoodess).
+
+Para acrescentar uma marca: crie a pasta dela com `dados.js`, `template.html` e
+`imagens/`, gere-a (`python3 scripts/gerar.py <pasta>`), some uma linha em
+`MARCAS_COMBINADAS` no `scripts/gerar.py` e rode `python3 scripts/gerar.py combinado`.
