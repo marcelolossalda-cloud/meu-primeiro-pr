@@ -323,6 +323,12 @@
   .offer-card > .rail { height: .375rem; margin: calc(-1 * clamp(1.75rem, 4vw, 2.75rem)) calc(-1 * clamp(1.75rem, 4vw, 2.75rem)) clamp(1.5rem, 3vw, 2rem); }
   .price { font-family: var(--display); font-size: clamp(2.6rem, 7.5vw, 3.9rem); line-height: 1; margin-top: .6rem; }
   .price small { font-size: .28em; font-family: var(--body); font-weight: 500; color: var(--muted); display: block; margin-bottom: .5rem; letter-spacing: .12em; text-transform: uppercase; }
+  .anchor {
+    margin-top: 1.1rem; padding-top: 1.1rem; border-top: 1px solid var(--line);
+    font-family: var(--display); font-style: italic; font-size: 1.05rem;
+    color: var(--ink-soft); line-height: 1.4; text-wrap: balance;
+  }
+
   .offer-list { list-style: none; margin: 1.75rem 0; padding: 0; display: grid; gap: .75rem; text-align: left; font-size: .95rem; color: var(--ink-soft); }
   .offer-list li { display: grid; grid-template-columns: 1.3rem 1fr; gap: .55rem; }
   .offer-list li::before { content: "✓"; color: var(--accent-text); font-size: .9rem; font-weight: 700; }
@@ -682,8 +688,9 @@
       <div class="scale"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     </div>
     <p class="eyebrow">Loiro de Tinta na Prática</p>
-    <p class="price"><small>Acesso à aula completa</small><span class="tbd">R$ 00,00</span></p>
-    <p class="cta-note"><span class="tbd">ou 00x de R$ 00,00 no cartão</span></p>
+    <p class="price"><small>Acesso à aula completa</small>R$ 97<span style="font-size:.45em;vertical-align:.55em">,00</span></p>
+    <p class="cta-note">à vista · ou parcelado no cartão <span class="tbd">confirmar parcelamento no checkout</span></p>
+    <p class="anchor">Menos do que você cobra por um único atendimento de correção.</p>
 
     <ul class="offer-list">
       <li><strong>Aula completa com o caso real</strong> — do diagnóstico ao resultado final, sem cortes na parte técnica</li>
@@ -692,14 +699,15 @@
       <li><strong>Correção de manchas</strong> de processo caseiro, passo a passo</li>
       <li><strong>Tratamento pós-química e finalização</strong></li>
       <li><strong>12 meses de acesso</strong> — reveja quantas vezes quiser, direto do celular no salão</li>
+      <li><strong>Bônus: 30 dias no USalon</strong>, o app de gestão de salão</li>
     </ul>
 
     <div class="bonus">
       <div class="bonus-head">Bônus incluso</div>
       <div class="bonus-body">
-        <h3>30 dias no app de Vendas e Gestão</h3>
-        <p><span class="tbd">Uma frase sobre o que o app resolve no dia a dia do salão — agenda, clientes, controle do que entra e do que sai.</span></p>
-        <span class="bonus-by">por Marcelo Lossalda</span>
+        <h3>30 dias no USalon</h3>
+        <p>App de gestão de salão.</p>
+        <span class="bonus-by">USalon · por Marcelo Lossalda</span>
       </div>
     </div>
 
@@ -746,7 +754,7 @@
     </details>
     <details>
       <summary>O que é o bônus do app?</summary>
-      <p>Junto com a aula você recebe 30 dias de acesso ao app de Vendas e Gestão de Marcelo Lossalda. <span class="tbd">Descreva aqui em duas frases o que ele faz e como a profissional usa no salão.</span></p>
+      <p>Junto com a aula você recebe 30 dias de acesso ao <strong>USalon</strong>, app de gestão de salão.</p>
     </details>
     <details>
       <summary>E se eu não gostar?</summary>
