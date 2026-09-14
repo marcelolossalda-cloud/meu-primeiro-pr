@@ -300,6 +300,19 @@
   .offer-list li { display: grid; grid-template-columns: 1.3rem 1fr; gap: .55rem; }
   .offer-list li::before { content: "✓"; color: var(--accent-text); font-size: .9rem; font-weight: 700; }
   .offer-list strong { color: var(--ink); font-weight: 600; }
+  .bonus {
+    text-align: left; border: 1px solid var(--accent); border-radius: 2px;
+    margin-top: 1.5rem; overflow: hidden;
+  }
+  .bonus-head {
+    background: var(--accent); color: #241713; padding: .5rem 1.25rem;
+    font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase;
+  }
+  .bonus-body { padding: 1.25rem; }
+  .bonus-body h3 { font-size: 1.25rem; line-height: 1.2; }
+  .bonus-body p { margin-top: .5rem; font-size: .9rem; color: var(--ink-soft); line-height: 1.6; }
+  .bonus-by { display: block; margin-top: .6rem; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
   .guarantee {
     display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: center; text-align: left;
     background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 2px;
@@ -651,8 +664,16 @@
       <li><strong>Correção de manchas</strong> de processo caseiro, passo a passo</li>
       <li><strong>Tratamento pós-química e finalização</strong></li>
       <li><strong>12 meses de acesso</strong> — reveja quantas vezes quiser, direto do celular no salão</li>
-      <li><span class="tbd">bônus, se houver</span></li>
     </ul>
+
+    <div class="bonus">
+      <div class="bonus-head">Bônus incluso</div>
+      <div class="bonus-body">
+        <h3>30 dias no app de Vendas e Gestão</h3>
+        <p><span class="tbd">Uma frase sobre o que o app resolve no dia a dia do salão — agenda, clientes, controle do que entra e do que sai.</span></p>
+        <span class="bonus-by">por Marcelo Lossalda</span>
+      </div>
+    </div>
 
     <a class="btn btn-gold btn-wide" href="https://pay.hotmart.com/T107203040Y" rel="noopener">Quero assistir agora <span class="arrow" aria-hidden="true">→</span></a>
 
@@ -694,6 +715,10 @@
     <details>
       <summary>Como recebo o acesso depois da compra?</summary>
       <p>Assim que o pagamento é confirmado, a Hotmart envia o acesso para o e-mail cadastrado na compra. <span class="tbd">confirmar o fluxo: área de membros, prazo de liberação no boleto/Pix</span></p>
+    </details>
+    <details>
+      <summary>O que é o bônus do app?</summary>
+      <p>Junto com a aula você recebe 30 dias de acesso ao app de Vendas e Gestão de Marcelo Lossalda. <span class="tbd">Descreva aqui em duas frases o que ele faz e como a profissional usa no salão.</span></p>
     </details>
     <details>
       <summary>E se eu não gostar?</summary>
