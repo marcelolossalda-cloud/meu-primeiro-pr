@@ -1,0 +1,103 @@
+<style>
+/* ==========================================================================
+   Seletor de marcas — barra acima dos catálogos, na página Loja.
+   Escopado em .lm-marcas; cada catálogo abaixo mantém o seu próprio CSS.
+   ========================================================================== */
+.lm-marcas {
+  --lm-papel: #FFFFFF;
+  --lm-texto: #17171A;
+  --lm-suave: #6C6A64;
+  --lm-borda: #E0DFDB;
+  --lm-ativo: #17171A;
+  background: var(--lm-papel);
+  color: var(--lm-texto);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  container-type: inline-size;
+}
+.lm-marcas[data-tema="escuro"],
+:root[data-theme="dark"] .lm-marcas[data-tema="auto"] {
+  --lm-papel: #121214; --lm-texto: #F2F1EE; --lm-suave: #9B9992; --lm-borda: #2C2C31; --lm-ativo: #F2F1EE;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .lm-marcas[data-tema="auto"] {
+    --lm-papel: #121214; --lm-texto: #F2F1EE; --lm-suave: #9B9992; --lm-borda: #2C2C31; --lm-ativo: #F2F1EE;
+  }
+}
+.lm-marcas *, .lm-marcas *::before, .lm-marcas *::after { box-sizing: border-box; }
+:where(.lm-marcas) :where(p) { margin: 0; }
+:where(.lm-marcas) :where(button) { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+.lm-marcas [hidden] { display: none !important; }
+
+.lm-topo {
+  padding: 1.1rem clamp(1.25rem, 4vw, 2.5rem) 0;
+  display: grid; gap: .55rem;
+  border-bottom: 1px solid var(--lm-borda);
+}
+.lm-rotulo {
+  font-size: .6875rem; text-transform: uppercase; letter-spacing: .14em;
+  font-weight: 700; color: var(--lm-suave);
+}
+.lm-abas { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
+.lm-aba {
+  position: relative;
+  padding: .35rem 0 .8rem;
+  font-size: 1rem; font-weight: 600; color: var(--lm-suave);
+  white-space: nowrap;
+  transition: color .15s;
+}
+.lm-aba:hover { color: var(--lm-texto); }
+.lm-aba[aria-selected="true"] { color: var(--lm-ativo); }
+.lm-aba[aria-selected="true"]::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--lm-ativo);
+}
+.lm-aba:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; border-radius: 2px; }
+@container (max-width: 520px) {
+  .lm-abas { gap: .25rem 1.1rem; }
+  .lm-aba { font-size: .9rem; }
+}
+</style>
+
+<div class="lm-marcas" lang="pt-BR" data-tema="auto">
+  <div class="lm-topo">
+    <p class="lm-rotulo">Marcas que trabalhamos</p>
+    <div class="lm-abas" role="tablist" aria-label="Escolher marca">{{ABAS}}</div>
+  </div>
+{{PAINEIS}}
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var raiz = document.currentScript.previousElementSibling;
+  while (raiz && !raiz.classList.contains('lm-marcas')) raiz = raiz.previousElementSibling;
+  if (!raiz) return;
+  var abas = [].slice.call(raiz.querySelectorAll('.lm-aba'));
+
+  function mostrar(id) {
+    abas.forEach(function (a) {
+      var ligada = a.dataset.alvo === id;
+      a.setAttribute('aria-selected', String(ligada));
+      a.setAttribute('tabindex', ligada ? '0' : '-1');
+      var painel = document.getElementById(a.dataset.alvo);
+      if (painel) painel.hidden = !ligada;
+    });
+  }
+
+  raiz.addEventListener('click', function (e) {
+    var a = e.target.closest('.lm-aba');
+    if (a) mostrar(a.dataset.alvo);
+  });
+
+  /* setas esquerda/direita percorrem as abas, como manda o padrão de tablist */
+  raiz.addEventListener('keydown', function (e) {
+    if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+    var i = abas.indexOf(document.activeElement);
+    if (i < 0) return;
+    e.preventDefault();
+    var proxima = abas[(i + (e.key === 'ArrowRight' ? 1 : abas.length - 1)) % abas.length];
+    proxima.focus(); mostrar(proxima.dataset.alvo);
+  });
+
+  mostrar(abas[0].dataset.alvo);
+})();
+</script>

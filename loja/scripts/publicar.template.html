@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITULO}}</title>
+<style>
+  :root { color-scheme: light; --tinta: #1c1c1e; --suave: #6b6b70; --borda: #dcdcdf; --fundo: #f6f6f7; --painel: #fff; --acento: #8a6d3b; --ok: #2e7d4f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--fundo); color: var(--tinta); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 60rem; margin: 0 auto; padding: 2rem 1.25rem 4rem; display: grid; gap: 1.5rem; }
+  h1 { font-size: 1.6rem; margin: 0; letter-spacing: -.01em; }
+  h2 { font-size: 1.1rem; margin: 0; }
+  p { margin: 0; }
+  .nota { color: var(--suave); font-size: .9rem; max-width: 62ch; }
+  section { background: var(--painel); border: 1px solid var(--borda); border-radius: 8px; padding: 1.25rem; display: grid; gap: .9rem; }
+  .linha { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+  .etiqueta { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--acento); font-weight: 700; }
+  button { font: inherit; font-weight: 600; padding: .55rem 1rem; border-radius: 6px; border: 1px solid var(--acento); background: var(--acento); color: #fff; cursor: pointer; }
+  button.leve { background: transparent; color: var(--acento); }
+  button[data-estado="ok"] { background: var(--ok); border-color: var(--ok); color: #fff; }
+  button[data-estado="erro"] { background: #b3261e; border-color: #b3261e; }
+  textarea { width: 100%; min-height: 9rem; font: 12.5px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border: 1px solid var(--borda); border-radius: 6px; padding: .75rem; background: #fafafa; color: var(--tinta); resize: vertical; white-space: pre; }
+  textarea.comando { min-height: 17rem; white-space: pre-wrap; font: 14px/1.5 system-ui, sans-serif; }
+  details summary { cursor: pointer; color: var(--suave); font-size: .9rem; }
+  ol { margin: 0; padding-left: 1.3rem; display: grid; gap: .25rem; }
+  .meta { font-size: .85rem; color: var(--suave); }
+  kbd { font: inherit; font-size: .85em; border: 1px solid var(--borda); border-bottom-width: 2px; border-radius: 4px; padding: 0 .35em; background: #fff; }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>Publicar o catálogo {{NOME}} no Hostinger</h1>
+    <p class="nota">Este arquivo é local. Ele guarda o código do catálogo {{NOME}} e o comando para a extensão do navegador publicar na página <strong>{{PAGINA}}</strong> do site, e em nenhuma outra. Deixe esta aba aberta, logado no editor do Hostinger em outra aba.</p>
+  </div>
+
+  <section>
+    <p class="etiqueta">Comando para a extensão do navegador</p>
+    <p class="nota">Cole este texto na extensão (por exemplo, o Claude no Chrome) com esta aba e a aba do editor do Hostinger abertas.</p>
+    <textarea class="comando" id="comando" readonly>{{COMANDO}}</textarea>
+    <div class="linha"><button type="button" data-copiar="comando">Copiar comando</button></div>
+  </section>
+
+{{MARCAS}}
+
+  <section>
+    <h2>Se for fazer à mão</h2>
+    <ol>
+      <li>No editor do Hostinger, abra a página <strong>{{PAGINA}}</strong>.</li>
+      <li><strong>Adicionar elemento</strong> → <strong>Incorporar código</strong>.</li>
+      <li>Clique em <strong>Copiar código</strong> aqui em cima, depois clique na caixa do elemento e cole com <kbd>Ctrl</kbd>+<kbd>V</kbd>. Confirme em <strong>Incorporar código</strong>.</li>
+      <li>Estique o elemento para ficar bem alto (uns 3.000 px).</li>
+      <li><strong>Atualizar site</strong>.</li>
+    </ol>
+    <p class="nota">As fotos são carregadas do GitHub por um endereço fixo, então não precisa subir imagem nenhuma. Se o conteúdo mudar, gere este arquivo de novo com <code>python3 loja/scripts/gerar.py</code> e repita a colagem.</p>
+  </section>
+</main>
+<script>
+(function () {
+  function marcar(botao, estado, texto) {
+    var original = botao.dataset.rotulo || (botao.dataset.rotulo = botao.textContent);
+    botao.dataset.estado = estado; botao.textContent = texto;
+    setTimeout(function () { botao.dataset.estado = ''; botao.textContent = original; }, 2500);
+  }
+  function copiarFallback(area) {
+    var det = area.closest('details'); if (det) det.open = true;
+    area.focus(); area.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    window.getSelection().removeAllRanges(); return ok;
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-copiar]'); if (!b) return;
+    var area = document.getElementById(b.dataset.copiar);
+    var texto = area.value;
+    var pronto = function () { marcar(b, 'ok', 'Copiado ✓ (' + Math.round(texto.length / 1024) + ' KB)'); };
+    var falhou = function () { marcar(b, 'erro', 'Não copiou. Selecione o texto e use Ctrl+C.'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(pronto, function () { copiarFallback(area) ? pronto() : falhou(); });
+    } else { copiarFallback(area) ? pronto() : falhou(); }
+  });
+})();
+</script>
+</body>
+</html>
