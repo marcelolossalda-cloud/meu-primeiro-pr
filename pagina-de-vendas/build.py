@@ -20,7 +20,7 @@ ORIGEM = RAIZ / "pagina-de-vendas" / "index.html"
 DESTINO = RAIZ / "site" / "index.html"
 
 # Ajuste estes três valores quando definir o endereço final da página.
-URL = "https://marceloemilene.com/"
+URL = "https://aula.marceloemilene.com/"
 TITULO = "Loiro de Tinta na Prática — com Milene Kucera"
 DESCRICAO = (
     "Aula prática para profissionais: acompanhe um caso real de correção de "
