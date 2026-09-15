@@ -1,0 +1,41 @@
+<!-- ===========================================================
+     Cole ESTE código no elemento "Incorporar código" (Embed code)
+     da aba "Curso Loiro de Tinta", no Criador de Sites da Hostinger.
+
+     Ele carrega a página de vendas dentro do site da Milene e ajusta
+     a altura sozinho, sem barra de rolagem interna.
+     =========================================================== -->
+
+<div style="width:100%;margin:0;padding:0">
+  <iframe
+    id="loiro-de-tinta"
+    src="https://aula.marceloemilene.com/?embed=1"
+    title="Curso Loiro de Tinta na Prática"
+    loading="lazy"
+    scrolling="no"
+    style="width:100%;height:3200px;border:0;display:block;overflow:hidden"></iframe>
+</div>
+
+<script>
+(function () {
+  var origem = "https://aula.marceloemilene.com";
+  var quadro = document.getElementById("loiro-de-tinta");
+
+  window.addEventListener("message", function (evento) {
+    if (evento.origin !== origem) return;
+    var dados = evento.data;
+    if (!dados || typeof dados !== "object") return;
+
+    // a página informa quanto espaço precisa
+    if (dados.tipo === "altura-loiro" && typeof dados.altura === "number") {
+      quadro.style.height = Math.ceil(dados.altura) + "px";
+    }
+
+    // os botões internos pedem que o site role até a oferta
+    if (dados.tipo === "rolar-loiro" && typeof dados.topo === "number") {
+      var topoDoQuadro = quadro.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: topoDoQuadro + dados.topo - 80, behavior: "smooth" });
+    }
+  });
+})();
+</script>

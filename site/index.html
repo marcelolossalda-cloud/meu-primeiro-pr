@@ -380,6 +380,11 @@
   footer { border-top: 1px solid var(--line); padding-block: 3rem; color: var(--muted); font-size: .8125rem; }
   footer p + p { margin-top: .5rem; }
 
+  /* ---------- modo embutido (dentro do site da Hostinger) ---------- */
+  html.is-embed .nav { display: none; }
+  html.is-embed .hero { padding-top: clamp(2rem, 5vw, 3.5rem); }
+  html.is-embed body { background: var(--paper); }
+
   /* ---------- reveal ---------- */
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
   .reveal.is-in { opacity: 1; transform: none; }
@@ -804,6 +809,40 @@
     window.addEventListener("scroll", function () {
       nav.classList.toggle("is-stuck", window.scrollY > 8);
     }, { passive: true });
+
+    /* modo embutido: a página vive dentro de um iframe no site da Milene */
+    var embutido = new URLSearchParams(location.search).get("embed") === "1";
+    if (embutido) {
+      document.documentElement.classList.add("is-embed");
+
+      var enviarAltura = function () {
+        parent.postMessage(
+          { tipo: "altura-loiro", altura: document.documentElement.scrollHeight },
+          "*"
+        );
+      };
+      window.addEventListener("load", enviarAltura);
+      window.addEventListener("resize", enviarAltura);
+      if ("ResizeObserver" in window) new ResizeObserver(enviarAltura).observe(document.body);
+      document.querySelectorAll("details").forEach(function (d) {
+        d.addEventListener("toggle", function () { setTimeout(enviarAltura, 60); });
+      });
+      enviarAltura();
+
+      /* âncoras internas não rolam dentro de um iframe sem barra de rolagem:
+         pedimos à página hospedeira que role até a posição certa */
+      document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+        a.addEventListener("click", function (ev) {
+          var alvo = document.getElementById(a.getAttribute("href").slice(1));
+          if (!alvo) return;
+          ev.preventDefault();
+          parent.postMessage(
+            { tipo: "rolar-loiro", topo: alvo.getBoundingClientRect().top + window.scrollY },
+            "*"
+          );
+        });
+      });
+    }
 
     /* comparador antes / depois */
     var frame = document.getElementById("baFrame");
