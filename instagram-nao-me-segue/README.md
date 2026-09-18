@@ -20,16 +20,21 @@ Abra o `instagram.com` e faça login. Clique no ícone da extensão e em **Anali
 A extensão usa a sessão que já está aberta no navegador para ler as listas, com pausas entre
 as requisições. A barra mostra o progresso e o tempo estimado.
 
-Contas grandes levam mais tempo: o ritmo *Normal* lê cerca de 50 perfis a cada 1–2 segundos
-(≈ 1 minuto para cada 2.000 seguidores).
+As duas listas são lidas **ao mesmo tempo**, compartilhando um agendador único: a taxa de
+requisições ao Instagram continua sendo exatamente a do ritmo escolhido, mas o tempo de
+espera de uma requisição é aproveitado pela outra, em vez de somar latência + pausa.
 
 Ritmos disponíveis:
 
-| Ritmo    | Pausa entre páginas | Quando usar                                   |
-| -------- | ------------------- | --------------------------------------------- |
-| Devagar  | 2,4 – 4,2 s         | contas grandes ou depois de levar um bloqueio |
-| Normal   | 1,2 – 2,4 s         | padrão                                        |
-| Rápido   | 0,5 – 1,1 s         | contas pequenas, com pressa                   |
+| Ritmo    | Intervalo entre requisições | Perfis por página | Quando usar                     |
+| -------- | --------------------------- | ----------------- | ------------------------------- |
+| Devagar  | 1,5 – 2,6 s                 | 100               | contas grandes ou após bloqueio |
+| Normal   | 0,6 – 1,2 s                 | 100               | padrão                          |
+| Rápido   | 0,25 – 0,55 s               | 200               | contas pequenas, com pressa     |
+
+Medido em banco de ensaio (600 seguidores + 400 seguindo, 400 ms de latência por
+requisição): 41,8 s na versão 1.1.1 → **9,1 s no Normal** e **2,6 s no Rápido**, com
+resultado idêntico e metade das requisições.
 
 ### Opção 2 — Importar os dados (sem risco nenhum)
 

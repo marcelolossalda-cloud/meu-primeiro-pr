@@ -6,6 +6,7 @@ const PASSO = 50;
 
 const FASES = {
   resolvendo: 'Identificando a conta…',
+  coletando: 'Lendo suas listas…',
   seguidores: 'Lendo seus seguidores…',
   seguindo: 'Lendo quem você segue…',
   concluido: 'Pronto!',
@@ -376,8 +377,10 @@ function restante(alvo, contagens) {
     Math.max(0, (alvo.totalSeguindo || 0) - contagens.following);
   if (!faltam) return 'quase lá';
 
-  const paginas = Math.ceil(faltam / (ritmo.count || 50));
-  const ms = paginas * ((ritmo.min + ritmo.max) / 2 + 350);
+  // As duas listas dividem o mesmo agendador, então o tempo é o número de
+  // páginas que faltam vezes o intervalo entre requisições.
+  const paginas = Math.ceil(faltam / (ritmo.count || 100));
+  const ms = paginas * ((ritmo.min + ritmo.max) / 2);
   const min = Math.round(ms / 60000);
   if (ms < 45000) return 'menos de 1 min';
   return `~${min} min restante${min > 1 ? 's' : ''}`;

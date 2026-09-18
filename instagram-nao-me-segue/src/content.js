@@ -12,12 +12,14 @@
   const IG_APP_ID = '936619743392459';
   const MAX_PAGES = 4000;
 
-  // Ritmos de coleta. Quanto mais devagar, menor a chance de bater no limite
-  // de requisicoes do Instagram.
+  // Ritmos de coleta: intervalo entre requisicoes e tamanho da pagina.
+  // O intervalo e respeitado globalmente (ver criarAgendador), entao a taxa de
+  // requisicoes ao Instagram e exatamente esta, mesmo com as duas listas em
+  // paralelo. Paginas maiores reduzem o numero de requisicoes.
   const PACE = {
-    seguro: { min: 2400, max: 4200, count: 50 },
-    normal: { min: 1200, max: 2400, count: 50 },
-    rapido: { min: 500, max: 1100, count: 100 },
+    seguro: { min: 1500, max: 2600, count: 100 },
+    normal: { min: 600, max: 1200, count: 100 },
+    rapido: { min: 250, max: 550, count: 200 },
   };
 
   let cancelled = false;
@@ -81,6 +83,28 @@
 
   function jitter(pace) {
     return Math.round(pace.min + Math.random() * (pace.max - pace.min));
+  }
+
+  /**
+   * Distribui as requisicoes no tempo respeitando o intervalo do ritmo.
+   * Como as duas listas compartilham o mesmo agendador, rodar em paralelo nao
+   * aumenta a taxa de requisicoes — so aproveita o tempo que antes era gasto
+   * esperando a resposta chegar para so entao comecar a dormir.
+   */
+  function criarAgendador(pace) {
+    let proximoLivre = 0;
+    return {
+      async vez() {
+        const agora = Date.now();
+        const alvo = Math.max(agora, proximoLivre);
+        proximoLivre = alvo + jitter(pace);
+        if (alvo > agora) await sleep(alvo - agora);
+      },
+      /** Segura todas as requisicoes por um tempo (usado no backoff de 429). */
+      pausar(ms) {
+        proximoLivre = Math.max(proximoLivre, Date.now() + ms);
+      },
+    };
   }
 
   function getCookie(name) {
@@ -202,7 +226,7 @@
   }
 
   /** Percorre todas as páginas de followers/following. */
-  async function fetchList(kind, userId, pace, onProgress) {
+  async function fetchList(kind, userId, pace, agendador, onProgress) {
     const out = [];
     const vistos = new Set();
     let maxId = null;
@@ -214,9 +238,14 @@
       const qs = new URLSearchParams({ count: String(pace.count) });
       if (maxId != null) qs.set('max_id', String(maxId));
 
+      await agendador.vez();
+
       const data = await igFetchRetry(
         '/api/v1/friendships/' + userId + '/' + kind + '/?' + qs.toString(),
-        (espera) => onProgress(out.length, { esperandoAte: Date.now() + espera })
+        (espera) => {
+          agendador.pausar(espera);
+          onProgress(out.length, { esperandoAte: Date.now() + espera });
+        }
       );
 
       const users = Array.isArray(data && data.users) ? data.users : [];
@@ -233,8 +262,6 @@
       if (!users.length || proximo == null || proximo === '' || String(proximo) === String(anterior)) break;
       anterior = proximo;
       maxId = proximo;
-
-      await sleep(jitter(pace));
     }
 
     return out;
@@ -246,17 +273,25 @@
       report({ phase: 'resolvendo', counts: { followers: 0, following: 0 }, pace: { ...pace, nome: options.pace || 'normal' } });
       const target = await resolveTarget(options.username);
 
-      report({ phase: 'seguidores', target, counts: { followers: 0, following: 0 } });
-      let seguidores = 0;
-      const followers = await fetchList('followers', target.id, pace, (n, extra) => {
-        seguidores = n;
-        report({ phase: 'seguidores', counts: { followers: n, following: 0 }, ...extra });
-      });
+      report({ phase: 'coletando', target, counts: { followers: 0, following: 0 } });
 
-      report({ phase: 'seguindo', counts: { followers: seguidores, following: 0 } });
-      const following = await fetchList('following', target.id, pace, (n, extra) => {
-        report({ phase: 'seguindo', counts: { followers: seguidores, following: n }, ...extra });
-      });
+      // As duas listas são lidas ao mesmo tempo, dividindo o mesmo agendador:
+      // a taxa de requisições continua a do ritmo escolhido, mas o tempo total
+      // cai porque a latência de uma requisição cobre a espera da outra.
+      const agendador = criarAgendador(pace);
+      const contagens = { followers: 0, following: 0 };
+      const avisar = (extra) => report({ phase: 'coletando', counts: { ...contagens }, ...extra });
+
+      const [followers, following] = await Promise.all([
+        fetchList('followers', target.id, pace, agendador, (n, extra) => {
+          contagens.followers = n;
+          avisar(extra);
+        }),
+        fetchList('following', target.id, pace, agendador, (n, extra) => {
+          contagens.following = n;
+          avisar(extra);
+        }),
+      ]);
 
       // Aviso de coleta incompleta: uma lista parcial acusaria como "não te
       // segue" gente que na verdade segue. Comparamos com o total do perfil.
