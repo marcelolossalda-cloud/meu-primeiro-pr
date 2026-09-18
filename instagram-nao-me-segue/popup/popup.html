@@ -153,6 +153,41 @@
   <p id="vazio" class="vazio oculto"></p>
 </section>
 
+<!-- ───────────── Falha explicada ───────────── -->
+<section id="tela-falha" class="tela oculto">
+  <div class="cartao falha">
+    <h2 id="falha-titulo">Não consegui ler suas listas</h2>
+    <p id="falha-motivo" class="ajuda"></p>
+    <ol id="falha-passos" class="passos"></ol>
+    <button id="falha-tentar" class="primario">Tentar de novo</button>
+    <button id="falha-ultima" class="secundario largo oculto">Ver a última análise salva</button>
+  </div>
+
+  <div class="cartao">
+    <h2>Caminho que sempre funciona</h2>
+    <p class="ajuda">A importação do arquivo oficial do Instagram não depende da API e não pode ser bloqueada.</p>
+    <label class="arquivo">
+      <input id="arquivo-falha" type="file" accept=".zip,.json,.html" multiple hidden>
+      <span>Escolher o .zip ou os .json</span>
+    </label>
+    <p id="import-status-falha" class="ajuda mini"></p>
+    <details class="avancado">
+      <summary>Como conseguir o arquivo</summary>
+      <ol class="passos">
+        <li>Instagram → <b>Configurações → Central de contas → Suas informações e permissões → Baixar suas informações</b></li>
+        <li>Peça em formato <b>JSON</b> (a seção “Seguidores e seguindo” já basta)</li>
+        <li>Quando o e-mail chegar, baixe o .zip e solte aqui</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="cartao diagnostico-caixa">
+    <button id="falha-detalhes-btn" class="secundario largo">Ver detalhes técnicos</button>
+    <ul id="falha-detalhes" class="diagnostico oculto"></ul>
+    <button id="falha-copiar" class="secundario largo oculto">Copiar detalhes</button>
+  </div>
+</section>
+
 <!-- ───────────── Erro ───────────── -->
 <div id="erro" class="erro oculto">
   <b id="erro-titulo">Algo deu errado</b>

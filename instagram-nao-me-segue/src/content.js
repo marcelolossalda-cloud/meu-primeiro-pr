@@ -109,23 +109,35 @@
         ', www-claim ' + (lerClaim() ? 'ok' : 'ausente'),
     });
 
-    try {
-      const d = await igFetch('/api/v1/friendships/' + id + '/followers/?count=1&search_surface=follow_list_page');
-      const n = Array.isArray(d && d.users) ? d.users.length : 0;
-      linhas.push({
-        ok: n > 0,
-        texto: n > 0 ? 'A API do Instagram respondeu normalmente' : 'A API respondeu, mas não devolveu perfis',
-      });
-    } catch (e) {
-      linhas.push({ ok: false, texto: 'A API recusou a leitura: ' + (e.message || e) });
-      if (e.detalhe) {
-        linhas.push({
-          ok: false,
-          texto: 'Detalhe: HTTP ' + e.detalhe.status + ' · ' + e.detalhe.tipo + ' · ' +
-            e.detalhe.tamanho + ' bytes · início: ' + (e.detalhe.inicio || '(vazio)'),
-        });
+    let algumaFuncionou = false;
+    for (const est of ESTRATEGIAS) {
+      try {
+        const d = await igFetch(est.url('followers', id, 1, null));
+        const r = est.extrair(d, 'followers');
+        if (r && Array.isArray(r.users)) {
+          algumaFuncionou = true;
+          linhas.push({ ok: true, texto: 'Leitura "' + est.nome + '": funcionou (' + r.users.length + ' perfil de teste)' });
+        } else {
+          linhas.push({ ok: false, texto: 'Leitura "' + est.nome + '": respondeu sem lista de perfis' });
+        }
+      } catch (e) {
+        linhas.push({ ok: false, texto: 'Leitura "' + est.nome + '": ' + (e.message || e) });
+        if (e.detalhe) {
+          linhas.push({
+            ok: false,
+            texto: '   ↳ HTTP ' + e.detalhe.status + ' · ' + e.detalhe.tipo + ' · ' + e.detalhe.tamanho +
+              ' bytes · ' + (e.detalhe.inicio || '(vazio)'),
+          });
+        }
       }
     }
+
+    linhas.push({
+      ok: algumaFuncionou,
+      texto: algumaFuncionou
+        ? 'Pelo menos uma forma de leitura funciona: a análise deve rodar'
+        : 'Nenhuma forma de leitura funcionou nesta conta',
+    });
     return linhas;
   }
 
@@ -274,6 +286,91 @@
     }
   }
 
+  /**
+   * Formas conhecidas de ler seguidores/seguindo na web do Instagram. Elas mudam
+   * com o tempo e nem toda conta responde às mesmas, entao a extensao testa cada
+   * uma no comeco e fica com a primeira que devolver dados de verdade.
+   */
+  const ESTRATEGIAS = [
+    {
+      nome: 'api-v1',
+      url(kind, id, count, cursor) {
+        const qs = new URLSearchParams({ count: String(count), search_surface: 'follow_list_page' });
+        if (cursor) qs.set('max_id', String(cursor));
+        return '/api/v1/friendships/' + id + '/' + kind + '/?' + qs.toString();
+      },
+      extrair(d) {
+        if (!d || !Array.isArray(d.users)) return null;
+        const prox = d.next_max_id;
+        return {
+          users: d.users,
+          proximo: prox == null || prox === '' ? null : String(prox),
+        };
+      },
+    },
+    {
+      nome: 'api-v1-basica',
+      url(kind, id, count, cursor) {
+        const qs = new URLSearchParams({ count: String(Math.min(count, 50)) });
+        if (cursor) qs.set('max_id', String(cursor));
+        return '/api/v1/friendships/' + id + '/' + kind + '/?' + qs.toString();
+      },
+      extrair(d) {
+        if (!d || !Array.isArray(d.users)) return null;
+        const prox = d.next_max_id;
+        return { users: d.users, proximo: prox == null || prox === '' ? null : String(prox) };
+      },
+    },
+    {
+      nome: 'graphql',
+      url(kind, id, count, cursor) {
+        const hash =
+          kind === 'followers'
+            ? 'c76146de99bb02f6415203be841dd25a'
+            : 'd04b0a864b4b54837c0d870b0e77e076';
+        const variables = {
+          id: String(id),
+          include_reel: false,
+          fetch_mutual: false,
+          first: Math.min(count, 50),
+        };
+        if (cursor) variables.after = String(cursor);
+        return '/graphql/query/?query_hash=' + hash + '&variables=' + encodeURIComponent(JSON.stringify(variables));
+      },
+      extrair(d, kind) {
+        const user = d && d.data && d.data.user;
+        const bloco = user && (kind === 'followers' ? user.edge_followed_by : user.edge_follow);
+        if (!bloco || !Array.isArray(bloco.edges)) return null;
+        const pagina = bloco.page_info || {};
+        return {
+          users: bloco.edges.map((e) => e && e.node).filter(Boolean),
+          proximo: pagina.has_next_page ? pagina.end_cursor : null,
+        };
+      },
+    },
+  ];
+
+  /** Descobre qual estratégia funciona nesta conta, com uma chamada leve. */
+  async function detectarEstrategia(userId) {
+    const falhas = [];
+    for (const est of ESTRATEGIAS) {
+      try {
+        const d = await igFetch(est.url('followers', userId, 1, null));
+        const r = est.extrair(d, 'followers');
+        if (r && Array.isArray(r.users)) return { estrategia: est, falhas };
+        falhas.push(est.nome + ': resposta sem lista de perfis');
+      } catch (e) {
+        falhas.push(est.nome + ': ' + (e.code || 'erro'));
+        // 429 e sessão inválida não melhoram trocando de estratégia
+        if (e.code === 'RATE_LIMIT' || e.code === 'NAO_AUTENTICADO') throw e;
+      }
+    }
+    throw fail(
+      'SEM_ESTRATEGIA',
+      'Nenhuma das formas de leitura funcionou nesta conta (' + falhas.join(' · ') + ').'
+    );
+  }
+
   function pick(u) {
     return {
       id: String(u.pk || u.pk_id || u.id || ''),
@@ -326,7 +423,7 @@
   }
 
   /** Percorre todas as páginas de followers/following. */
-  async function fetchList(kind, userId, pace, agendador, esperado, estadoLista, onProgress) {
+  async function fetchList(kind, userId, pace, agendador, esperado, estadoLista, estrategia, onProgress) {
     const out = estadoLista.itens;
     const vistos = new Set(out.map((u) => String(u.username).toLowerCase()));
     let maxId = estadoLista.maxId;
@@ -347,20 +444,16 @@
     for (let page = 0; page < limite; page++) {
       if (cancelled) throw fail('CANCELADO', 'Cancelado.');
 
-      const qs = new URLSearchParams({ count: String(pace.count), search_surface: 'follow_list_page' });
-      if (maxId != null) qs.set('max_id', String(maxId));
-
       await agendador.vez();
 
-      const data = await igFetchRetry(
-        '/api/v1/friendships/' + userId + '/' + kind + '/?' + qs.toString(),
-        (espera) => {
-          agendador.pausar(espera);
-          onProgress(out.length, { esperandoAte: Date.now() + espera });
-        }
-      );
+      const data = await igFetchRetry(estrategia.url(kind, userId, pace.count, maxId), (espera) => {
+        agendador.pausar(espera);
+        onProgress(out.length, { esperandoAte: Date.now() + espera });
+      });
 
-      const users = Array.isArray(data && data.users) ? data.users : [];
+      const extraido = estrategia.extrair(data, kind);
+      if (!extraido) throw fail('FORMATO_INESPERADO', 'O Instagram mudou o formato da resposta no meio da leitura.');
+      const users = extraido.users;
       const antes = out.length;
       for (const u of users) {
         if (!u || !u.username) continue;
@@ -376,7 +469,7 @@
       paginasSemNovidade = out.length > antes ? 0 : paginasSemNovidade + 1;
       if (paginasSemNovidade >= 3) break;
 
-      const proximo = data && data.next_max_id;
+      const proximo = extraido.proximo;
       if (!users.length || proximo == null || proximo === '' || String(proximo) === String(anterior)) break;
       anterior = proximo;
       maxId = proximo;
@@ -426,6 +519,9 @@
 
       // Retoma de onde parou quando a coleta anterior morreu no meio (aba
       // recarregada, por exemplo), em vez de recomeçar do zero.
+      // Descobre a forma de leitura que funciona nesta conta antes de começar.
+      const { estrategia } = await detectarEstrategia(target.id);
+
       const salvo = options.retomar ? await lerProgresso(target) : null;
       const listas = {
         followers: (salvo && salvo.followers) || novaLista(),
@@ -439,6 +535,7 @@
         pace: { ...pace, nome: options.pace || 'minuto' },
         plano: { paginas, estimativaMs, alvoSegundos: base.alvoSegundos || null },
         retomado: !!salvo,
+        estrategia: estrategia.nome,
       });
 
       // As duas listas são lidas ao mesmo tempo, dividindo o mesmo agendador:
@@ -474,11 +571,11 @@
       };
 
       const [followers, following] = await Promise.all([
-        fetchList('followers', target.id, pace, agendador, target.totalSeguidores, listas.followers, (n, extra) => {
+        fetchList('followers', target.id, pace, agendador, target.totalSeguidores, listas.followers, estrategia, (n, extra) => {
           contagens.followers = n;
           avisar(extra);
         }),
-        fetchList('following', target.id, pace, agendador, target.totalSeguindo, listas.following, (n, extra) => {
+        fetchList('following', target.id, pace, agendador, target.totalSeguindo, listas.following, estrategia, (n, extra) => {
           contagens.following = n;
           avisar(extra);
         }),

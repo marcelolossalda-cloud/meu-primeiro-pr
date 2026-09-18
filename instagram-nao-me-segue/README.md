@@ -122,6 +122,30 @@ te segue — e um número errado é pior do que número nenhum.
 - Se for publicar na Chrome Web Store, revise o nome e os ícones: "Instagram" é marca
   registrada da Meta e a loja rejeita extensões que sugiram vínculo oficial.
 
+## Três formas de ler as listas
+
+O Instagram muda seus endpoints e nem toda conta responde aos mesmos. Antes de começar,
+a extensão faz uma chamada de teste e fica com a primeira forma que devolver dados:
+
+| Estratégia      | O que usa                                                    |
+| --------------- | ------------------------------------------------------------ |
+| `api-v1`        | `/api/v1/friendships/{id}/followers/` com `search_surface`     |
+| `api-v1-basica` | o mesmo endpoint, sem parâmetros extras e com páginas de 50    |
+| `graphql`       | `/graphql/query/` com os `query_hash` de seguidores/seguindo   |
+
+Se nenhuma responder, a extensão diz isso em vez de falhar em silêncio — e aponta o
+caminho da importação, que não depende de API nenhuma.
+
+## Quando falha, a extensão explica
+
+Toda falha tem uma tela própria com título em português, o motivo, uma lista do que fazer,
+o botão de tentar de novo e a alternativa da importação. Os detalhes técnicos (código do
+erro, status HTTP, content-type e início da resposta) ficam num botão, prontos para copiar.
+
+Falhas cobertas: nenhuma leitura funcionou, página HTML no lugar dos dados, sessão recusada,
+limite de requisições, perfil privado, perfil inexistente, aba recarregada, aba perdida,
+Instagram sem resposta e formato inesperado.
+
 ## A análise sempre termina
 
 A coleta roda dentro da aba do Instagram, então ela morre se a aba recarregar,

@@ -12,6 +12,81 @@ const FASES = {
   concluido: 'Pronto!',
 };
 
+// Cada falha possível vira uma explicação em português e uma lista do que fazer.
+const FALHAS = {
+  SEM_ESTRATEGIA: {
+    titulo: 'O Instagram não está entregando as listas',
+    motivo:
+      'Testei as três formas conhecidas de ler seguidores e nenhuma devolveu dados — o site respondeu com a própria página no lugar. Isso costuma ser sessão a renovar, verificação de segurança pendente na conta, ou limite temporário depois de muitas leituras.',
+    passos: [
+      'Abra o instagram.com em uma aba e confirme que você entra normalmente.',
+      'Resolva qualquer aviso de segurança, confirmação de identidade ou "atividade incomum".',
+      'Recarregue a aba do Instagram e clique em Tentar de novo.',
+      'Se continuar, espere umas horas: o limite por conta some sozinho.',
+    ],
+  },
+  RESPOSTA_INVALIDA: {
+    titulo: 'O Instagram devolveu a página do site, não os dados',
+    motivo:
+      'A resposta veio como página HTML em vez da lista de perfis. Na prática, o Instagram não reconheceu a leitura como legítima nesta sessão.',
+    passos: [
+      'Abra o instagram.com e confirme que entra normalmente.',
+      'Resolva qualquer verificação pendente na conta.',
+      'Recarregue a aba e tente de novo.',
+    ],
+  },
+  NAO_AUTENTICADO: {
+    titulo: 'A sessão do Instagram não foi aceita',
+    motivo: 'Os cookies da aba não autorizam a leitura. Normalmente é login expirado ou a aba estar deslogada.',
+    passos: ['Abra o instagram.com nessa aba.', 'Faça login (ou saia e entre de novo).', 'Volte aqui e tente de novo.'],
+  },
+  RATE_LIMIT: {
+    titulo: 'O Instagram pediu para parar por um tempo',
+    motivo: 'Foram feitas leituras demais em pouco tempo e a conta entrou em limite temporário. Não há nada quebrado: é uma pausa imposta pelo serviço.',
+    passos: [
+      'Espere de 15 minutos a algumas horas.',
+      'Na volta, abra Opções e escolha o ritmo "Devagar".',
+      'Enquanto isso, a importação do arquivo funciona normalmente.',
+    ],
+  },
+  PERFIL_PRIVADO: {
+    titulo: 'Esse perfil é privado',
+    motivo: 'Só dá para ler as listas de contas públicas ou que você já segue.',
+    passos: ['Deixe o campo de usuário vazio para analisar a sua própria conta.'],
+  },
+  NAO_ENCONTRADO: {
+    titulo: 'Perfil não encontrado',
+    motivo: 'O nome de usuário informado não existe ou foi digitado errado.',
+    passos: ['Confira o @ digitado, ou deixe o campo vazio para analisar a sua conta.'],
+  },
+  INTERROMPIDA: {
+    titulo: 'A análise foi interrompida',
+    motivo: 'A aba do Instagram recarregou várias vezes durante a leitura, e a coleta morre junto com ela.',
+    passos: ['Deixe a aba do Instagram parada durante a análise.', 'Clique em Tentar de novo — a leitura continua de onde parou.'],
+  },
+  ABA_PERDIDA: {
+    titulo: 'Perdi a aba do Instagram',
+    motivo: 'A aba usada para a leitura foi fechada ou trocou de endereço no meio do caminho.',
+    passos: ['Abra o instagram.com em uma aba.', 'Clique em Tentar de novo — a leitura continua de onde parou.'],
+  },
+  SEM_RESPOSTA: {
+    titulo: 'O Instagram parou de responder',
+    motivo: 'As requisições deixaram de voltar no meio da análise.',
+    passos: ['Verifique sua conexão.', 'Recarregue a aba do Instagram.', 'Tente de novo em alguns minutos.'],
+  },
+  FORMATO_INESPERADO: {
+    titulo: 'O Instagram mudou o formato da resposta',
+    motivo: 'A leitura começou bem, mas em algum momento a resposta veio com uma estrutura diferente da esperada.',
+    passos: ['Tente de novo: a extensão vai redetectar a forma de leitura.', 'Se persistir, use a importação do arquivo.'],
+  },
+};
+
+const FALHA_PADRAO = {
+  titulo: 'Não consegui concluir a análise',
+  motivo: '',
+  passos: ['Recarregue a aba do Instagram e tente de novo.', 'Se continuar, use a importação do arquivo oficial.'],
+};
+
 const ABAS = {
   'nao-seguem': {
     placar: 'não te seguem de volta',
@@ -168,6 +243,33 @@ function ligarEventos() {
 
   $('#btn-diagnostico').addEventListener('click', diagnosticar);
 
+  $('#falha-tentar').addEventListener('click', analisar);
+  $('#arquivo-falha').addEventListener('change', importar);
+
+  $('#falha-ultima').addEventListener('click', () => {
+    estado = { ...(estado || {}), phase: 'ocioso', error: null };
+    pintar();
+  });
+
+  $('#falha-detalhes-btn').addEventListener('click', () => {
+    const lista = $('#falha-detalhes');
+    const escondido = lista.classList.toggle('oculto');
+    $('#falha-detalhes-btn').textContent = escondido ? 'Ver detalhes técnicos' : 'Esconder detalhes';
+    $('#falha-copiar').classList.toggle('oculto', escondido);
+  });
+
+  $('#falha-copiar').addEventListener('click', async () => {
+    const texto = [...document.querySelectorAll('#falha-detalhes li')]
+      .map((li) => (li.classList.contains('ok') ? '[ok]    ' : '[falha] ') + li.textContent)
+      .join('\n');
+    try {
+      await navigator.clipboard.writeText(texto);
+      toast('Detalhes copiados.');
+    } catch {
+      toast('Não consegui copiar.');
+    }
+  });
+
   $('#btn-copiar-diag').addEventListener('click', async () => {
     const texto = [...document.querySelectorAll('#diagnostico li')]
       .map((li) => (li.classList.contains('ok') ? '[ok]    ' : '[falha] ') + li.textContent)
@@ -217,6 +319,11 @@ async function salvarPrefs(patch) {
 }
 
 async function analisar() {
+  // detalhes técnicos são recalculados a cada tentativa
+  const detalhes = $('#falha-detalhes');
+  delete detalhes.dataset.carregado;
+  detalhes.textContent = '';
+
   $('#btn-analisar').disabled = true;
   $('#erro').classList.add('oculto');
   const options = { pace: $('#pace').value, username: $('#username').value.trim() };
@@ -227,10 +334,11 @@ async function analisar() {
 
 async function importar(e) {
   const arquivos = [...e.target.files];
+  const campoStatus = e.target.id === 'arquivo-falha' ? $('#import-status-falha') : $('#import-status');
   e.target.value = '';
   if (!arquivos.length) return;
 
-  $('#import-status').textContent = 'Lendo arquivos…';
+  campoStatus.textContent = 'Lendo arquivos…';
   try {
     const { followers, following, usados } = await lerExport(arquivos);
     const novo = {
@@ -249,10 +357,11 @@ async function importar(e) {
       type: 'IMPORT_DONE',
       counts: { followers: followers.length, following: following.length },
     }).catch(() => {});
-    $('#import-status').textContent = `Importado: ${usados.join(', ')}`;
+    campoStatus.textContent = `Importado: ${usados.join(', ')}`;
+    estado = { ...(estado || {}), phase: 'concluido', error: null, running: false };
     pintar();
   } catch (erro) {
-    $('#import-status').textContent = '';
+    campoStatus.textContent = '';
     mostrarErro('Não consegui ler o arquivo', erro.message || String(erro));
   }
 }
@@ -329,24 +438,75 @@ async function alternarIgnorado(username) {
 /* ─────────────────────────── telas ─────────────────────────── */
 
 function mostrarTela(nome) {
-  for (const id of ['inicio', 'progresso', 'resultado']) {
+  for (const id of ['inicio', 'progresso', 'resultado', 'falha']) {
     $('#tela-' + id).classList.toggle('oculto', id !== nome);
   }
 }
 
 function pintar() {
   const rodando = !!(estado && estado.running);
-  if (rodando) mostrarTela('progresso');
-  else if (resultado) mostrarTela('resultado');
-  else mostrarTela('inicio');
+  const falhou = !rodando && estado && estado.phase === 'erro' && estado.error;
 
-  if (rodando) pintarProgresso();
-  else if (resultado) pintarResultado();
+  if (rodando) {
+    mostrarTela('progresso');
+    pintarProgresso();
+    return;
+  }
 
-  if (estado && estado.phase === 'erro' && estado.error) {
-    mostrarErro('Não deu certo', mensagemAmigavel(estado.error));
-  } else if (estado && estado.phase === 'cancelado') {
+  if (falhou) {
+    mostrarTela('falha');
+    pintarFalha(estado.error);
+    return;
+  }
+
+  if (resultado) {
+    mostrarTela('resultado');
+    pintarResultado();
+  } else {
+    mostrarTela('inicio');
+  }
+
+  if (estado && estado.phase === 'cancelado') {
     mostrarErro('Coleta cancelada', 'Nada foi salvo: uma lista incompleta acusaria gente que na verdade te segue.');
+  }
+}
+
+/** Explica a falha dentro da própria extensão, com o que fazer a seguir. */
+function pintarFalha(erro) {
+  const info = FALHAS[erro.code] || { ...FALHA_PADRAO, motivo: erro.message || '' };
+
+  $('#falha-titulo').textContent = info.titulo;
+  $('#falha-motivo').textContent = info.motivo || erro.message || '';
+
+  const lista = $('#falha-passos');
+  lista.textContent = '';
+  for (const passo of info.passos) {
+    const li = document.createElement('li');
+    li.textContent = passo;
+    lista.appendChild(li);
+  }
+
+  $('#falha-ultima').classList.toggle('oculto', !resultado);
+
+  // Os detalhes técnicos ficam prontos sem o usuário precisar pedir.
+  const detalhes = $('#falha-detalhes');
+  if (!detalhes.dataset.carregado) {
+    detalhes.dataset.carregado = '1';
+    const tecnico = [{ ok: false, texto: 'Código: ' + erro.code + ' — ' + (erro.message || '') }];
+    chrome.runtime
+      .sendMessage({ type: 'DIAGNOSTICO' })
+      .then((r) => preencherDiagnostico(detalhes, tecnico.concat((r && r.linhas) || [])))
+      .catch(() => preencherDiagnostico(detalhes, tecnico));
+  }
+}
+
+function preencherDiagnostico(lista, linhas) {
+  lista.textContent = '';
+  for (const linha of linhas) {
+    const li = document.createElement('li');
+    li.className = linha.ok ? 'ok' : 'falha';
+    li.textContent = linha.texto;
+    lista.appendChild(li);
   }
 }
 
