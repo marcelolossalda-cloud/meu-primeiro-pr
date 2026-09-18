@@ -229,6 +229,11 @@
         report({ phase: 'seguindo', counts: { followers: seguidores, following: n }, ...extra });
       });
 
+      // Aviso de coleta incompleta: uma lista parcial acusaria como "não te
+      // segue" gente que na verdade segue. Comparamos com o total do perfil.
+      const esperado = (target.totalSeguidores || 0) + (target.totalSeguindo || 0);
+      const obtido = followers.length + following.length;
+
       const resultado = {
         version: 1,
         source: 'live',
@@ -236,6 +241,7 @@
         scannedAt: Date.now(),
         followers,
         following,
+        parcial: esperado > 0 && obtido < esperado * 0.9,
       };
       await salvar(resultado);
       chrome.runtime.sendMessage({ type: 'SCAN_DONE', counts: { followers: followers.length, following: following.length } }).catch(() => {});
@@ -250,13 +256,34 @@
     }
   }
 
-  /** Grava o resultado; se estourar a cota, regrava sem as fotos de perfil. */
+  /**
+   * Grava o resultado e guarda o anterior para a comparação "o que mudou".
+   * Se estourar a cota do storage, regrava sem as fotos de perfil.
+   */
   async function salvar(resultado) {
+    const dados = { lastResult: resultado };
+
+    const { lastResult: anterior } = await chrome.storage.local.get('lastResult');
+    const mesmaConta =
+      anterior &&
+      !anterior.parcial &&
+      (anterior.target || {}).username === (resultado.target || {}).username;
+
+    if (mesmaConta) {
+      const enxuto = (u) => ({ username: u.username, full_name: u.full_name || '' });
+      dados.previousResult = {
+        scannedAt: anterior.scannedAt,
+        followers: (anterior.followers || []).map(enxuto),
+        following: (anterior.following || []).map(enxuto),
+      };
+    }
+
     try {
-      await chrome.storage.local.set({ lastResult: resultado });
+      await chrome.storage.local.set(dados);
     } catch {
       const semFoto = (l) => l.map((u) => ({ ...u, pic: '' }));
       await chrome.storage.local.set({
+        ...dados,
         lastResult: { ...resultado, followers: semFoto(resultado.followers), following: semFoto(resultado.following) },
       });
     }

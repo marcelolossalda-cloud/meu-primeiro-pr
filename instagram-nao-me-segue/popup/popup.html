@@ -26,6 +26,12 @@
     <button id="btn-analisar" class="primario grande">Analisar minha conta</button>
     <p class="ajuda mini centro">É preciso estar logado em instagram.com.</p>
 
+    <ul class="garantias">
+      <li>Só leitura — nunca segue nem deixa de seguir ninguém</li>
+      <li>Nada sai do seu navegador</li>
+      <li>Pode parar no meio ou fechar a janelinha</li>
+    </ul>
+
     <details class="avancado">
       <summary>Opções</summary>
       <label class="campo">
@@ -88,6 +94,20 @@
 
 <!-- ───────────── Tela de resultado ───────────── -->
 <section id="tela-resultado" class="tela oculto">
+  <div class="placar">
+    <b id="placar-numero">0</b>
+    <span id="placar-texto">não te seguem de volta</span>
+  </div>
+
+  <p id="aviso-parcial" class="aviso-parcial oculto">
+    Coleta incompleta: esta lista pode acusar quem na verdade te segue. Analise de novo.
+  </p>
+
+  <div id="novidades" class="novidades oculto">
+    <span id="novidades-texto"></span>
+    <button id="btn-saidas" class="secundario pequeno">Ver quem saiu</button>
+  </div>
+
   <div class="resumo">
     <img id="r-avatar" class="avatar" alt="" referrerpolicy="no-referrer" hidden>
     <div class="resumo-texto">
@@ -101,6 +121,7 @@
     <button class="aba ativa" data-aba="nao-seguem">Não me seguem <b>0</b></button>
     <button class="aba" data-aba="nao-sigo">Não sigo <b>0</b></button>
     <button class="aba" data-aba="mutuos">Mútuos <b>0</b></button>
+    <button class="aba" data-aba="saidas">Saíram <b>0</b></button>
     <button class="aba" data-aba="ignorados">Ignorados <b>0</b></button>
   </nav>
 

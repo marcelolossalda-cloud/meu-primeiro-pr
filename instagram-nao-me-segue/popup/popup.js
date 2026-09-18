@@ -12,13 +12,30 @@ const FASES = {
 };
 
 const ABAS = {
-  'nao-seguem': { titulo: 'Não te seguem de volta', vazio: 'Todo mundo que você segue te segue de volta. 🎉' },
-  'nao-sigo': { titulo: 'Você não segue de volta', vazio: 'Você segue todo mundo que te segue.' },
-  mutuos: { titulo: 'Mútuos', vazio: 'Nenhum seguidor mútuo por aqui.' },
-  ignorados: { titulo: 'Ignorados', vazio: 'Ninguém na lista de ignorados. Use o ✕ ao lado de um perfil para escondê-lo das outras abas.' },
+  'nao-seguem': {
+    placar: 'não te seguem de volta',
+    vazio: 'Todo mundo que você segue te segue de volta. 🎉',
+  },
+  'nao-sigo': {
+    placar: 'te seguem e você não segue',
+    vazio: 'Você segue todo mundo que te segue.',
+  },
+  mutuos: {
+    placar: 'seguem você e são seguidos por você',
+    vazio: 'Nenhum seguidor mútuo por aqui.',
+  },
+  saidas: {
+    placar: 'deixaram de te seguir desde a última análise',
+    vazio: 'Ninguém deixou de te seguir desde a última análise.',
+  },
+  ignorados: {
+    placar: 'perfis escondidos das outras listas',
+    vazio: 'Ninguém na lista de ignorados. Use o ✕ ao lado de um perfil para escondê-lo das outras abas.',
+  },
 };
 
 let resultado = null;
+let previo = null;
 let estado = null;
 let ignorados = new Set();
 let prefs = { pace: 'normal', ordem: 'ig' };
@@ -32,8 +49,9 @@ iniciar();
 async function iniciar() {
   if (new URLSearchParams(location.search).has('full')) document.body.classList.add('full');
 
-  const dados = await chrome.storage.local.get(['lastResult', 'ignorados', 'prefs']);
+  const dados = await chrome.storage.local.get(['lastResult', 'previousResult', 'ignorados', 'prefs']);
   resultado = dados.lastResult || null;
+  previo = dados.previousResult || null;
   ignorados = new Set(dados.ignorados || []);
   prefs = { ...prefs, ...(dados.prefs || {}) };
   $('#pace').value = prefs.pace;
@@ -53,6 +71,7 @@ async function iniciar() {
 
   chrome.storage.onChanged.addListener((mudancas, area) => {
     if (area !== 'local') return;
+    if (mudancas.previousResult) previo = mudancas.previousResult.newValue || null;
     if (mudancas.lastResult) {
       resultado = mudancas.lastResult.newValue || null;
       cache = null;
@@ -133,6 +152,12 @@ function ligarEventos() {
     }
   });
 
+  $('#btn-saidas').addEventListener('click', () => {
+    aba = 'saidas';
+    limite = PASSO;
+    pintarResultado();
+  });
+
   $('#erro-fechar').addEventListener('click', () => $('#erro').classList.add('oculto'));
 }
 
@@ -190,7 +215,7 @@ function chave(u) {
 
 function calcular() {
   if (cache) return cache;
-  if (!resultado) return { 'nao-seguem': [], 'nao-sigo': [], mutuos: [], ignorados: [] };
+  if (!resultado) return { 'nao-seguem': [], 'nao-sigo': [], mutuos: [], saidas: [], ignorados: [], novos: 0 };
 
   const seguidores = resultado.followers || [];
   const seguindo = resultado.following || [];
@@ -205,11 +230,22 @@ function calcular() {
   const unicos = new Map();
   for (const u of escondidos) unicos.set(chave(u), u);
 
+  // Comparação com a análise anterior: quem te seguia e não te segue mais.
+  let saidas = [];
+  let novos = 0;
+  if (previo && Array.isArray(previo.followers)) {
+    const antes = new Set(previo.followers.map(chave));
+    saidas = previo.followers.filter((u) => !setSeguidores.has(chave(u)));
+    novos = seguidores.filter((u) => !antes.has(chave(u))).length;
+  }
+
   cache = {
     'nao-seguem': naoSeguem.filter((u) => !ignorados.has(chave(u))),
     'nao-sigo': naoSigo.filter((u) => !ignorados.has(chave(u))),
     mutuos: mutuos.filter((u) => !ignorados.has(chave(u))),
+    saidas: saidas.filter((u) => !ignorados.has(chave(u))),
     ignorados: [...unicos.values()],
+    novos,
   };
   return cache;
 }
@@ -259,6 +295,8 @@ function pintar() {
 
   if (estado && estado.phase === 'erro' && estado.error) {
     mostrarErro('Não deu certo', mensagemAmigavel(estado.error));
+  } else if (estado && estado.phase === 'cancelado') {
+    mostrarErro('Coleta cancelada', 'Nada foi salvo: uma lista incompleta acusaria gente que na verdade te segue.');
   }
 }
 
@@ -332,6 +370,24 @@ function pintarResultado() {
     const nome = botao.dataset.aba;
     botao.querySelector('b').textContent = (grupos[nome] || []).length.toLocaleString('pt-BR');
     botao.classList.toggle('ativa', nome === aba);
+  }
+
+  // O número que interessa vem primeiro: é ele que ancora a leitura da tela.
+  const atual = grupos[aba] || [];
+  $('#placar-numero').textContent = atual.length.toLocaleString('pt-BR');
+  $('#placar-texto').textContent = ABAS[aba].placar;
+
+  $('#aviso-parcial').classList.toggle('oculto', !resultado.parcial);
+
+  const faixa = $('#novidades');
+  const temHistorico = !!previo && (grupos.saidas.length > 0 || grupos.novos > 0);
+  faixa.classList.toggle('oculto', !temHistorico);
+  if (temHistorico) {
+    const partes = [];
+    if (grupos.saidas.length) partes.push(`<b>${grupos.saidas.length}</b> deixaram de te seguir`);
+    if (grupos.novos) partes.push(`<b>${grupos.novos}</b> novos seguidores`);
+    $('#novidades-texto').innerHTML = `Última análise ${quando(previo.scannedAt)}: ` + partes.join(' · ');
+    $('#btn-saidas').classList.toggle('oculto', !grupos.saidas.length);
   }
 
   const lista = listaVisivel();

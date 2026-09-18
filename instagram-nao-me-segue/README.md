@@ -70,6 +70,27 @@ popup/                 interface: telas de início, progresso e resultado
 O resultado fica em `chrome.storage.local` (chave `lastResult`), então reabrir o popup mostra
 a última análise sem precisar coletar de novo.
 
+## Decisões de interface
+
+A tela foi revisada aplicando *Enviesados — Psicologia e Vieses Cognitivos no Design*
+(Rian Dutra, 2022), que trata vieses como algo a usar **a favor** de quem usa o produto,
+nunca como armadilha. O que entrou:
+
+| Princípio do livro | O que virou na tela |
+| ------------------ | ------------------- |
+| **Ancoragem** — a primeira informação vira a referência de tudo que vem depois | O resultado abre com um placar grande: o número da lista aberta, antes de qualquer dado de serviço |
+| **Aversão à perda** — o medo pesa o dobro do ganho, e aliviá-lo é uma abordagem legítima | Três garantias antes do clique ("só leitura", "nada sai do navegador", "pode parar no meio") e a legenda de que o ✕ apenas esconde |
+| **Efeito cashless** — quanto menos tangível o custo, menor o atrito | Aqui o custo é tempo: a coleta roda em segundo plano, o popup pode fechar e o total aparece no ícone da extensão quando termina |
+| **Custo afundado / comprometimento** — as pessoas valorizam o que construíram e progresso retém | Cada análise guarda a anterior, e a tela mostra quem deixou de te seguir e quantos seguidores novos chegaram desde então |
+
+O que ficou **de fora de propósito**, porque o livro classifica como padrão obscuro:
+contagem regressiva falsa, aviso de escassez inventado, confirmação envergonhada
+("quero perder essa oportunidade") e qualquer atrito artificial para desistir.
+
+Na mesma linha, cancelar no meio **não salva** um resultado parcial, e uma coleta que
+vier incompleta é marcada com aviso: meia lista acusaria como "não te segue" alguém que
+te segue — e um número errado é pior do que número nenhum.
+
 ## Avisos
 
 - O Instagram **não tem API pública** para ler seguidores; a coleta ao vivo usa os mesmos

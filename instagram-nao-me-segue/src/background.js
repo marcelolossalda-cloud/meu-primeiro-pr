@@ -130,6 +130,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case 'SCAN_DONE':
       setState({ running: false, phase: 'concluido', esperandoAte: null, finishedAt: Date.now(), counts: msg.counts || undefined });
+      atualizarBadge();
       return;
 
     case 'SCAN_CANCELLED':
@@ -150,12 +151,33 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         target: msg.target || null,
         counts: msg.counts || { followers: 0, following: 0 },
       });
+      atualizarBadge();
       return;
 
     default:
       return;
   }
 });
+
+/**
+ * Mostra no ícone quantas contas não te seguem de volta, para o resultado
+ * chegar sem a pessoa precisar ficar de olho na janelinha.
+ */
+async function atualizarBadge() {
+  try {
+    const { lastResult } = await chrome.storage.local.get('lastResult');
+    if (!lastResult || !Array.isArray(lastResult.followers)) {
+      await chrome.action.setBadgeText({ text: '' });
+      return;
+    }
+    const seguidores = new Set(lastResult.followers.map((u) => String(u.username).toLowerCase()));
+    const n = lastResult.following.filter((u) => !seguidores.has(String(u.username).toLowerCase())).length;
+    await chrome.action.setBadgeBackgroundColor({ color: '#d62976' });
+    await chrome.action.setBadgeText({ text: n > 999 ? '999+' : String(n) });
+  } catch {
+    /* badge é só conveniência: falhar aqui não pode quebrar a coleta */
+  }
+}
 
 // Se a aba que estava coletando some, a varredura morreu junto.
 chrome.tabs.onRemoved.addListener(async (tabId) => {
@@ -168,3 +190,11 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
     });
   }
 });
+
+// Qualquer caminho que grave um resultado (coleta ou importação) reflete no ícone.
+chrome.storage.onChanged.addListener((mudancas, area) => {
+  if (area === 'local' && mudancas.lastResult) atualizarBadge();
+});
+
+// Ao iniciar o service worker, reflete o último resultado no ícone.
+atualizarBadge();
