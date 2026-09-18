@@ -112,11 +112,13 @@
     let algumaFuncionou = false;
     for (const est of ESTRATEGIAS) {
       try {
-        const d = await igFetch(est.url('followers', id, 1, null));
+        const d = await igFetch(est.url('followers', id, 12, null));
         const r = est.extrair(d, 'followers');
-        if (r && Array.isArray(r.users)) {
+        if (r && Array.isArray(r.users) && r.users.length > 0) {
           algumaFuncionou = true;
-          linhas.push({ ok: true, texto: 'Leitura "' + est.nome + '": funcionou (' + r.users.length + ' perfil de teste)' });
+          linhas.push({ ok: true, texto: 'Leitura "' + est.nome + '": funcionou (' + r.users.length + ' perfis de teste)' });
+        } else if (r && Array.isArray(r.users)) {
+          linhas.push({ ok: false, texto: 'Leitura "' + est.nome + '": respondeu 200 mas com lista VAZIA' });
         } else {
           linhas.push({ ok: false, texto: 'Leitura "' + est.nome + '": respondeu sem lista de perfis' });
         }
@@ -350,24 +352,37 @@
     },
   ];
 
-  /** Descobre qual estratégia funciona nesta conta, com uma chamada leve. */
-  async function detectarEstrategia(userId) {
+  /**
+   * Descobre qual estrategia funciona nesta conta, com uma chamada leve.
+   * Uma estrategia que responde 200 com lista VAZIA numa conta que tem
+   * seguidores nao serve: seria aceita e devolveria zero perfis no fim.
+   */
+  async function detectarEstrategia(userId, esperadoSeguidores) {
     const falhas = [];
     for (const est of ESTRATEGIAS) {
       try {
-        const d = await igFetch(est.url('followers', userId, 1, null));
+        const d = await igFetch(est.url('followers', userId, 12, null));
         const r = est.extrair(d, 'followers');
-        if (r && Array.isArray(r.users)) return { estrategia: est, falhas };
-        falhas.push(est.nome + ': resposta sem lista de perfis');
+
+        if (!r || !Array.isArray(r.users)) {
+          falhas.push(est.nome + ': resposta sem lista de perfis');
+          continue;
+        }
+        if (esperadoSeguidores > 0 && r.users.length === 0) {
+          falhas.push(est.nome + ': devolveu lista vazia');
+          continue;
+        }
+        return { estrategia: est, falhas };
       } catch (e) {
         falhas.push(est.nome + ': ' + (e.code || 'erro'));
         // 429 e sessão inválida não melhoram trocando de estratégia
         if (e.code === 'RATE_LIMIT' || e.code === 'NAO_AUTENTICADO') throw e;
       }
     }
+
     throw fail(
-      'SEM_ESTRATEGIA',
-      'Nenhuma das formas de leitura funcionou nesta conta (' + falhas.join(' · ') + ').'
+      esperadoSeguidores > 0 ? 'LISTAS_VAZIAS' : 'SEM_ESTRATEGIA',
+      'Nenhuma das formas de leitura devolveu perfis (' + falhas.join(' · ') + ').'
     );
   }
 
@@ -520,7 +535,7 @@
       // Retoma de onde parou quando a coleta anterior morreu no meio (aba
       // recarregada, por exemplo), em vez de recomeçar do zero.
       // Descobre a forma de leitura que funciona nesta conta antes de começar.
-      const { estrategia } = await detectarEstrategia(target.id);
+      const { estrategia } = await detectarEstrategia(target.id, target.totalSeguidores || 0);
 
       const salvo = options.retomar ? await lerProgresso(target) : null;
       const listas = {
@@ -585,6 +600,16 @@
       // segue" gente que na verdade segue. Comparamos com o total do perfil.
       const esperado = (target.totalSeguidores || 0) + (target.totalSeguindo || 0);
       const obtido = followers.length + following.length;
+
+      // Zero perfis numa conta que tem conexões não é "resultado parcial": é
+      // falha. Salvar isso mostraria uma tela de zeros como se fosse resposta.
+      if (esperado > 0 && obtido === 0) {
+        throw fail(
+          'LISTAS_VAZIAS',
+          'O Instagram respondeu, mas devolveu as listas vazias, embora o perfil tenha ' +
+            esperado.toLocaleString('pt-BR') + ' conexões.'
+        );
+      }
 
       const resultado = {
         version: 1,

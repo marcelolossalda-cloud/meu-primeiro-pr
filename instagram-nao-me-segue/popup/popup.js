@@ -25,6 +25,17 @@ const FALHAS = {
       'Se continuar, espere umas horas: o limite por conta some sozinho.',
     ],
   },
+  LISTAS_VAZIAS: {
+    titulo: 'O Instagram respondeu, mas mandou listas vazias',
+    motivo:
+      'O seu perfil foi identificado e tem conexões, porém todas as formas de leitura devolveram zero perfis. É o jeito silencioso do Instagram de recusar a leitura — acontece com conta em verificação pendente, sessão antiga, ou depois de muitas leituras seguidas.',
+    passos: [
+      'Abra o instagram.com, saia da conta e entre de novo (isso renova a sessão).',
+      'Resolva qualquer aviso de segurança ou confirmação de identidade.',
+      'Recarregue a aba e clique em Tentar de novo.',
+      'Se continuar em zero, use a importação do arquivo abaixo: ela não passa pela API.',
+    ],
+  },
   RESPOSTA_INVALIDA: {
     titulo: 'O Instagram devolveu a página do site, não os dados',
     motivo:
