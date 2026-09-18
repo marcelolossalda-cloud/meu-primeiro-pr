@@ -102,6 +102,16 @@ te segue — e um número errado é pior do que número nenhum.
 - Se for publicar na Chrome Web Store, revise o nome e os ícones: "Instagram" é marca
   registrada da Meta e a loja rejeita extensões que sugiram vínculo oficial.
 
+## Publicar na Chrome Web Store
+
+Os textos do formulário, as justificativas de permissões e as capturas em 1280×800
+estão prontos em [`loja/PUBLICACAO.md`](loja/PUBLICACAO.md). A política de privacidade
+exigida pela loja está em [`PRIVACIDADE.md`](../instagram-nao-me-segue/PRIVACIDADE.md).
+
+Para reduzir o risco de rejeição por marca registrada, o nome não contém "Instagram",
+o ícone usa paleta própria (índigo/azul, não o gradiente da Meta) e o aviso de projeto
+independente aparece na extensão, na descrição e na política.
+
 ## Desenvolvimento
 
 Não há build: é JavaScript puro com módulos ES. Edite e clique em **Atualizar** em

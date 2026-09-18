@@ -16,10 +16,11 @@ def write_png(path, w, h, px):
 def lerp(a, b, t):
     return tuple(a[i] + (b[i] - a[i]) * t for i in range(3))
 
-# Paleta inspirada no gradiente do Instagram
-C1 = (131, 58, 180)   # roxo
-C2 = (225, 48, 108)   # rosa
-C3 = (252, 175, 69)   # laranja
+# Paleta própria: deliberadamente diferente do gradiente do Instagram,
+# para a extensão não sugerir vínculo oficial com a Meta (regra da loja).
+C1 = (79, 70, 229)    # indigo
+C2 = (99, 102, 241)   # violeta
+C3 = (14, 165, 233)   # azul
 
 def grad(x, y):
     t = max(0.0, min(1.0, (x * 0.55 + (1 - y) * 0.45)))
@@ -53,7 +54,7 @@ def cross(x, y, cx, cy, half=0.105, th=0.032):
 
 BADGE_C, BADGE_R = (0.755, 0.745), 0.215
 RING_R = 0.175
-RED = (237, 73, 86)
+RED = (244, 63, 94)   # rose, para o selo de "não segue"
 
 def shade(x, y):
     """Retorna (r,g,b,a) em floats 0..255 para um ponto normalizado."""

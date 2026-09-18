@@ -4,8 +4,8 @@
   --borda: #e4e6eb;
   --texto: #14161a;
   --texto-2: #6b7280;
-  --acento: #d62976;
-  --acento-2: #962fbf;
+  --acento: #4f46e5;
+  --acento-2: #0ea5e9;
   --perigo: #d33;
   --raio: 12px;
   color-scheme: light dark;
@@ -53,7 +53,7 @@ body.full {
   justify-content: space-between;
   gap: 8px;
   padding: 10px 12px;
-  background: linear-gradient(90deg, var(--acento-2), var(--acento) 60%, #f9a03f);
+  background: linear-gradient(90deg, var(--acento), var(--acento-2));
   color: #fff;
 }
 

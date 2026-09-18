@@ -172,7 +172,7 @@ async function atualizarBadge() {
     }
     const seguidores = new Set(lastResult.followers.map((u) => String(u.username).toLowerCase()));
     const n = lastResult.following.filter((u) => !seguidores.has(String(u.username).toLowerCase())).length;
-    await chrome.action.setBadgeBackgroundColor({ color: '#d62976' });
+    await chrome.action.setBadgeBackgroundColor({ color: '#4f46e5' });
     await chrome.action.setBadgeText({ text: n > 999 ? '999+' : String(n) });
   } catch {
     /* badge é só conveniência: falhar aqui não pode quebrar a coleta */
