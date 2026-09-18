@@ -391,7 +391,7 @@ function pintarProgresso() {
     const seg = Math.ceil((estado.esperandoAte - Date.now()) / 1000);
     $('#progresso-aviso').textContent = `O Instagram pediu uma pausa. Retomando em ~${seg}s.`;
   } else {
-    $('#progresso-aviso').textContent = '';
+    $('#progresso-aviso').textContent = estado.retomado ? 'Retomando de onde parou…' : '';
   }
 }
 
@@ -556,6 +556,9 @@ function mensagemAmigavel(erro) {
     PERFIL_PRIVADO: 'Esse perfil é privado e você não o segue.',
     NAO_ENCONTRADO: 'Perfil não encontrado. Confira o nome de usuário.',
     ABA_FECHADA: 'A aba do Instagram foi fechada antes de terminar. Tente de novo.',
+    INTERROMPIDA: 'A análise foi interrompida porque a aba do Instagram recarregou. Deixe a aba parada e tente de novo.',
+    ABA_PERDIDA: 'Perdi a aba do Instagram no meio da análise. Abra o instagram.com e clique em Analisar de novo — a leitura continua de onde parou.',
+    SEM_RESPOSTA: 'O Instagram parou de responder no meio da análise. Espere alguns minutos e tente de novo.',
   };
   return mapa[erro.code] || erro.message || 'Erro inesperado.';
 }

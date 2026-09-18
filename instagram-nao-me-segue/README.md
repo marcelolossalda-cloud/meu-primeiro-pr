@@ -122,6 +122,29 @@ te segue — e um número errado é pior do que número nenhum.
 - Se for publicar na Chrome Web Store, revise o nome e os ícones: "Instagram" é marca
   registrada da Meta e a loja rejeita extensões que sugiram vínculo oficial.
 
+## A análise sempre termina
+
+A coleta roda dentro da aba do Instagram, então ela morre se a aba recarregar,
+navegar ou for fechada. Em vez de ficar "analisando" para sempre quando isso
+acontece, a extensão:
+
+- grava o progresso (perfis lidos e cursor de cada lista) a cada poucos segundos;
+- vigia a coleta por alarme: sem sinal de vida por 45 s, ela verifica se o script
+  ainda responde;
+- **retoma do ponto onde parou** quando o script morreu, até três vezes, reinjetando
+  na mesma aba ou em outra;
+- encerra com um motivo na tela quando não dá para continuar.
+
+Cenários verificados em banco de ensaio (1.200 seguidores + 800 seguindo):
+
+| Situação                        | Resultado                                        |
+| ------------------------------- | ------------------------------------------------ |
+| Coleta normal                   | conclui em 13,7 s, listas completas               |
+| Aba recarregada no meio         | retoma e conclui em 15,2 s, listas completas      |
+| Aba fechada no meio             | encerra em 6,1 s dizendo o que houve              |
+| Cursor do Instagram em loop     | para sozinho e marca o resultado como parcial     |
+| Instagram responde 429          | espera o backoff e conclui                        |
+
 ## Se não funcionar
 
 Na tela inicial há o botão **"Não está funcionando? Diagnosticar"**. Ele verifica, em

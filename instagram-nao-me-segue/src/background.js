@@ -15,7 +15,16 @@ const ESTADO_INICIAL = {
   tabId: null,
   startedAt: null,
   finishedAt: null,
+  ultimoProgresso: null,
+  options: null,
+  retomadas: 0,
 };
+
+// Vigia: sem sinal de vida por este tempo, a coleta é considerada morta.
+const SEM_SINAL_MS = 45000;
+// Teto absoluto sem nenhum avanço, mesmo com o script respondendo.
+const TRAVADO_MS = 5 * 60 * 1000;
+const MAX_RETOMADAS = 3;
 
 async function getState() {
   const { [STATE_KEY]: s } = await chrome.storage.local.get(STATE_KEY);
@@ -73,6 +82,8 @@ async function startScan(options = {}) {
 
   await chrome.scripting.executeScript({ target: { tabId: aba.id }, files: ['src/content.js'] });
 
+  await chrome.storage.local.remove('scanProgress'); // análise nova começa limpa
+
   await setState({
     running: true,
     phase: 'resolvendo',
@@ -83,7 +94,12 @@ async function startScan(options = {}) {
     tabId: aba.id,
     startedAt: Date.now(),
     finishedAt: null,
+    ultimoProgresso: Date.now(),
+    options,
+    retomadas: 0,
   });
+
+  chrome.alarms.create('vigia', { periodInMinutes: 0.5 });
 
   const resposta = await chrome.tabs.sendMessage(aba.id, { type: 'RUN_SCAN', options });
   if (resposta && resposta.ok === false) {
@@ -168,19 +184,22 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     // Vindas do content script
     case 'SCAN_PROGRESS':
-      setState({ running: true, esperandoAte: null, ...(msg.patch || {}) });
+      setState({ running: true, esperandoAte: null, ultimoProgresso: Date.now(), ...(msg.patch || {}) });
       return;
 
     case 'SCAN_DONE':
+      chrome.alarms.clear('vigia');
       setState({ running: false, phase: 'concluido', esperandoAte: null, finishedAt: Date.now(), counts: msg.counts || undefined });
       atualizarBadge();
       return;
 
     case 'SCAN_CANCELLED':
+      chrome.alarms.clear('vigia');
       setState({ running: false, phase: 'cancelado', esperandoAte: null });
       return;
 
     case 'SCAN_ERROR':
+      chrome.alarms.clear('vigia');
       setState({ running: false, phase: 'erro', esperandoAte: null, error: { code: msg.code, message: msg.message } });
       return;
 
@@ -203,6 +222,78 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 /**
+ * Vigia da coleta: garante que ela sempre termina — concluindo, retomando
+ * sozinha quando a aba morre no meio, ou falhando com um motivo na tela.
+ * Nunca deixa a extensão "analisando" para sempre.
+ */
+async function vigiar() {
+  const s = await getState();
+  if (!s.running) {
+    await chrome.alarms.clear('vigia');
+    return;
+  }
+
+  // Pausa pedida pelo próprio Instagram (429) não é travamento.
+  if (s.esperandoAte && s.esperandoAte > Date.now()) return;
+
+  const parado = Date.now() - (s.ultimoProgresso || s.startedAt || Date.now());
+  if (parado < SEM_SINAL_MS) return;
+
+  let vivo = false;
+  try {
+    const r = await chrome.tabs.sendMessage(s.tabId, { type: 'PING' });
+    vivo = !!(r && r.running);
+  } catch {
+    vivo = false;
+  }
+
+  if (vivo) {
+    if (parado > TRAVADO_MS) {
+      await encerrarComErro('SEM_RESPOSTA', 'O Instagram parou de responder no meio da análise.');
+    }
+    return;
+  }
+
+  // O script morreu (aba recarregada, navegada ou descartada): retoma.
+  if ((s.retomadas || 0) >= MAX_RETOMADAS) {
+    await encerrarComErro(
+      'INTERROMPIDA',
+      'A análise foi interrompida várias vezes porque a aba do Instagram recarregou.'
+    );
+    return;
+  }
+
+  await setState({ retomadas: (s.retomadas || 0) + 1, ultimoProgresso: Date.now() });
+
+  // Duas tentativas: uma aba recém-criada às vezes ainda não aceita injeção.
+  for (let tentativa = 0; tentativa < 2; tentativa++) {
+    try {
+      const aba = await ensureInstagramTab();
+      await chrome.scripting.executeScript({ target: { tabId: aba.id }, files: ['src/content.js'] });
+      await chrome.tabs.sendMessage(aba.id, { type: 'RUN_SCAN', options: { ...(s.options || {}), retomar: true } });
+      await setState({ tabId: aba.id });
+      return;
+    } catch {
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+  }
+
+  await encerrarComErro(
+    'ABA_PERDIDA',
+    'Perdi a aba do Instagram no meio da análise. Abra o instagram.com e clique em Analisar de novo — a leitura continua de onde parou.'
+  );
+}
+
+async function encerrarComErro(code, message) {
+  await chrome.alarms.clear('vigia');
+  await setState({ running: false, phase: 'erro', esperandoAte: null, error: { code, message } });
+}
+
+chrome.alarms.onAlarm.addListener((a) => {
+  if (a.name === 'vigia') vigiar();
+});
+
+/**
  * Mostra no ícone quantas contas não te seguem de volta, para o resultado
  * chegar sem a pessoa precisar ficar de olho na janelinha.
  */
@@ -222,15 +313,23 @@ async function atualizarBadge() {
   }
 }
 
-// Se a aba que estava coletando some, a varredura morreu junto.
+// A aba que coletava foi fechada: segue em outra, do ponto onde parou.
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   const state = await getState();
   if (state.running && state.tabId === tabId) {
-    await setState({
-      running: false,
-      phase: 'erro',
-      error: { code: 'ABA_FECHADA', message: 'A aba do Instagram foi fechada antes de terminar a coleta.' },
-    });
+    await setState({ ultimoProgresso: Date.now() - SEM_SINAL_MS - 1 });
+    await vigiar();
+  }
+});
+
+// A aba recarregou durante a coleta: o script morreu junto, então retoma sem
+// esperar o próximo alarme.
+chrome.tabs.onUpdated.addListener(async (tabId, info) => {
+  if (info.status !== 'complete') return;
+  const state = await getState();
+  if (state.running && state.tabId === tabId) {
+    await setState({ ultimoProgresso: Date.now() - SEM_SINAL_MS - 1 });
+    await vigiar();
   }
 });
 

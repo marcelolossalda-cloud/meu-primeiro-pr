@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Quem Não Me Segue de Volta",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Veja quem você segue e não te segue de volta. Roda 100% no seu navegador. Não é um produto oficial do Instagram nem da Meta.",
   "icons": {
     "16": "icons/icon16.png",
@@ -19,7 +19,8 @@
   },
   "permissions": [
     "storage",
-    "scripting"
+    "scripting",
+    "alarms"
   ],
   "host_permissions": [
     "https://www.instagram.com/*"

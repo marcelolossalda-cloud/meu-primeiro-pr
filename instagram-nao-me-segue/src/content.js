@@ -11,7 +11,7 @@
 
   const IG_APP_ID = '936619743392459';
   const IG_ASBD_ID = '129477';
-  const MAX_PAGES = 4000;
+  const MAX_PAGES_ABSOLUTO = 4000;
 
   // Ritmos de coleta: intervalo entre requisicoes e tamanho da pagina.
   // O intervalo e respeitado globalmente (ver criarAgendador), entao a taxa de
@@ -326,13 +326,25 @@
   }
 
   /** Percorre todas as páginas de followers/following. */
-  async function fetchList(kind, userId, pace, agendador, onProgress) {
-    const out = [];
-    const vistos = new Set();
-    let maxId = null;
+  async function fetchList(kind, userId, pace, agendador, esperado, estadoLista, onProgress) {
+    const out = estadoLista.itens;
+    const vistos = new Set(out.map((u) => String(u.username).toLowerCase()));
+    let maxId = estadoLista.maxId;
     let anterior = null;
+    let paginasSemNovidade = 0;
 
-    for (let page = 0; page < MAX_PAGES; page++) {
+    if (estadoLista.completo) {
+      onProgress(out.length, {});
+      return out;
+    }
+
+    // Teto proporcional ao tamanho da lista: protege contra um cursor que nunca
+    // termina, sem cortar uma coleta legítima.
+    const limite = esperado
+      ? Math.min(MAX_PAGES_ABSOLUTO, Math.ceil(esperado / pace.count) * 2 + 20)
+      : MAX_PAGES_ABSOLUTO;
+
+    for (let page = 0; page < limite; page++) {
       if (cancelled) throw fail('CANCELADO', 'Cancelado.');
 
       const qs = new URLSearchParams({ count: String(pace.count), search_surface: 'follow_list_page' });
@@ -349,6 +361,7 @@
       );
 
       const users = Array.isArray(data && data.users) ? data.users : [];
+      const antes = out.length;
       for (const u of users) {
         if (!u || !u.username) continue;
         const chave = u.username.toLowerCase();
@@ -358,13 +371,48 @@
       }
       onProgress(out.length, {});
 
+      // Páginas seguidas só com perfis repetidos significam cursor girando em
+      // falso: melhor parar do que ficar rodando para sempre.
+      paginasSemNovidade = out.length > antes ? 0 : paginasSemNovidade + 1;
+      if (paginasSemNovidade >= 3) break;
+
       const proximo = data && data.next_max_id;
       if (!users.length || proximo == null || proximo === '' || String(proximo) === String(anterior)) break;
       anterior = proximo;
       maxId = proximo;
+      estadoLista.maxId = maxId; // ponto de retomada, caso a aba morra aqui
     }
 
+    estadoLista.completo = true;
     return out;
+  }
+
+  /* ───────── progresso retomável ───────── */
+
+  const CHAVE_PROGRESSO = 'scanProgress';
+  const VALIDADE_PROGRESSO = 15 * 60 * 1000;
+
+  async function lerProgresso(target) {
+    try {
+      const { [CHAVE_PROGRESSO]: p } = await chrome.storage.local.get(CHAVE_PROGRESSO);
+      if (!p || p.targetId !== target.id) return null;
+      if (Date.now() - (p.atualizadoEm || 0) > VALIDADE_PROGRESSO) return null;
+      return p;
+    } catch {
+      return null;
+    }
+  }
+
+  function novaLista() {
+    return { itens: [], maxId: null, completo: false };
+  }
+
+  async function limparProgresso() {
+    try {
+      await chrome.storage.local.remove(CHAVE_PROGRESSO);
+    } catch {
+      /* sem problema: o progresso vence sozinho */
+    }
   }
 
   async function run(options) {
@@ -376,27 +424,61 @@
       // Com os totais do perfil em mãos, o ritmo é ajustado ao tamanho da conta.
       const { ritmo: pace, paginas, estimativaMs } = calibrar(base, target);
 
+      // Retoma de onde parou quando a coleta anterior morreu no meio (aba
+      // recarregada, por exemplo), em vez de recomeçar do zero.
+      const salvo = options.retomar ? await lerProgresso(target) : null;
+      const listas = {
+        followers: (salvo && salvo.followers) || novaLista(),
+        following: (salvo && salvo.following) || novaLista(),
+      };
+
       report({
         phase: 'coletando',
         target,
-        counts: { followers: 0, following: 0 },
+        counts: { followers: listas.followers.itens.length, following: listas.following.itens.length },
         pace: { ...pace, nome: options.pace || 'minuto' },
         plano: { paginas, estimativaMs, alvoSegundos: base.alvoSegundos || null },
+        retomado: !!salvo,
       });
 
       // As duas listas são lidas ao mesmo tempo, dividindo o mesmo agendador:
       // a taxa de requisições continua a do ritmo escolhido, mas o tempo total
       // cai porque a latência de uma requisição cobre a espera da outra.
       const agendador = criarAgendador(pace);
-      const contagens = { followers: 0, following: 0 };
-      const avisar = (extra) => report({ phase: 'coletando', counts: { ...contagens }, ...extra });
+      const contagens = {
+        followers: listas.followers.itens.length,
+        following: listas.following.itens.length,
+      };
+
+      let ultimoSalvamento = 0;
+      const salvarProgresso = async () => {
+        if (Date.now() - ultimoSalvamento < 3000) return;
+        ultimoSalvamento = Date.now();
+        try {
+          await chrome.storage.local.set({
+            [CHAVE_PROGRESSO]: {
+              targetId: target.id,
+              atualizadoEm: Date.now(),
+              followers: listas.followers,
+              following: listas.following,
+            },
+          });
+        } catch {
+          /* se o storage encher, seguimos sem ponto de retomada */
+        }
+      };
+
+      const avisar = (extra) => {
+        report({ phase: 'coletando', counts: { ...contagens }, ...extra });
+        salvarProgresso();
+      };
 
       const [followers, following] = await Promise.all([
-        fetchList('followers', target.id, pace, agendador, (n, extra) => {
+        fetchList('followers', target.id, pace, agendador, target.totalSeguidores, listas.followers, (n, extra) => {
           contagens.followers = n;
           avisar(extra);
         }),
-        fetchList('following', target.id, pace, agendador, (n, extra) => {
+        fetchList('following', target.id, pace, agendador, target.totalSeguindo, listas.following, (n, extra) => {
           contagens.following = n;
           avisar(extra);
         }),
@@ -417,9 +499,11 @@
         parcial: esperado > 0 && obtido < esperado * 0.9,
       };
       await salvar(resultado);
+      await limparProgresso();
       chrome.runtime.sendMessage({ type: 'SCAN_DONE', counts: { followers: followers.length, following: following.length } }).catch(() => {});
     } catch (e) {
       if (e && e.code === 'CANCELADO') {
+        await limparProgresso();
         chrome.runtime.sendMessage({ type: 'SCAN_CANCELLED' }).catch(() => {});
         return;
       }
