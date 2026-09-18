@@ -168,6 +168,18 @@ function ligarEventos() {
 
   $('#btn-diagnostico').addEventListener('click', diagnosticar);
 
+  $('#btn-copiar-diag').addEventListener('click', async () => {
+    const texto = [...document.querySelectorAll('#diagnostico li')]
+      .map((li) => (li.classList.contains('ok') ? '[ok]    ' : '[falha] ') + li.textContent)
+      .join('\n');
+    try {
+      await navigator.clipboard.writeText(texto);
+      toast('Diagnóstico copiado.');
+    } catch {
+      toast('Não consegui copiar.');
+    }
+  });
+
   $('#erro-fechar').addEventListener('click', () => $('#erro').classList.add('oculto'));
 }
 
@@ -196,6 +208,7 @@ async function diagnosticar() {
 
   botao.disabled = false;
   botao.textContent = 'Verificar de novo';
+  $('#btn-copiar-diag').classList.remove('oculto');
 }
 
 async function salvarPrefs(patch) {

@@ -120,6 +120,7 @@ Erros comuns:
 | Nenhuma aba do instagram.com aberta | Abra `instagram.com` em uma aba e clique de novo |
 | Você não está logado nesta aba | Faça login no Instagram nessa mesma aba |
 | A API recusou a leitura | Sessão expirou ou o Instagram limitou: recarregue a aba, ou espere alguns minutos e use o ritmo "Devagar" |
+| O Instagram devolveu a página do site em vez dos dados | Resposta 200 com HTML no lugar de JSON. Quase sempre é sessão a renovar ou verificação de segurança pendente: abra o instagram.com, confirme que entra normalmente, resolva qualquer aviso e recarregue a aba. A linha "Cookies:" do diagnóstico mostra se o `sessionid` está presente |
 | O script não respondeu | Recarregue a aba do Instagram (a injeção não sobrevive a uma navegação em andamento) |
 
 Se o popup abrir e o botão não responder, abra `chrome://extensions`, clique em

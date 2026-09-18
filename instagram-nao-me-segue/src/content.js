@@ -10,6 +10,7 @@
   window.__QNMS_CONTENT__ = true;
 
   const IG_APP_ID = '936619743392459';
+  const IG_ASBD_ID = '129477';
   const MAX_PAGES = 4000;
 
   // Ritmos de coleta: intervalo entre requisicoes e tamanho da pagina.
@@ -64,8 +65,15 @@
     });
     if (!id) return linhas;
 
+    linhas.push({
+      ok: true,
+      texto: 'Cookies: csrftoken ' + (getCookie('csrftoken') ? 'ok' : 'ausente') +
+        ', sessionid ' + (getCookie('sessionid') ? 'ok' : 'ausente') +
+        ', www-claim ' + (lerClaim() ? 'ok' : 'ausente'),
+    });
+
     try {
-      const d = await igFetch('/api/v1/friendships/' + id + '/followers/?count=1');
+      const d = await igFetch('/api/v1/friendships/' + id + '/followers/?count=1&search_surface=follow_list_page');
       const n = Array.isArray(d && d.users) ? d.users.length : 0;
       linhas.push({
         ok: n > 0,
@@ -73,6 +81,13 @@
       });
     } catch (e) {
       linhas.push({ ok: false, texto: 'A API recusou a leitura: ' + (e.message || e) });
+      if (e.detalhe) {
+        linhas.push({
+          ok: false,
+          texto: 'Detalhe: HTTP ' + e.detalhe.status + ' · ' + e.detalhe.tipo + ' · ' +
+            e.detalhe.tamanho + ' bytes · início: ' + (e.detalhe.inicio || '(vazio)'),
+        });
+      }
     }
     return linhas;
   }
@@ -115,10 +130,33 @@
     return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
   }
 
-  function fail(code, message) {
+  function fail(code, message, detalhe) {
     const e = new Error(message);
     e.code = code;
+    if (detalhe) e.detalhe = detalhe;
     return e;
+  }
+
+  /**
+   * O app web do Instagram manda um "www-claim" junto das chamadas de API e o
+   * renova a cada resposta. Ele fica no sessionStorage da propria pagina, que o
+   * content script enxerga por ser a mesma origem.
+   */
+  function lerClaim() {
+    try {
+      return sessionStorage.getItem('www-claim-v2') || '';
+    } catch {
+      return '';
+    }
+  }
+
+  function guardarClaim(res) {
+    try {
+      const novo = res.headers.get('x-ig-set-www-claim');
+      if (novo) sessionStorage.setItem('www-claim-v2', novo);
+    } catch {
+      /* sessionStorage pode estar bloqueado; seguir sem o claim */
+    }
   }
 
   function report(patch) {
@@ -126,14 +164,17 @@
   }
 
   async function igFetch(path) {
-    const res = await fetch('https://www.instagram.com' + path, {
-      credentials: 'include',
-      headers: {
-        'x-ig-app-id': IG_APP_ID,
-        'x-csrftoken': getCookie('csrftoken') || '',
-        'x-requested-with': 'XMLHttpRequest',
-      },
-    });
+    const headers = {
+      'x-ig-app-id': IG_APP_ID,
+      'x-asbd-id': IG_ASBD_ID,
+      'x-csrftoken': getCookie('csrftoken') || '',
+      'x-requested-with': 'XMLHttpRequest',
+    };
+    const claim = lerClaim();
+    if (claim) headers['x-ig-www-claim'] = claim;
+
+    const res = await fetch('https://www.instagram.com' + path, { credentials: 'include', headers });
+    guardarClaim(res);
 
     if (res.status === 429) throw fail('RATE_LIMIT', 'O Instagram pediu para diminuir o ritmo (429).');
     if (res.status === 401 || res.status === 403) {
@@ -142,14 +183,36 @@
     if (res.status === 404) throw fail('NAO_ENCONTRADO', 'Perfil não encontrado.');
     if (!res.ok) throw fail('HTTP_' + res.status, 'O Instagram respondeu com erro ' + res.status + '.');
 
+    const texto = await res.text();
     let data;
     try {
-      data = await res.json();
+      data = JSON.parse(texto);
     } catch {
-      throw fail('RESPOSTA_INVALIDA', 'Resposta inesperada do Instagram. Recarregue a aba e tente de novo.');
+      // Resposta 200 que não é JSON: quase sempre é a página HTML de login ou
+      // de verificação servida no lugar dos dados.
+      const tipo = res.headers.get('content-type') || 'sem content-type';
+      const ehPagina = /text\/html/i.test(tipo) || /^\s*<(!doctype|html)/i.test(texto);
+      const detalhe = {
+        status: res.status,
+        tipo,
+        url: res.url,
+        tamanho: texto.length,
+        inicio: texto.slice(0, 120).replace(/\s+/g, ' ').trim(),
+      };
+      throw fail(
+        'RESPOSTA_INVALIDA',
+        ehPagina
+          ? 'O Instagram devolveu a página do site em vez dos dados. Isso costuma ser sessão a renovar ou verificação pendente na conta: abra o instagram.com, confirme que entra normalmente e resolva qualquer aviso de segurança.'
+          : 'Resposta inesperada do Instagram (' + tipo + ').',
+        detalhe
+      );
     }
+
     if (data && data.status === 'fail') {
       throw fail('IG_FAIL', data.message || 'O Instagram recusou a requisição.');
+    }
+    if (data && data.require_login) {
+      throw fail('NAO_AUTENTICADO', 'O Instagram pediu login novamente. Entre no site e repita.');
     }
     return data;
   }
@@ -235,7 +298,7 @@
     for (let page = 0; page < MAX_PAGES; page++) {
       if (cancelled) throw fail('CANCELADO', 'Cancelado.');
 
-      const qs = new URLSearchParams({ count: String(pace.count) });
+      const qs = new URLSearchParams({ count: String(pace.count), search_surface: 'follow_list_page' });
       if (maxId != null) qs.set('max_id', String(maxId));
 
       await agendador.vez();
