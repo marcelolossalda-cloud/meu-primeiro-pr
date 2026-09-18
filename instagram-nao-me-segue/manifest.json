@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Quem Não Me Segue de Volta",
+  "version": "1.0.0",
+  "description": "Descubra quem você segue no Instagram e não te segue de volta. Análise 100% local, dentro do seu navegador.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Quem não me segue de volta"
+  },
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "permissions": ["storage", "scripting"],
+  "host_permissions": ["https://www.instagram.com/*"]
+}

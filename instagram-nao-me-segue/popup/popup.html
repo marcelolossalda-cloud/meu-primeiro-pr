@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Quem não me segue de volta</title>
+<link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+<header class="topo">
+  <div class="marca">
+    <img src="../icons/icon32.png" alt="" width="22" height="22">
+    <div>
+      <strong>Quem não me segue</strong>
+      <span id="subtitulo">de volta no Instagram</span>
+    </div>
+  </div>
+  <button id="btn-expandir" class="icone" title="Abrir em uma aba">⤢</button>
+</header>
+
+<!-- ───────────── Tela inicial ───────────── -->
+<section id="tela-inicio" class="tela">
+  <div class="cartao destaque">
+    <h2>Quem você segue e não te segue de volta</h2>
+    <p class="ajuda">A extensão lê suas listas direto do Instagram, na aba que você já tem aberta.</p>
+    <button id="btn-analisar" class="primario grande">Analisar minha conta</button>
+    <p class="ajuda mini centro">É preciso estar logado em instagram.com.</p>
+
+    <details class="avancado">
+      <summary>Opções</summary>
+      <label class="campo">
+        <span>Ritmo da coleta</span>
+        <select id="pace">
+          <option value="seguro">Devagar — menor risco de bloqueio</option>
+          <option value="normal" selected>Normal — recomendado</option>
+          <option value="rapido">Rápido — pode acionar o limite do Instagram</option>
+        </select>
+      </label>
+      <label class="campo">
+        <span>Analisar outro perfil (público ou que você segue)</span>
+        <input id="username" type="text" placeholder="@usuario" autocomplete="off" spellcheck="false">
+      </label>
+    </details>
+  </div>
+
+  <div class="cartao">
+    <h2>Prefere não conectar?</h2>
+    <p class="ajuda">Use o arquivo de “Baixar suas informações” do Instagram. Zero risco de bloqueio.</p>
+    <label class="arquivo">
+      <input id="arquivo" type="file" accept=".zip,.json,.html" multiple hidden>
+      <span>Escolher o .zip ou os .json</span>
+    </label>
+    <p id="import-status" class="ajuda mini"></p>
+    <details class="avancado">
+      <summary>Como conseguir o arquivo</summary>
+      <ol class="passos">
+        <li>Instagram → <b>Configurações → Central de contas → Suas informações e permissões → Baixar suas informações</b></li>
+        <li>Peça em formato <b>JSON</b> (a seção “Seguidores e seguindo” já basta)</li>
+        <li>Quando o e-mail chegar, baixe o .zip e solte aqui</li>
+      </ol>
+    </details>
+  </div>
+
+  <p class="rodape-aviso">Tudo roda no seu navegador. Nada é enviado para servidores.</p>
+</section>
+
+<!-- ───────────── Tela de progresso ───────────── -->
+<section id="tela-progresso" class="tela oculto">
+  <div class="cartao centro">
+    <div class="spinner" aria-hidden="true"></div>
+    <h2 id="progresso-fase">Coletando…</h2>
+
+    <div class="barra-progresso" role="progressbar" aria-labelledby="progresso-fase">
+      <div id="progresso-preenchido"></div>
+    </div>
+    <p id="progresso-eta" class="ajuda mini centro"></p>
+
+    <div class="contadores">
+      <div><b id="p-seguidores">0</b><span>seguidores</span></div>
+      <div><b id="p-seguindo">0</b><span>seguindo</span></div>
+    </div>
+
+    <p id="progresso-aviso" class="ajuda mini"></p>
+    <p class="ajuda mini">Pode fechar esta janelinha — a coleta continua. Só não feche a aba do Instagram.</p>
+    <button id="btn-cancelar" class="secundario">Cancelar</button>
+  </div>
+</section>
+
+<!-- ───────────── Tela de resultado ───────────── -->
+<section id="tela-resultado" class="tela oculto">
+  <div class="resumo">
+    <img id="r-avatar" class="avatar" alt="" referrerpolicy="no-referrer" hidden>
+    <div class="resumo-texto">
+      <b id="r-conta">—</b>
+      <span id="r-quando" class="ajuda mini"></span>
+    </div>
+    <button id="btn-reanalisar" class="secundario pequeno">Atualizar</button>
+  </div>
+
+  <nav class="abas" id="abas">
+    <button class="aba ativa" data-aba="nao-seguem">Não me seguem <b>0</b></button>
+    <button class="aba" data-aba="nao-sigo">Não sigo <b>0</b></button>
+    <button class="aba" data-aba="mutuos">Mútuos <b>0</b></button>
+    <button class="aba" data-aba="ignorados">Ignorados <b>0</b></button>
+  </nav>
+
+  <div class="barra">
+    <input id="busca" type="search" placeholder="Buscar…" autocomplete="off">
+    <select id="ordem" title="Ordenar a lista">
+      <option value="ig">Padrão</option>
+      <option value="az">A → Z</option>
+      <option value="za">Z → A</option>
+    </select>
+    <button id="btn-csv" class="secundario pequeno" title="Baixar a lista em CSV">CSV</button>
+    <button id="btn-copiar" class="secundario pequeno" title="Copiar os @ da lista">Copiar</button>
+  </div>
+
+  <p class="legenda"><b>✕</b> só esconde da lista — não deixa de seguir ninguém.</p>
+
+  <ul id="lista" class="lista"></ul>
+  <button id="btn-mais" class="secundario largo oculto">Mostrar mais</button>
+  <p id="vazio" class="vazio oculto"></p>
+</section>
+
+<!-- ───────────── Erro ───────────── -->
+<div id="erro" class="erro oculto">
+  <b id="erro-titulo">Algo deu errado</b>
+  <span id="erro-msg"></span>
+  <button id="erro-fechar" class="icone">✕</button>
+</div>
+
+<div id="aviso-toast" class="toast oculto"></div>
+
+<script type="module" src="popup.js"></script>
+</body>
+</html>
