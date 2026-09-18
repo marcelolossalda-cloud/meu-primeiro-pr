@@ -63,6 +63,11 @@
   let cancelled = false;
   let running = false;
 
+  // Referer usado nas chamadas de lista. O Instagram trata o parametro
+  // search_surface=follow_list_page como vindo da pagina do perfil; mandando do
+  // feed, algumas contas recebem 200 com lista vazia.
+  let referrerPerfil = null;
+
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (!msg || typeof msg !== 'object') return;
     if (msg.type === 'PING') {
@@ -101,6 +106,24 @@
       texto: id ? 'Sessão do Instagram encontrada nesta aba' : 'Você não está logado no instagram.com nesta aba',
     });
     if (!id) return linhas;
+
+    // Reproduz o mesmo preparo da análise, para o diagnóstico valer de verdade.
+    try {
+      const d = await igFetch('/api/v1/users/' + id + '/info/');
+      const nome = d && d.user && d.user.username;
+      if (nome) {
+        referrerPerfil = 'https://www.instagram.com/' + nome + '/';
+        linhas.push({ ok: true, texto: 'Perfil identificado: @' + nome + ' · ' + (d.user.follower_count || 0) + ' seguidores' });
+        try {
+          await igFetch('/api/v1/users/web_profile_info/?username=' + encodeURIComponent(nome));
+          linhas.push({ ok: true, texto: 'Aquecimento da sessão: ok' });
+        } catch (e) {
+          linhas.push({ ok: false, texto: 'Aquecimento da sessão falhou: ' + (e.code || e.message) });
+        }
+      }
+    } catch (e) {
+      linhas.push({ ok: false, texto: 'Não consegui ler os dados do seu perfil: ' + (e.message || e) });
+    }
 
     linhas.push({
       ok: true,
@@ -224,7 +247,13 @@
     const claim = lerClaim();
     if (claim) headers['x-ig-www-claim'] = claim;
 
-    const res = await fetch('https://www.instagram.com' + path, { credentials: 'include', headers });
+    const init = { credentials: 'include', headers };
+    if (referrerPerfil) {
+      init.referrer = referrerPerfil;
+      init.referrerPolicy = 'strict-origin-when-cross-origin';
+    }
+
+    const res = await fetch('https://www.instagram.com' + path, init);
     guardarClaim(res);
 
     if (res.status === 429) throw fail('RATE_LIMIT', 'O Instagram pediu para diminuir o ritmo (429).');
@@ -534,6 +563,20 @@
 
       // Retoma de onde parou quando a coleta anterior morreu no meio (aba
       // recarregada, por exemplo), em vez de recomeçar do zero.
+      // Faz as chamadas saírem como se viessem da página do perfil.
+      if (target.username) referrerPerfil = 'https://www.instagram.com/' + target.username + '/';
+
+      // Aquecimento: esta chamada devolve o cabeçalho x-ig-set-www-claim, que
+      // o app web manda em toda leitura de lista. Sem ele, parte das contas
+      // recebe resposta vazia.
+      if (target.username) {
+        try {
+          await igFetch('/api/v1/users/web_profile_info/?username=' + encodeURIComponent(target.username));
+        } catch {
+          /* o aquecimento é um bônus: se falhar, a leitura ainda é tentada */
+        }
+      }
+
       // Descobre a forma de leitura que funciona nesta conta antes de começar.
       const { estrategia } = await detectarEstrategia(target.id, target.totalSeguidores || 0);
 
