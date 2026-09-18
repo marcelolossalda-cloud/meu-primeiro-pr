@@ -39,7 +39,7 @@ let resultado = null;
 let previo = null;
 let estado = null;
 let ignorados = new Set();
-let prefs = { pace: 'normal', ordem: 'ig' };
+let prefs = { pace: 'minuto', ordem: 'ig' };
 let aba = 'nao-seguem';
 let busca = '';
 let limite = PASSO;
@@ -375,6 +375,18 @@ function pintarProgresso() {
     $('#progresso-eta').textContent = '';
   }
 
+  // Quando a conta é grande demais para caber no tempo alvo mesmo no intervalo
+  // mínimo seguro, é melhor dizer isso do que fingir que cabe.
+  const plano = estado.plano;
+  const campoPlano = $('#progresso-plano');
+  if (plano && plano.alvoSegundos && plano.estimativaMs > plano.alvoSegundos * 1000 * 1.15) {
+    const min = Math.max(1, Math.round(plano.estimativaMs / 60000));
+    campoPlano.textContent =
+      `Sua conta é grande (${plano.paginas} páginas): no ritmo máximo seguro isso leva cerca de ${min} min.`;
+  } else {
+    campoPlano.textContent = '';
+  }
+
   if (estado.esperandoAte && estado.esperandoAte > Date.now()) {
     const seg = Math.ceil((estado.esperandoAte - Date.now()) / 1000);
     $('#progresso-aviso').textContent = `O Instagram pediu uma pausa. Retomando em ~${seg}s.`;
@@ -384,7 +396,7 @@ function pintarProgresso() {
 }
 
 function restante(alvo, contagens) {
-  const ritmo = (estado && estado.pace) || { min: 1200, max: 2400, count: 50 };
+  const ritmo = (estado && estado.pace) || { min: 600, max: 1200, count: 200 };
   const faltam =
     Math.max(0, (alvo.totalSeguidores || 0) - contagens.followers) +
     Math.max(0, (alvo.totalSeguindo || 0) - contagens.following);
@@ -392,10 +404,11 @@ function restante(alvo, contagens) {
 
   // As duas listas dividem o mesmo agendador, então o tempo é o número de
   // páginas que faltam vezes o intervalo entre requisições.
-  const paginas = Math.ceil(faltam / (ritmo.count || 100));
+  const paginas = Math.ceil(faltam / (ritmo.count || 200));
   const ms = paginas * ((ritmo.min + ritmo.max) / 2);
+  if (ms < 20000) return `~${Math.max(5, Math.round(ms / 1000))}s restantes`;
+  if (ms < 75000) return 'menos de 1 min';
   const min = Math.round(ms / 60000);
-  if (ms < 45000) return 'menos de 1 min';
   return `~${min} min restante${min > 1 ? 's' : ''}`;
 }
 

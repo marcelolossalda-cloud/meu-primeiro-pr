@@ -22,7 +22,7 @@
 <section id="tela-inicio" class="tela">
   <div class="cartao destaque">
     <h2>Quem você segue e não te segue de volta</h2>
-    <p class="ajuda">A extensão lê suas listas direto do Instagram, na aba que você já tem aberta.</p>
+    <p class="ajuda">A extensão lê suas listas direto do Instagram, na aba que você já tem aberta. Na maioria das contas leva menos de um minuto.</p>
     <button id="btn-analisar" class="primario grande">Analisar minha conta</button>
     <p class="ajuda mini centro">É preciso estar logado em instagram.com.</p>
 
@@ -37,9 +37,9 @@
       <label class="campo">
         <span>Ritmo da coleta</span>
         <select id="pace">
+          <option value="minuto" selected>Até 1 minuto — ajusta sozinho ao tamanho da conta</option>
+          <option value="normal">Equilibrado — mais folgado, menor risco</option>
           <option value="seguro">Devagar — para contas grandes ou após bloqueio</option>
-          <option value="normal" selected>Normal — recomendado</option>
-          <option value="rapido">Rápido — pode acionar o limite do Instagram</option>
         </select>
       </label>
       <label class="campo">
@@ -96,6 +96,7 @@
     </div>
 
     <p id="progresso-aviso" class="ajuda mini"></p>
+    <p id="progresso-plano" class="ajuda mini"></p>
     <p class="ajuda mini">Pode fechar esta janelinha — a coleta continua. Só não feche a aba do Instagram.</p>
     <button id="btn-cancelar" class="secundario">Cancelar</button>
   </div>

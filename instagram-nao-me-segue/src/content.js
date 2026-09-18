@@ -17,11 +17,48 @@
   // O intervalo e respeitado globalmente (ver criarAgendador), entao a taxa de
   // requisicoes ao Instagram e exatamente esta, mesmo com as duas listas em
   // paralelo. Paginas maiores reduzem o numero de requisicoes.
+  //
+  // "minuto" nao tem intervalo fixo: ele e calculado em calibrar(), a partir do
+  // tamanho real da conta, para a coleta caber no tempo alvo.
   const PACE = {
+    minuto: { alvoSegundos: 60, piso: 200, teto: 1500, count: 200 },
+    normal: { min: 600, max: 1200, count: 200 },
     seguro: { min: 1500, max: 2600, count: 100 },
-    normal: { min: 600, max: 1200, count: 100 },
-    rapido: { min: 250, max: 550, count: 200 },
   };
+
+  // Folga para resolver o perfil, montar e gravar o resultado.
+  const MARGEM_MS = 5000;
+
+  /**
+   * Divide o tempo alvo pelo numero de paginas que a conta exige, dentro de um
+   * piso e um teto de seguranca. Devolve tambem a estimativa real, que pode
+   * passar do alvo quando a conta e grande demais para o piso.
+   */
+  function calibrar(base, target) {
+    if (!base.alvoSegundos) {
+      const medio = (base.min + base.max) / 2;
+      return { ritmo: base, paginas: null, estimativaMs: null, medio };
+    }
+
+    const seguidores = target.totalSeguidores || 0;
+    const seguindo = target.totalSeguindo || 0;
+    const paginas = Math.ceil(seguidores / base.count) + Math.ceil(seguindo / base.count);
+
+    if (!paginas) {
+      return { ritmo: { ...base, min: 350, max: 500 }, paginas: 0, estimativaMs: 0, medio: 425 };
+    }
+
+    const disponivel = base.alvoSegundos * 1000 - MARGEM_MS;
+    const ideal = Math.floor(disponivel / paginas);
+    const intervalo = Math.max(base.piso, Math.min(base.teto, ideal));
+
+    return {
+      ritmo: { ...base, min: Math.round(intervalo * 0.8), max: Math.round(intervalo * 1.2) },
+      paginas,
+      estimativaMs: paginas * intervalo + MARGEM_MS,
+      medio: intervalo,
+    };
+  }
 
   let cancelled = false;
   let running = false;
@@ -331,12 +368,21 @@
   }
 
   async function run(options) {
-    const pace = PACE[options.pace] || PACE.normal;
+    const base = PACE[options.pace] || PACE.minuto;
     try {
-      report({ phase: 'resolvendo', counts: { followers: 0, following: 0 }, pace: { ...pace, nome: options.pace || 'normal' } });
+      report({ phase: 'resolvendo', counts: { followers: 0, following: 0 } });
       const target = await resolveTarget(options.username);
 
-      report({ phase: 'coletando', target, counts: { followers: 0, following: 0 } });
+      // Com os totais do perfil em mãos, o ritmo é ajustado ao tamanho da conta.
+      const { ritmo: pace, paginas, estimativaMs } = calibrar(base, target);
+
+      report({
+        phase: 'coletando',
+        target,
+        counts: { followers: 0, following: 0 },
+        pace: { ...pace, nome: options.pace || 'minuto' },
+        plano: { paginas, estimativaMs, alvoSegundos: base.alvoSegundos || null },
+      });
 
       // As duas listas são lidas ao mesmo tempo, dividindo o mesmo agendador:
       // a taxa de requisições continua a do ritmo escolhido, mas o tempo total

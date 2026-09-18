@@ -26,15 +26,30 @@ espera de uma requisição é aproveitado pela outra, em vez de somar latência 
 
 Ritmos disponíveis:
 
-| Ritmo    | Intervalo entre requisições | Perfis por página | Quando usar                     |
-| -------- | --------------------------- | ----------------- | ------------------------------- |
-| Devagar  | 1,5 – 2,6 s                 | 100               | contas grandes ou após bloqueio |
-| Normal   | 0,6 – 1,2 s                 | 100               | padrão                          |
-| Rápido   | 0,25 – 0,55 s               | 200               | contas pequenas, com pressa     |
+| Ritmo           | Intervalo entre requisições      | Perfis por página |
+| --------------- | -------------------------------- | ----------------- |
+| **Até 1 minuto** (padrão) | calculado: 0,2 – 1,5 s | 200               |
+| Equilibrado     | 0,6 – 1,2 s                      | 200               |
+| Devagar         | 1,5 – 2,6 s                      | 100               |
 
-Medido em banco de ensaio (600 seguidores + 400 seguindo, 400 ms de latência por
-requisição): 41,8 s na versão 1.1.1 → **9,1 s no Normal** e **2,6 s no Rápido**, com
-resultado idêntico e metade das requisições.
+O ritmo padrão não é fixo. Assim que descobre o perfil, a extensão sabe quantos
+seguidores e quantos seguindo a conta tem, calcula quantas páginas serão necessárias e
+divide os 60 segundos entre elas — sempre dentro de um piso de 200 ms (para não disparar
+o limite do Instagram) e um teto de 1,5 s. Ou seja: usa o intervalo **mais folgado** que
+ainda cabe no minuto, o que é o mais seguro possível dentro do orçamento.
+
+Quando a conta é grande demais para caber em 60 s mesmo no intervalo mínimo, a tela de
+progresso diz o tempo real esperado em vez de fingir que cabe.
+
+Medido em banco de ensaio, com 400 ms de latência por requisição:
+
+| Conta                   | Páginas | Tempo  |
+| ----------------------- | ------- | ------ |
+| 500 + 300 conexões      | 5       | 7,1 s  |
+| 5.000 + 1.000 conexões  | 30      | 45,4 s |
+| 20.000 + 2.000 conexões | 110     | 57,1 s |
+
+Para referência, a versão 1.1.1 levava 41,8 s em uma conta de apenas 1.000 conexões.
 
 ### Opção 2 — Importar os dados (sem risco nenhum)
 
