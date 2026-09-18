@@ -44,10 +44,19 @@ let busca = '';
 let limite = PASSO;
 let cache = null;
 
-iniciar();
+// Qualquer erro solto vira mensagem na tela, em vez de deixar a janela muda.
+window.addEventListener('error', (e) => mostrarErro('Erro na extensão', e.message || 'erro desconhecido'));
+window.addEventListener('unhandledrejection', (e) =>
+  mostrarErro('Erro na extensão', String((e.reason && e.reason.message) || e.reason || 'erro desconhecido'))
+);
+
+iniciar().catch((e) => mostrarErro('Falha ao abrir a extensão', String((e && e.message) || e)));
 
 async function iniciar() {
   if (new URLSearchParams(location.search).has('full')) document.body.classList.add('full');
+
+  // Antes de qualquer await: se a leitura do storage falhar, os botões ainda respondem.
+  ligarEventos();
 
   const dados = await chrome.storage.local.get(['lastResult', 'previousResult', 'ignorados', 'prefs']);
   resultado = dados.lastResult || null;
@@ -59,8 +68,6 @@ async function iniciar() {
 
   const resposta = await chrome.runtime.sendMessage({ type: 'GET_STATE' }).catch(() => null);
   estado = (resposta && resposta.state) || null;
-
-  ligarEventos();
 
   chrome.runtime.onMessage.addListener((msg) => {
     if (msg && msg.type === 'UI_STATE') {
@@ -158,7 +165,36 @@ function ligarEventos() {
     pintarResultado();
   });
 
+  $('#btn-diagnostico').addEventListener('click', diagnosticar);
+
   $('#erro-fechar').addEventListener('click', () => $('#erro').classList.add('oculto'));
+}
+
+async function diagnosticar() {
+  const botao = $('#btn-diagnostico');
+  const lista = $('#diagnostico');
+  botao.disabled = true;
+  botao.textContent = 'Verificando…';
+  lista.classList.remove('oculto');
+  lista.textContent = '';
+
+  let linhas;
+  try {
+    const r = await chrome.runtime.sendMessage({ type: 'DIAGNOSTICO' });
+    linhas = (r && r.linhas) || [{ ok: false, texto: 'O serviço da extensão não respondeu.' }];
+  } catch (e) {
+    linhas = [{ ok: false, texto: 'Não consegui falar com o serviço da extensão: ' + ((e && e.message) || e) }];
+  }
+
+  for (const linha of linhas) {
+    const li = document.createElement('li');
+    li.className = linha.ok ? 'ok' : 'falha';
+    li.textContent = linha.texto;
+    lista.appendChild(li);
+  }
+
+  botao.disabled = false;
+  botao.textContent = 'Verificar de novo';
 }
 
 async function salvarPrefs(patch) {

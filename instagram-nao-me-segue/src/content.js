@@ -34,6 +34,10 @@
       sendResponse({ ok: true });
       return;
     }
+    if (msg.type === 'DIAGNOSTICO') {
+      diagnosticar().then((linhas) => sendResponse({ linhas }));
+      return true; // resposta assíncrona
+    }
     if (msg.type === 'RUN_SCAN') {
       if (running) {
         sendResponse({ ok: false, error: 'JA_RODANDO' });
@@ -45,6 +49,31 @@
       sendResponse({ ok: true });
     }
   });
+
+  /** Checagens de "por que não funciona", rodadas na aba do Instagram. */
+  async function diagnosticar() {
+    const linhas = [];
+    linhas.push({ ok: true, texto: 'Script de leitura rodando em ' + location.host });
+
+    const id = getCookie('ds_user_id');
+    linhas.push({
+      ok: !!id,
+      texto: id ? 'Sessão do Instagram encontrada nesta aba' : 'Você não está logado no instagram.com nesta aba',
+    });
+    if (!id) return linhas;
+
+    try {
+      const d = await igFetch('/api/v1/friendships/' + id + '/followers/?count=1');
+      const n = Array.isArray(d && d.users) ? d.users.length : 0;
+      linhas.push({
+        ok: n > 0,
+        texto: n > 0 ? 'A API do Instagram respondeu normalmente' : 'A API respondeu, mas não devolveu perfis',
+      });
+    } catch (e) {
+      linhas.push({ ok: false, texto: 'A API recusou a leitura: ' + (e.message || e) });
+    }
+    return linhas;
+  }
 
   function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));

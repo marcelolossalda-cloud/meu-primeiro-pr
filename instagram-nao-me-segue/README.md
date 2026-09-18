@@ -102,6 +102,29 @@ te segue — e um número errado é pior do que número nenhum.
 - Se for publicar na Chrome Web Store, revise o nome e os ícones: "Instagram" é marca
   registrada da Meta e a loja rejeita extensões que sugiram vínculo oficial.
 
+## Se não funcionar
+
+Na tela inicial há o botão **"Não está funcionando? Diagnosticar"**. Ele verifica, em
+ordem, se a extensão carregou, se existe uma aba do Instagram aberta, se o script foi
+injetado nela, se há sessão iniciada e se a API respondeu — e mostra em qual ponto parou.
+
+Erros comuns:
+
+| O que aparece | O que fazer |
+| ------------- | ----------- |
+| Nenhuma aba do instagram.com aberta | Abra `instagram.com` em uma aba e clique de novo |
+| Você não está logado nesta aba | Faça login no Instagram nessa mesma aba |
+| A API recusou a leitura | Sessão expirou ou o Instagram limitou: recarregue a aba, ou espere alguns minutos e use o ritmo "Devagar" |
+| O script não respondeu | Recarregue a aba do Instagram (a injeção não sobrevive a uma navegação em andamento) |
+
+Se o popup abrir e o botão não responder, abra `chrome://extensions`, clique em
+**Detalhes → Inspecionar visualizações: popup** e veja o Console: qualquer erro agora
+também aparece dentro da própria janela da extensão.
+
+**Atenção na instalação:** o Chrome não aceita o arquivo `.zip` arrastado. É preciso
+descompactar e apontar **Carregar sem compactação** para a pasta que contém o
+`manifest.json` — não para a pasta acima dela.
+
 ## Publicar na Chrome Web Store
 
 Os textos do formulário, as justificativas de permissões e as capturas em 1280×800

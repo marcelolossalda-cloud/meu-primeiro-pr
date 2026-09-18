@@ -417,3 +417,28 @@ body.full .lista {
   background: color-mix(in srgb, #d9a441 12%, var(--bg));
   font-size: 12px;
 }
+
+/* ── Diagnóstico ── */
+.diagnostico-caixa { padding: 12px; }
+.diagnostico-caixa .secundario.largo { margin-top: 0; }
+
+.diagnostico {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.diagnostico li {
+  position: relative;
+  padding: 4px 0 4px 20px;
+  border-top: 1px solid var(--borda);
+}
+.diagnostico li:first-child { border-top: 0; }
+.diagnostico li::before {
+  position: absolute;
+  left: 2px;
+  font-weight: 700;
+}
+.diagnostico li.ok::before { content: "✓"; color: #22a06b; }
+.diagnostico li.falha::before { content: "✕"; color: var(--perigo); }
+.diagnostico li.falha { color: var(--perigo); }

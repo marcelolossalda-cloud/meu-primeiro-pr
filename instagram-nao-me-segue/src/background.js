@@ -101,6 +101,42 @@ async function cancelScan() {
   return { ok: true };
 }
 
+/** Roda as checagens de diagnóstico e devolve uma lista de linhas ok/falha. */
+async function diagnosticar() {
+  const linhas = [];
+  const add = (ok, texto) => linhas.push({ ok, texto });
+
+  add(true, 'Extensão carregada (versão ' + chrome.runtime.getManifest().version + ')');
+
+  let abas;
+  try {
+    abas = await chrome.tabs.query({ url: 'https://www.instagram.com/*' });
+  } catch (e) {
+    add(false, 'Não consegui listar as abas: ' + (e.message || e));
+    return linhas;
+  }
+
+  add(abas.length > 0, abas.length ? 'Aba do Instagram aberta' : 'Nenhuma aba do instagram.com aberta — abra o site e tente de novo');
+  const aba = abas.find((t) => t.status === 'complete') || abas[0];
+  if (!aba) return linhas;
+
+  try {
+    await chrome.scripting.executeScript({ target: { tabId: aba.id }, files: ['src/content.js'] });
+    add(true, 'Script injetado na aba do Instagram');
+  } catch (e) {
+    add(false, 'Não consegui injetar o script: ' + (e.message || e));
+    return linhas;
+  }
+
+  try {
+    const r = await chrome.tabs.sendMessage(aba.id, { type: 'DIAGNOSTICO' });
+    for (const l of (r && r.linhas) || []) add(l.ok, l.texto);
+  } catch (e) {
+    add(false, 'O script não respondeu: ' + (e.message || e));
+  }
+  return linhas;
+}
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || typeof msg !== 'object') return;
 
@@ -121,6 +157,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case 'CANCEL_SCAN':
       cancelScan().then(sendResponse);
+      return true;
+
+    case 'DIAGNOSTICO':
+      diagnosticar().then(
+        (linhas) => sendResponse({ ok: true, linhas }),
+        (e) => sendResponse({ ok: false, linhas: [{ ok: false, texto: 'Falha no diagnóstico: ' + (e.message || e) }] })
+      );
       return true;
 
     // Vindas do content script
