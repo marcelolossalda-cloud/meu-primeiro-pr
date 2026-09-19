@@ -49,6 +49,21 @@
     </details>
   </div>
 
+  <div class="cartao destaque">
+    <h2>Ler pela tela do Instagram</h2>
+    <p class="ajuda">
+      Não usa a API: abre as suas listas no site e lê os nomes que aparecem, rolando a página.
+      Funciona mesmo quando o Instagram bloqueou a leitura automática. É mais lento e a aba
+      precisa ficar visível.
+    </p>
+    <label class="campo">
+      <span>Seu nome de usuário</span>
+      <input id="usuario-tela" type="text" placeholder="seu.perfil" autocomplete="off" spellcheck="false">
+    </label>
+    <button id="btn-ler-tela" class="primario">Ler pela tela</button>
+    <p id="tela-status" class="ajuda mini"></p>
+  </div>
+
   <div class="cartao">
     <h2>Prefere não conectar?</h2>
     <p class="ajuda">Use o arquivo de “Baixar suas informações” do Instagram. Zero risco de bloqueio.</p>
@@ -164,6 +179,13 @@
     <ol id="falha-passos" class="passos"></ol>
     <button id="falha-tentar" class="primario">Tentar de novo</button>
     <button id="falha-ultima" class="secundario largo oculto">Ver a última análise salva</button>
+  </div>
+
+  <div class="cartao">
+    <h2>Ler pela tela do Instagram</h2>
+    <p class="ajuda">Não usa a API — funciona mesmo com a leitura automática bloqueada.</p>
+    <button id="btn-ler-tela-falha" class="primario">Ler pela tela</button>
+    <p id="tela-status-falha" class="ajuda mini"></p>
   </div>
 
   <div class="cartao">

@@ -234,6 +234,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       })().then(sendResponse, (e) => sendResponse({ ok: false, erro: (e && e.message) || String(e) }));
       return true;
 
+    case 'LER_PELA_TELA_COMPLETO':
+      lerPelaTelaCompleto(msg.username).then(sendResponse, (e) =>
+        sendResponse({ ok: false, erro: (e && e.message) || String(e) })
+      );
+      return true;
+
     case 'DIAGNOSTICO':
       diagnosticar().then(
         (linhas) => sendResponse({ ok: true, linhas }),
@@ -293,6 +299,72 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return;
   }
 });
+
+/**
+ * Le as duas listas pela propria interface do Instagram, abrindo a janela de
+ * seguidores e a de seguindo e rolando cada uma. Nao usa API: e o caminho que
+ * funciona quando o Instagram fecha a API para a conta.
+ */
+async function lerPelaTelaCompleto(username) {
+  const alvo = String(username || '').replace(/^@/, '').trim();
+  if (!alvo) return { ok: false, erro: 'Preciso do seu nome de usuário para abrir as listas.' };
+
+  const ler = async (secao) => {
+    const abas = await chrome.tabs.query({ url: 'https://www.instagram.com/*' });
+    let aba = abas.find((t) => t.status === 'complete') || abas[0];
+    const url = `https://www.instagram.com/${alvo}/${secao}/`;
+
+    if (aba) await chrome.tabs.update(aba.id, { url, active: true });
+    else aba = await chrome.tabs.create({ url, active: true });
+
+    await esperarCarregar(aba.id, 45000);
+    await new Promise((r) => setTimeout(r, 3500)); // a janela leva um tempo para montar
+
+    await chrome.scripting.executeScript({ target: { tabId: aba.id }, files: ['src/content.js'] });
+    const r = await chrome.tabs.sendMessage(aba.id, { type: 'LER_PELA_TELA', esperado: 0 });
+    if (!r || !r.ok) throw new Error((r && r.erro) || 'Não consegui ler a janela de ' + secao);
+    return r.lista || [];
+  };
+
+  await setState({ running: true, phase: 'tela', esperandoAte: null, error: null, startedAt: Date.now() });
+
+  try {
+    const following = await ler('following');
+    await setState({ phase: 'tela', counts: { followers: 0, following: following.length } });
+
+    const followers = await ler('followers');
+
+    const resultado = {
+      version: 1,
+      source: 'tela',
+      target: { id: '', username: alvo, full_name: '', pic: '' },
+      scannedAt: Date.now(),
+      followers,
+      following,
+      parcial: false,
+      verificado: true,
+      fonte: 'tela',
+      seguidoresCompletos: true,
+      semSeguidores: followers.length === 0,
+      souEu: true,
+      oficial: { seguidores: followers.length, seguindo: following.length },
+    };
+
+    await chrome.storage.local.set({ lastResult: resultado });
+    await setState({
+      running: false, phase: 'concluido', finishedAt: Date.now(),
+      counts: { followers: followers.length, following: following.length },
+    });
+    atualizarBadge();
+    return { ok: true, followers: followers.length, following: following.length };
+  } catch (e) {
+    await setState({
+      running: false, phase: 'erro',
+      error: { code: 'TELA_FALHOU', message: (e && e.message) || String(e) },
+    });
+    return { ok: false, erro: (e && e.message) || String(e) };
+  }
+}
 
 /**
  * Vigia da coleta: garante que ela sempre termina — concluindo, retomando

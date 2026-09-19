@@ -86,6 +86,15 @@
       );
       return true; // resposta assíncrona
     }
+    if (msg.type === 'LER_PELA_TELA') {
+      lerPelaTela(msg.esperado || 0, (n) =>
+        chrome.runtime.sendMessage({ type: 'TELA_PROGRESSO', lidos: n }).catch(() => {})
+      ).then(
+        (lista) => sendResponse({ ok: true, lista }),
+        (e) => sendResponse({ ok: false, erro: (e && e.message) || String(e), code: e && e.code })
+      );
+      return true;
+    }
     if (msg.type === 'DIAGNOSTICO') {
       diagnosticar().then((linhas) => sendResponse({ linhas }));
       return true; // resposta assíncrona
@@ -441,6 +450,100 @@
       esperado > 0 ? 'LISTAS_VAZIAS' : 'SEM_ESTRATEGIA',
       'Nenhuma das formas de leitura devolveu perfis (' + falhas.join(' · ') + ').'
     );
+  }
+
+  /* ───────── leitura pela tela (sem API) ───────── */
+
+  const NAO_SAO_PERFIS = new Set([
+    'explore', 'reels', 'direct', 'accounts', 'stories', 'p', 'tv', 'about',
+    'legal', 'privacy', 'terms', 'developer', 'emails', 'challenge', 'api',
+  ]);
+
+  /** Perfis visíveis dentro da janela de seguidores/seguindo aberta na página. */
+  function perfisNaJanela() {
+    const janela = document.querySelector('div[role="dialog"]');
+    if (!janela) return null;
+
+    const achados = new Map();
+    for (const a of janela.querySelectorAll('a[href^="/"]')) {
+      const href = a.getAttribute('href') || '';
+      const m = href.match(/^\/([A-Za-z0-9._]{1,30})\/?$/);
+      if (!m) continue;
+      const nome = m[1];
+      if (NAO_SAO_PERFIS.has(nome.toLowerCase())) continue;
+      if (achados.has(nome.toLowerCase())) continue;
+
+      // O nome de exibição costuma estar no mesmo bloco do link.
+      const bloco = a.closest('li, div[role="button"], div') || a;
+      const textos = [...bloco.querySelectorAll('span')]
+        .map((e) => (e.textContent || '').trim())
+        .filter((t) => t && t !== nome && t.length < 60);
+
+      achados.set(nome.toLowerCase(), {
+        id: '',
+        username: nome,
+        full_name: textos.find((t) => !/^\d/.test(t)) || '',
+        is_private: false,
+        is_verified: !!bloco.querySelector('[aria-label*="erificad"], svg[aria-label*="erified"]'),
+        pic: (bloco.querySelector('img') || {}).src || '',
+      });
+    }
+    return [...achados.values()];
+  }
+
+  /** Elemento que rola dentro da janela. */
+  function roladorDaJanela() {
+    const janela = document.querySelector('div[role="dialog"]');
+    if (!janela) return null;
+    let melhor = null;
+    for (const el of janela.querySelectorAll('div')) {
+      if (el.scrollHeight > el.clientHeight + 40 && el.clientHeight > 80) {
+        if (!melhor || el.scrollHeight > melhor.scrollHeight) melhor = el;
+      }
+    }
+    return melhor;
+  }
+
+  /**
+   * Le a lista rolando a janela do proprio site. Nao usa API nenhuma: se os
+   * nomes aparecem para o usuario, aparecem para a extensao. E o caminho que
+   * sobra quando o Instagram fecha a API da conta.
+   */
+  async function lerPelaTela(esperado, onProgress) {
+    if (!document.querySelector('div[role="dialog"]')) {
+      throw fail('JANELA_FECHADA', 'A janela da lista não está aberta nesta aba.');
+    }
+
+    const reunidos = new Map();
+    let paradas = 0;
+
+    for (let volta = 0; volta < 1500; volta++) {
+      if (cancelled) throw fail('CANCELADO', 'Cancelado.');
+
+      const visiveis = perfisNaJanela() || [];
+      const antes = reunidos.size;
+      for (const u of visiveis) reunidos.set(u.username.toLowerCase(), u);
+      onProgress(reunidos.size);
+
+      if (esperado > 0 && reunidos.size >= esperado) break;
+
+      const rolador = roladorDaJanela();
+      if (!rolador) throw fail('SEM_ROLAGEM', 'Não achei a lista dentro da janela.');
+
+      const alturaAntes = rolador.scrollHeight;
+      rolador.scrollTop = rolador.scrollHeight;
+      await sleep(420);
+
+      // Nada novo e a lista parou de crescer: chegou ao fim (ou travou).
+      if (reunidos.size === antes && rolador.scrollHeight === alturaAntes) {
+        if (++paradas >= 6) break;
+        await sleep(900);
+      } else {
+        paradas = 0;
+      }
+    }
+
+    return [...reunidos.values()];
   }
 
   function pick(u) {

@@ -7,6 +7,7 @@ const PASSO = 50;
 const FASES = {
   resolvendo: 'Identificando a conta…',
   coletando: 'Lendo suas listas…',
+  tela: 'Lendo pela tela do Instagram…',
   pausado: 'Pausado pelo Instagram',
   conferindo: 'Conferindo quem retribui…',
   seguidores: 'Lendo seus seguidores…',
@@ -170,6 +171,7 @@ async function iniciar() {
   ignorados = new Set(dados.ignorados || []);
   prefs = { ...prefs, ...(dados.prefs || {}) };
   $('#pace').value = prefs.pace;
+  if (prefs.usuarioTela) $('#usuario-tela').value = prefs.usuarioTela;
   $('#ordem').value = prefs.ordem;
 
   const resposta = await chrome.runtime.sendMessage({ type: 'GET_STATE' }).catch(() => null);
@@ -283,6 +285,10 @@ function ligarEventos() {
   $('#btn-diagnostico').addEventListener('click', diagnosticar);
 
   $('#falha-tentar').addEventListener('click', analisar);
+
+  $('#btn-ler-tela').addEventListener('click', () => lerPelaTela('#btn-ler-tela', '#tela-status'));
+  $('#btn-ler-tela-falha').addEventListener('click', () => lerPelaTela('#btn-ler-tela-falha', '#tela-status-falha'));
+
   $('#arquivo-falha').addEventListener('change', importar);
 
   $('#falha-ultima').addEventListener('click', () => {
@@ -350,6 +356,40 @@ async function diagnosticar() {
   botao.disabled = false;
   botao.textContent = 'Verificar de novo';
   $('#btn-copiar-diag').classList.remove('oculto');
+}
+
+/** Lê as listas rolando a própria interface do Instagram. */
+async function lerPelaTela(seletorBotao, seletorStatus) {
+  const status = $(seletorStatus);
+  const botao = $(seletorBotao);
+  const usuario =
+    ($('#usuario-tela').value || '').trim().replace(/^@/, '') ||
+    (resultado && resultado.target && resultado.target.username) ||
+    prefs.usuarioTela ||
+    '';
+
+  if (!usuario) {
+    status.textContent = 'Digite seu nome de usuário do Instagram (sem o @) no campo acima.';
+    $('#usuario-tela').focus();
+    return;
+  }
+
+  botao.disabled = true;
+  botao.textContent = 'Lendo…';
+  status.textContent = 'Vou abrir suas listas no Instagram e rolar. Deixe a aba visível.';
+
+  const r = await chrome.runtime
+    .sendMessage({ type: 'LER_PELA_TELA_COMPLETO', username: usuario })
+    .catch((e) => ({ ok: false, erro: (e && e.message) || String(e) }));
+
+  botao.disabled = false;
+  botao.textContent = 'Ler pela tela';
+  status.textContent =
+    r && r.ok
+      ? `Li ${r.following} seguindo e ${r.followers} seguidores.`
+      : 'Não consegui: ' + ((r && r.erro) || 'erro desconhecido');
+
+  await salvarPrefs({ usuarioTela: usuario });
 }
 
 async function salvarPrefs(patch) {
@@ -584,6 +624,17 @@ function preencherDiagnostico(lista, linhas) {
 function pintarProgresso() {
   const contagens = estado.counts || { followers: 0, following: 0 };
   const alvo = estado.target || {};
+
+  if (estado.phase === 'tela') {
+    $('#progresso-fase').textContent = 'Lendo pela tela do Instagram…';
+    $('#progresso-eta').textContent = 'Deixe a aba do Instagram visível enquanto eu rolo as listas.';
+    $('#progresso-aviso').textContent = '';
+    $('.barra-progresso').classList.add('indeterminada');
+    $('#p-seguidores').textContent = (contagens.followers || 0).toLocaleString('pt-BR');
+    $('#p-seguindo').textContent = (contagens.following || 0).toLocaleString('pt-BR');
+    $('#btn-retomar-agora').classList.add('oculto');
+    return;
+  }
 
   const pausado = estado.phase === 'pausado';
   $('#btn-retomar-agora').classList.toggle('oculto', !pausado);

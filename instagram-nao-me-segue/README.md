@@ -137,6 +137,22 @@ quando a lista foi conferida conta a conta — nunca sobre uma lista que possa e
 
 O ✕ ao lado continua sendo apenas "esconder da lista" — não mexe na sua conta.
 
+## Ler pela tela (quando o Instagram bloqueia a API)
+
+O Instagram fecha a API por conta, e quando isso acontece nenhuma quantidade de espera
+resolve. Mas as listas continuam aparecendo no site para o usuário — e o que aparece na
+tela pode ser lido.
+
+A extensão abre `instagram.com/<perfil>/following/` e `/followers/`, rola a janela até o
+fim e recolhe os nomes que o próprio site renderiza. Nenhuma requisição de API é feita.
+
+Verificado em banco de ensaio com a API devolvendo HTML em todas as rotas (o bloqueio
+real), janela carregando 30 perfis por vez: 420 de 420 seguindo e 300 de 300 seguidores,
+em 31,9 s.
+
+Limitações: a aba precisa ficar visível, é mais lento que a API e depende da estrutura da
+página — se o Instagram mudar a interface, o leitor precisa ser ajustado.
+
 ## A análise não desiste
 
 O Instagram fecha a porta por tempo determinado quando julga que houve leitura demais:
