@@ -581,7 +581,10 @@ function pintarProgresso() {
   const conf = $('#progresso-conferindo');
   conf.textContent =
     estado.phase === 'conferindo' && estado.aConferir
-      ? `Conferindo quem retribui: ${(estado.conferidos || 0).toLocaleString('pt-BR')} de ${estado.aConferir.toLocaleString('pt-BR')}`
+      ? (estado.umAUm ? 'Conferindo uma a uma (mais lento, para não errar): ' : 'Conferindo quem retribui: ') +
+        `${(estado.conferidos || 0).toLocaleString('pt-BR')} de ${estado.aConferir.toLocaleString('pt-BR')}`
+      : estado.phase === 'conferindo'
+      ? 'Conferindo se a resposta do Instagram bate…'
       : '';
 
   if (estado.esperandoAte && estado.esperandoAte > Date.now()) {

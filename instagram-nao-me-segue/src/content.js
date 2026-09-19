@@ -700,6 +700,101 @@
     return { ok: true, seguindo: !!(d && d.friendship_status && d.friendship_status.following) };
   }
 
+  /**
+   * Confere uma relacao isolada. Este endpoint e a fonte confiavel de
+   * followed_by; o show_many em lote nem sempre preenche esse campo.
+   */
+  async function relacaoIndividual(userId) {
+    const d = await igFetch('/api/v1/friendships/show/' + userId + '/');
+    if (!d || typeof d.followed_by !== 'boolean') return null;
+    return { meSegue: d.followed_by, euSigo: !!d.following };
+  }
+
+  /**
+   * Nao basta o show_many responder: e preciso que a resposta faca sentido.
+   * Numa conta com seguidores, e impossivel que NINGUEM dos seguidos retribua,
+   * e uma amostra conferida uma a uma denuncia respostas de fachada.
+   */
+  async function conferenciaConfiavel(following, relacoes, temSeguidores, agendador, aviso) {
+    const valores = following
+      .map((u) => relacoes.get(String(u.id)))
+      .filter((v) => typeof v === 'boolean');
+    if (!valores.length) return { ok: false, motivo: 'nenhuma relação veio preenchida' };
+
+    const retribuem = valores.filter(Boolean).length;
+    if (temSeguidores && retribuem === 0) {
+      return { ok: false, motivo: 'a resposta diz que ninguém retribui, o que é impossível nesta conta' };
+    }
+
+    // Amostra: pega perfis que a resposta em lote deu como "não retribui" e
+    // confere um a um. Uma divergência já invalida o lote inteiro.
+    const negados = following.filter((u) => relacoes.get(String(u.id)) === false);
+    const amostra = [];
+    const passo = Math.max(1, Math.floor(negados.length / 6));
+    for (let i = 0; i < negados.length && amostra.length < 6; i += passo) amostra.push(negados[i]);
+
+    let divergencias = 0;
+    for (const u of amostra) {
+      if (cancelled) break;
+      try {
+        await agendador.vez();
+        if (aviso) aviso();
+        const r = await relacaoIndividual(u.id);
+        if (r && r.meSegue === true) divergencias++;
+      } catch {
+        /* falha na amostragem não condena o lote */
+      }
+    }
+
+    if (divergencias > 0) {
+      return { ok: false, motivo: `${divergencias} de ${amostra.length} perfis conferidos na verdade te seguem` };
+    }
+    return { ok: true };
+  }
+
+  /**
+   * Confere uma a uma quem retribui. E a fonte mais cara e a mais confiavel:
+   * usada quando a resposta em lote nao passa na prova. Quem ja aparece na
+   * lista de seguidores lida nao precisa de requisicao.
+   */
+  async function conferirUmAUm(following, seguidoresLidos, onProgress) {
+    const jaConfirmados = new Set(seguidoresLidos.map((u) => String(u.username).toLowerCase()));
+    const agendaConferencia = criarAgendador({ min: 160, max: 320, count: 1 });
+
+    let feitos = 0;
+    let falhasSeguidas = 0;
+
+    for (const u of following) {
+      if (cancelled) throw fail('CANCELADO', 'Cancelado.');
+
+      if (jaConfirmados.has(String(u.username).toLowerCase())) {
+        u.me_segue = true;
+        onProgress(++feitos, following.length);
+        continue;
+      }
+
+      try {
+        await agendaConferencia.vez();
+        const r = await relacaoIndividual(u.id);
+        if (r) {
+          u.me_segue = r.meSegue;
+          falhasSeguidas = 0;
+        } else {
+          falhasSeguidas++;
+        }
+      } catch (e) {
+        if (e.code === 'RATE_LIMIT') throw e;
+        falhasSeguidas++;
+        // Muitas falhas seguidas significam que esta via também fechou.
+        if (falhasSeguidas >= 10) throw fail('CONFERENCIA_FALHOU', 'O Instagram parou de responder à conferência.');
+      }
+
+      onProgress(++feitos, following.length);
+    }
+
+    return following.filter((u) => typeof u.me_segue === 'boolean').length;
+  }
+
   /* ───────── progresso retomável ───────── */
 
   const CHAVE_PROGRESSO = 'scanProgress';
@@ -838,6 +933,7 @@
       // Fonte precisa da lista principal: pergunta conta a conta quem retribui.
       // Não depende da lista de seguidores, que vem cortada em perfis grandes.
       let verificado = false;
+      let motivoSemConferencia = null;
       try {
         const ids = following.map((u) => String(u.id || '')).filter((x) => x && /^\d+$/.test(x));
         if (ids.length && ids.length >= following.length * 0.9) {
@@ -846,15 +942,53 @@
             report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: ids.length })
           );
           if (relacoes.size >= ids.length * 0.95) {
-            for (const u of following) {
-              const v = relacoes.get(String(u.id));
-              if (typeof v === 'boolean') u.me_segue = v;
+            const prova = await conferenciaConfiavel(
+              following,
+              relacoes,
+              (target.totalSeguidores || 0) > 0,
+              agendador,
+              () => report({ phase: 'conferindo', counts: { ...contagens }, validando: true })
+            );
+
+            if (prova.ok) {
+              for (const u of following) {
+                const v = relacoes.get(String(u.id));
+                if (typeof v === 'boolean') u.me_segue = v;
+              }
+              verificado = true;
+            } else {
+              motivoSemConferencia = prova.motivo;
             }
-            verificado = true;
           }
         }
       } catch {
         /* sem show_many, a comparação por conjuntos continua valendo */
+      }
+
+      // Lote reprovado: confere uma a uma, que é lento mas confiável. Antes
+      // disso, lê a lista de seguidores que der — cada perfil encontrado nela
+      // é um mútuo confirmado que dispensa requisição.
+      if (!verificado) {
+        if (!lerSeguidores) {
+          report({ phase: 'coletando', counts: { ...contagens }, recuperando: true });
+          followers = await coletarCompleto(
+            'followers', target.id, pace, agendador, target.totalSeguidores,
+            listas.followers, estrategia,
+            (n, extra) => { contagens.followers = n; avisar(extra); }
+          );
+        }
+
+        try {
+          const conferidos = await conferirUmAUm(following, followers, (n, total) =>
+            report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: total, umAUm: true })
+          );
+          if (conferidos >= following.length * 0.95) {
+            verificado = true;
+            motivoSemConferencia = null;
+          }
+        } catch (e) {
+          if (!motivoSemConferencia) motivoSemConferencia = (e && e.message) || 'conferência interrompida';
+        }
       }
 
       // Conferência contra os números oficiais do perfil: se as listas vierem
@@ -905,9 +1039,11 @@
         followers,
         following,
         parcial:
+          (!verificado && eSeguidores > 0 && followers.length < eSeguidores * 0.95) ||
           (lerSeguidores && eSeguidores > 0 && followers.length < eSeguidores * 0.95) ||
           (eSeguindo > 0 && following.length < eSeguindo * 0.95),
-        semSeguidores: !lerSeguidores,
+        semSeguidores: !lerSeguidores && verificado,
+        motivoSemConferencia,
         // guardados para a tela poder mostrar coletado x oficial
         oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
         verificado,
