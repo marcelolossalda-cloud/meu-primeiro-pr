@@ -326,7 +326,7 @@
 
   /** Repete a requisição com espera crescente quando bate no limite de taxa. */
   async function igFetchRetry(path, onWait) {
-    const esperas = [30000, 75000, 150000];
+    const esperas = [15000, 40000, 80000];
     for (let tentativa = 0; ; tentativa++) {
       try {
         return await igFetch(path);
@@ -526,6 +526,14 @@
       const extraido = estrategia.extrair(data, kind);
       if (!extraido) throw fail('FORMATO_INESPERADO', 'O Instagram mudou o formato da resposta no meio da leitura.');
       const users = extraido.users;
+
+      // Perto do total informado pelo perfil, parar é melhor que esperar uma
+      // pausa longa do Instagram por um punhado de perfis.
+      if (esperado > 0 && out.length >= esperado * 0.99) {
+        estadoLista.completo = true;
+        onProgress(out.length, {});
+        return out;
+      }
       const antes = out.length;
       for (const u of users) {
         if (!u || !u.username) continue;
@@ -874,10 +882,16 @@
       // As duas listas são lidas ao mesmo tempo, dividindo o mesmo agendador:
       // a taxa de requisições continua a do ritmo escolhido, mas o tempo total
       // cai porque a latência de uma requisição cobre a espera da outra.
+      // Por padrão lemos só "quem você segue": a lista de seguidores custa
+      // muitas requisições, vem cortada em contas grandes e não é necessária
+      // para a resposta principal, que sai da conferência conta a conta.
+      // Precisa vir antes do agendador, que consulta este valor.
+      const lerSeguidores = options.completo === true;
+
       const prazo = base.alvoSegundos ? Date.now() + base.alvoSegundos * 1000 - MARGEM_MS : null;
       const paginasRestantes = () => {
-        const fSeg = Math.max(0, (target.totalSeguidores || 0) - contagens.followers);
         const fSig = Math.max(0, (target.totalSeguindo || 0) - contagens.following);
+        const fSeg = lerSeguidores ? Math.max(0, (target.totalSeguidores || 0) - contagens.followers) : 0;
         return Math.ceil(fSeg / pace.count) + Math.ceil(fSig / pace.count);
       };
 
@@ -905,15 +919,18 @@
         }
       };
 
+      // O total exibido é o da leitura que está realmente acontecendo: somar a
+      // lista de seguidores quando ela não está sendo lida faz 805 de 809
+      // parecer 805 de 3.122.
+      const metaTotal = lerSeguidores
+        ? (target.totalSeguidores || 0) + (target.totalSeguindo || 0)
+        : target.totalSeguindo || 0;
+
       const avisar = (extra) => {
-        report({ phase: 'coletando', counts: { ...contagens }, ...extra });
+        report({ phase: 'coletando', counts: { ...contagens }, metaTotal, ...extra });
         salvarProgresso();
       };
 
-      // Por padrão lemos só "quem você segue": a lista de seguidores custa
-      // muitas requisições, vem cortada em contas grandes e não é necessária
-      // para a resposta principal, que sai da conferência conta a conta.
-      const lerSeguidores = options.completo === true;
 
       const tarefas = [
         coletarCompleto('following', target.id, pace, agendador, target.totalSeguindo, listas.following, estrategia, (n, extra) => {

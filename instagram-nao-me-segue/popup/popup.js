@@ -561,7 +561,9 @@ function pintarProgresso() {
   $('#p-seguindo').textContent = contagens.following.toLocaleString('pt-BR');
   $('#btn-cancelar').disabled = false;
 
-  const totalEsperado = (alvo.totalSeguidores || 0) + (alvo.totalSeguindo || 0);
+  // metaTotal reflete o que está sendo lido de verdade (sem a lista de
+  // seguidores, quando ela não entra na conta).
+  const totalEsperado = estado.metaTotal || (alvo.totalSeguidores || 0) + (alvo.totalSeguindo || 0);
   const feitos = contagens.followers + contagens.following;
   const barra = $('.barra-progresso');
 
@@ -600,7 +602,10 @@ function pintarProgresso() {
 
   if (estado.esperandoAte && estado.esperandoAte > Date.now()) {
     const seg = Math.ceil((estado.esperandoAte - Date.now()) / 1000);
-    $('#progresso-aviso').textContent = `O Instagram pediu uma pausa. Retomando em ~${seg}s.`;
+    $('#progresso-aviso').textContent =
+      `O Instagram pediu uma pausa (limite de leituras). Retomando em ${seg}s — pode fechar a janelinha.`;
+    clearTimeout(tiquetaque);
+    tiquetaque = setTimeout(() => { if (estado && estado.running) pintarProgresso(); }, 1000);
   } else {
     $('#progresso-aviso').textContent = estado.retomado ? 'Retomando de onde parou…' : '';
   }
@@ -608,8 +613,9 @@ function pintarProgresso() {
 
 function restante(alvo, contagens) {
   const ritmo = (estado && estado.pace) || { min: 600, max: 1200, count: 200 };
+  const soSeguindo = !!(estado && estado.metaTotal && estado.metaTotal === (alvo.totalSeguindo || 0));
   const faltam =
-    Math.max(0, (alvo.totalSeguidores || 0) - contagens.followers) +
+    (soSeguindo ? 0 : Math.max(0, (alvo.totalSeguidores || 0) - contagens.followers)) +
     Math.max(0, (alvo.totalSeguindo || 0) - contagens.following);
   if (!faltam) return 'quase lá';
 
@@ -954,6 +960,7 @@ function mostrarErro(titulo, mensagem) {
   $('#erro').classList.remove('oculto');
 }
 
+let tiquetaque;
 let toastTimer;
 function toast(texto) {
   const el = $('#aviso-toast');
