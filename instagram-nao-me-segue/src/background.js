@@ -40,11 +40,24 @@ async function getState() {
   return { ...ESTADO_INICIAL, ...(s || {}) };
 }
 
-async function setState(patch) {
-  const state = { ...(await getState()), ...patch };
-  await chrome.storage.local.set({ [STATE_KEY]: state });
-  chrome.runtime.sendMessage({ type: 'UI_STATE', state }).catch(() => {});
-  return state;
+// Gravações de estado são serializadas: sem fila, um SCAN_PROGRESS atrasado lê
+// o estado velho e regrava running:true por cima de um SCAN_DONE já aplicado,
+// deixando a extensão "analisando" para sempre.
+let filaEstado = Promise.resolve();
+
+function setState(patch) {
+  filaEstado = filaEstado.then(async () => {
+    const atual = await getState();
+
+    // Progresso que chega depois do fim não reabre a análise.
+    if (patch.running === true && !atual.running && atual.finishedAt) return atual;
+
+    const state = { ...atual, ...patch };
+    await chrome.storage.local.set({ [STATE_KEY]: state });
+    chrome.runtime.sendMessage({ type: 'UI_STATE', state }).catch(() => {});
+    return state;
+  });
+  return filaEstado;
 }
 
 /** Acha uma aba do Instagram já aberta ou abre uma nova e espera carregar. */
@@ -121,11 +134,18 @@ async function startScan(options = {}) {
 
 async function cancelScan() {
   await chrome.alarms.clear('retomar');
+  await chrome.alarms.clear('vigia');
   const { tabId } = await getState();
   if (tabId != null) {
     await chrome.tabs.sendMessage(tabId, { type: 'CANCEL' }).catch(() => {});
   }
-  await setState({ running: false, phase: 'cancelado', esperandoAte: null });
+  await setState({
+    running: false,
+    phase: 'cancelado',
+    esperandoAte: null,
+    retomaEm: null,
+    finishedAt: Date.now(), // impede que progresso em voo reabra a análise
+  });
   return { ok: true };
 }
 
@@ -167,6 +187,15 @@ async function diagnosticar() {
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (!msg || typeof msg !== 'object') return;
+
+  // Relatos de coleta só são aceitos da aba que está coletando.
+  const DA_COLETA = new Set(['SCAN_PROGRESS', 'SCAN_DONE', 'SCAN_ERROR', 'SCAN_CANCELLED']);
+  if (DA_COLETA.has(msg.type) && sender && sender.tab) {
+    getState().then((s) => {
+      if (s.tabId == null || s.tabId === sender.tab.id) despachar(msg);
+    });
+    return;
+  }
 
   switch (msg.type) {
     case 'GET_STATE':
@@ -212,7 +241,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       );
       return true;
 
-    // Vindas do content script
+    default:
+      return;
+  }
+});
+
+/** Mensagens vindas da aba que está coletando. */
+function despachar(msg) {
+  switch (msg.type) {
     case 'SCAN_PROGRESS':
       setState({ running: true, esperandoAte: null, ultimoProgresso: Date.now(), ...(msg.patch || {}) });
       return;
@@ -232,6 +268,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       tratarErro(msg);
       return;
 
+    default:
+      return;
+  }
+}
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (!msg || typeof msg !== 'object') return;
+  switch (msg.type) {
     case 'IMPORT_DONE':
       setState({
         running: false,
@@ -255,7 +299,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
  * sozinha quando a aba morre no meio, ou falhando com um motivo na tela.
  * Nunca deixa a extensão "analisando" para sempre.
  */
+let vigiaOcupado = false;
+
 async function vigiar() {
+  if (vigiaOcupado) return; // alarme, onRemoved e onUpdated podem coincidir
+  vigiaOcupado = true;
+  try {
+    await vigiarInterno();
+  } finally {
+    vigiaOcupado = false;
+  }
+}
+
+async function vigiarInterno() {
   const s = await getState();
   if (!s.running || s.phase === 'pausado') {
     await chrome.alarms.clear('vigia');
@@ -391,8 +447,13 @@ async function atualizarBadge() {
       await chrome.action.setBadgeText({ text: '' });
       return;
     }
+    // Mesma regra da tela: me_segue manda, e sem dado ninguém é acusado.
     const seguidores = new Set(lastResult.followers.map((u) => String(u.username).toLowerCase()));
-    const n = lastResult.following.filter((u) => !seguidores.has(String(u.username).toLowerCase())).length;
+    const listaUtil = lastResult.followers.length > 0 && !lastResult.semSeguidores;
+    const n = lastResult.following.filter((u) => {
+      if (typeof u.me_segue === 'boolean') return !u.me_segue;
+      return listaUtil ? !seguidores.has(String(u.username).toLowerCase()) : false;
+    }).length;
     await chrome.action.setBadgeBackgroundColor({ color: '#4f46e5' });
     await chrome.action.setBadgeText({ text: n > 999 ? '999+' : String(n) });
   } catch {

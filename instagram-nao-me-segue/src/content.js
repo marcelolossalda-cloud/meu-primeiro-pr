@@ -509,11 +509,14 @@
 
     // Teto proporcional ao tamanho da lista: protege contra um cursor que nunca
     // termina, sem cortar uma coleta legítima.
-    const limite = esperado
-      ? Math.min(MAX_PAGES_ABSOLUTO, Math.ceil(esperado / pace.count) * 2 + 20)
-      : MAX_PAGES_ABSOLUTO;
+    // O tamanho real da página só se conhece depois da primeira resposta: o
+    // graphql entrega 50 mesmo quando se pede 200, e um teto calculado por 200
+    // cortaria a coleta em um quarto.
+    let porPagina = Math.min(pace.count, 50);
+    const limiteAtual = () =>
+      esperado ? Math.min(MAX_PAGES_ABSOLUTO, Math.ceil(esperado / porPagina) * 2 + 20) : MAX_PAGES_ABSOLUTO;
 
-    for (let page = 0; page < limite; page++) {
+    for (let page = 0; page < limiteAtual(); page++) {
       if (cancelled) throw fail('CANCELADO', 'Cancelado.');
 
       await agendador.vez();
@@ -526,10 +529,18 @@
       const extraido = estrategia.extrair(data, kind);
       if (!extraido) throw fail('FORMATO_INESPERADO', 'O Instagram mudou o formato da resposta no meio da leitura.');
       const users = extraido.users;
+      if (users.length > porPagina) porPagina = users.length;
 
       // Perto do total informado pelo perfil, parar é melhor que esperar uma
       // pausa longa do Instagram por um punhado de perfis.
-      if (esperado > 0 && out.length >= esperado * 0.99) {
+      if (esperado > 0 && out.length + users.length >= esperado * 0.99) {
+        for (const u of users) {
+          if (!u || !u.username) continue;
+          const chave = String(u.username).toLowerCase();
+          if (vistos.has(chave)) continue;
+          vistos.add(chave);
+          out.push(pick(u));
+        }
         estadoLista.completo = true;
         onProgress(out.length, {});
         return out;
@@ -550,13 +561,18 @@
       if (paginasSemNovidade >= 3) break;
 
       const proximo = extraido.proximo;
-      if (!users.length || proximo == null || proximo === '' || String(proximo) === String(anterior)) break;
+      // Fim de verdade: o Instagram não deu próximo cursor.
+      if (!users.length || proximo == null || proximo === '' || String(proximo) === String(anterior)) {
+        estadoLista.completo = true;
+        break;
+      }
       anterior = proximo;
       maxId = proximo;
       estadoLista.maxId = maxId; // ponto de retomada, caso a aba morra aqui
     }
 
-    estadoLista.completo = true;
+    // Sair por teto de páginas ou por páginas repetidas NÃO é lista completa:
+    // marcar como completa faria a retomada devolver dados truncados.
     return out;
   }
 
@@ -880,9 +896,20 @@
       const { estrategia } = await detectarEstrategia(target.id, target.totalSeguindo || 0, 'following');
 
       const salvo = options.retomar ? await lerProgresso(target) : null;
+
+      // Cursores de estratégias diferentes são incompatíveis (max_id x after):
+      // se a estratégia mudou desde a última tentativa, os perfis lidos
+      // continuam valendo, mas a paginação recomeça do início.
+      const mesmaEstrategia = !salvo || salvo.estrategia === estrategia.nome;
+      const restaurar = (lista) => {
+        if (!lista) return novaLista();
+        if (mesmaEstrategia) return lista;
+        return { itens: lista.itens || [], maxId: null, completo: false };
+      };
+
       const listas = {
-        followers: (salvo && salvo.followers) || novaLista(),
-        following: (salvo && salvo.following) || novaLista(),
+        followers: restaurar(salvo && salvo.followers),
+        following: restaurar(salvo && salvo.following),
       };
 
       report({
@@ -931,6 +958,7 @@
               followers: listas.followers,
               following: listas.following,
               relacoes: relacoesConhecidas,
+              estrategia: estrategia.nome,
             },
           });
         } catch {
@@ -984,7 +1012,8 @@
           const relacoes = await verificarRelacoes(ids, agendador, (n) =>
             report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: ids.length })
           );
-          if (relacoes.size >= ids.length * 0.95) {
+          const semResposta = following.filter((u) => !relacoes.has(String(u.id))).length;
+          if (semResposta === 0) {
             const prova = await conferenciaConfiavel(
               following,
               relacoes,
@@ -1002,6 +1031,8 @@
             } else {
               motivoSemConferencia = prova.motivo;
             }
+          } else {
+            motivoSemConferencia = `${semResposta} perfis ficaram sem resposta na conferência em lote`;
           }
         }
       } catch {
@@ -1063,10 +1094,15 @@
                 await publicarParcial(feitos);
               }
             );
-            if (conferidos >= following.length * 0.95) {
+            const semVeredito = following.length - conferidos;
+            if (semVeredito === 0) {
               verificado = true;
               fonte = 'individual';
               motivoSemConferencia = null;
+            } else {
+              // Um único perfil sem veredito seria exibido como "não te segue".
+              // Melhor tratar como pausa e terminar a conferência depois.
+              throw fail('CONFERENCIA_FALHOU', `${semVeredito} perfis ficaram sem conferir.`);
             }
           } catch (e) {
             if (!motivoSemConferencia) motivoSemConferencia = (e && e.message) || 'conferência interrompida';
@@ -1137,6 +1173,8 @@
         oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
         verificado,
         fonte,
+        // Só a conta logada pode sofrer ação: analisar outro perfil é leitura.
+        souEu: !options.username,
         trocadas,
         estrategia: estrategia.nome,
       };

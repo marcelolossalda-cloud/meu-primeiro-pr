@@ -140,7 +140,11 @@ let unfollows = { data: '', total: 0 };
 // conta ser restringida.
 const AVISO_DIARIO = 50;
 const TETO_DIARIO = 150;
-const hojeStr = () => new Date().toISOString().slice(0, 10);
+// Data LOCAL: com ISO/UTC o teto zerava às 21h no horário de Brasília.
+const hojeStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
 
 // Qualquer erro solto vira mensagem na tela, em vez de deixar a janela muda.
 window.addEventListener('error', (e) => mostrarErro('Erro na extensão', e.message || 'erro desconhecido'));
@@ -410,21 +414,28 @@ function chave(u) {
 
 function calcular() {
   if (cache) return cache;
-  if (!resultado) return { 'nao-seguem': [], 'nao-sigo': [], mutuos: [], saidas: [], ignorados: [], novos: 0 };
+  if (!resultado) return { 'nao-seguem': [], 'nao-sigo': [], mutuos: [], saidas: [], ignorados: [], novos: 0, indefinidos: [] };
 
   const seguidores = resultado.followers || [];
   const seguindo = resultado.following || [];
   const setSeguidores = new Set(seguidores.map(chave));
   const setSeguindo = new Set(seguindo.map(chave));
 
-  // me_segue vem da conferência conta a conta e vale mais que a comparação de
-  // listas, que erra quando o Instagram entrega os seguidores pela metade.
-  const retribui = (u) =>
-    typeof u.me_segue === 'boolean' ? u.me_segue : setSeguidores.has(chave(u));
+  // me_segue vem da conferência conta a conta. Sem ele, a comparação por listas
+  // só vale se a lista de seguidores foi realmente lida — senão o perfil fica
+  // SEM classificação, em vez de ser acusado de não seguir por falta de dado.
+  const listaDeSeguidoresUtil = seguidores.length > 0 && !resultado.semSeguidores;
 
-  const naoSeguem = seguindo.filter((u) => !retribui(u));
-  const mutuos = seguindo.filter((u) => retribui(u));
-  const naoSigo = seguidores.filter((u) => !setSeguindo.has(chave(u)));
+  const retribui = (u) => {
+    if (typeof u.me_segue === 'boolean') return u.me_segue;
+    if (listaDeSeguidoresUtil) return setSeguidores.has(chave(u));
+    return null; // desconhecido
+  };
+
+  const naoSeguem = seguindo.filter((u) => retribui(u) === false);
+  const mutuos = seguindo.filter((u) => retribui(u) === true);
+  const indefinidos = seguindo.filter((u) => retribui(u) === null);
+  const naoSigo = listaDeSeguidoresUtil ? seguidores.filter((u) => !setSeguindo.has(chave(u))) : [];
 
   const escondidos = [...seguindo, ...seguidores].filter((u) => ignorados.has(chave(u)));
   const unicos = new Map();
@@ -433,7 +444,7 @@ function calcular() {
   // Comparação com a análise anterior: quem te seguia e não te segue mais.
   let saidas = [];
   let novos = 0;
-  if (previo && Array.isArray(previo.followers)) {
+  if (previo && Array.isArray(previo.followers) && previo.followers.length && listaDeSeguidoresUtil) {
     const antes = new Set(previo.followers.map(chave));
     saidas = previo.followers.filter((u) => !setSeguidores.has(chave(u)));
     novos = seguidores.filter((u) => !antes.has(chave(u))).length;
@@ -446,6 +457,7 @@ function calcular() {
     saidas: saidas.filter((u) => !ignorados.has(chave(u))),
     ignorados: [...unicos.values()],
     novos,
+    indefinidos,
   };
   return cache;
 }
@@ -751,9 +763,9 @@ function pintarResultado() {
 
   // Aviso de ritmo na aba onde a ação existe.
   const avisoAcao = $('#aviso-acao');
-  const podeAgir = aba === 'nao-seguem' && resultado.verificado;
-  avisoAcao.classList.toggle('oculto', !podeAgir);
-  if (podeAgir) {
+  const mostraAviso = aba === 'nao-seguem' && resultado.verificado && resultado.souEu !== false;
+  avisoAcao.classList.toggle('oculto', !mostraAviso);
+  if (mostraAviso) {
     avisoAcao.textContent =
       unfollows.total > 0
         ? `Você deixou de seguir ${unfollows.total} hoje. O Instagram restringe contas que passam de ~100–150 por dia, então vá aos poucos.`
@@ -773,6 +785,16 @@ function pintarResultado() {
   if (sobra > 0) $('#btn-mais').textContent = `Mostrar mais ${Math.min(sobra, PASSO * 3)} (de ${sobra.toLocaleString('pt-BR')})`;
 
   const vazio = $('#vazio');
+  const indefinidos = (grupos.indefinidos || []).length;
+  if (indefinidos && aba === 'nao-seguem') {
+    const atualTexto = $('#aviso-parcial').textContent;
+    $('#aviso-parcial').classList.remove('oculto');
+    $('#aviso-parcial').textContent =
+      `${indefinidos.toLocaleString('pt-BR')} perfis ficaram sem conferir e foram deixados de fora desta lista ` +
+      '(melhor faltar do que acusar errado). Clique em Atualizar para completar.' +
+      (atualTexto && !atualTexto.includes('sem conferir') ? '' : '');
+  }
+
   const faltaLista = resultado.semSeguidores && (aba === 'nao-sigo' || aba === 'saidas');
 
   if (lista.length && !faltaLista) {
@@ -835,7 +857,15 @@ function item(usuario) {
 
   // Deixar de seguir só aparece onde faz sentido: contas que você segue e que
   // não retribuem, e apenas quando a lista foi conferida conta a conta.
-  if (aba === 'nao-seguem' && usuario.id && resultado && resultado.verificado) {
+  const podeAgir =
+    aba === 'nao-seguem' &&
+    usuario.id &&
+    resultado &&
+    resultado.verificado &&
+    resultado.souEu !== false &&
+    !resultado.emAndamento;
+
+  if (podeAgir) {
     li.appendChild(botaoDeixarDeSeguir(usuario));
   }
 
@@ -880,8 +910,12 @@ function botaoDeixarDeSeguir(usuario) {
     if (item) item.classList.add('saiu');
   };
 
+  // Relê do storage antes de somar: duas janelas abertas sobrescreviam uma à
+  // outra e o teto do dia podia ser furado.
   async function registrar(delta) {
-    unfollows = { data: hojeStr(), total: Math.max(0, unfollows.total + delta) };
+    const { unfollows: gravado } = await chrome.storage.local.get('unfollows');
+    const base = gravado && gravado.data === hojeStr() ? gravado : { data: hojeStr(), total: 0 };
+    unfollows = { data: hojeStr(), total: Math.max(0, base.total + delta) };
     await chrome.storage.local.set({ unfollows });
   }
 
@@ -897,6 +931,8 @@ function botaoDeixarDeSeguir(usuario) {
     }
 
     if (estadoBotao === 'armado') {
+      const { unfollows: atual } = await chrome.storage.local.get('unfollows');
+      if (atual && atual.data === hojeStr()) unfollows = atual;
       if (unfollows.total >= TETO_DIARIO) {
         pintarNormal();
         toast(`Limite do dia (${TETO_DIARIO}) atingido. Continue amanhã.`);
