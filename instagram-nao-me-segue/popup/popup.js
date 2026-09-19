@@ -134,6 +134,9 @@ let busca = '';
 let limite = PASSO;
 let cache = null;
 let unfollows = { data: '', total: 0 };
+// Enquanto uma ação está em curso a lista não é repintada: o repaint destruía
+// o botão no meio do await e o "Desfazer" sumia.
+let acaoEmCurso = false;
 
 // O Instagram limita ações de deixar de seguir. Estes números são
 // conservadores de propósito: passar deles é o caminho mais curto para a
@@ -355,6 +358,10 @@ async function salvarPrefs(patch) {
 }
 
 async function analisar(opcoes) {
+  if (estado && estado.running) {
+    toast('Já existe uma análise em andamento.');
+    return;
+  }
   // detalhes técnicos são recalculados a cada tentativa
   const detalhes = $('#falha-detalhes');
   delete detalhes.dataset.carregado;
@@ -677,6 +684,7 @@ function restante(alvo, contagens) {
 
 function pintarResultado() {
   if (!resultado) return;
+  if (acaoEmCurso) return; // não destrói o botão que está agindo
   const grupos = calcular();
 
   const alvo = resultado.target || {};
@@ -711,7 +719,7 @@ function pintarResultado() {
 
   // O número que interessa vem primeiro: é ele que ancora a leitura da tela.
   const atual = grupos[aba] || [];
-  const emAndamento = resultado.emAndamento;
+  const emAndamento = estado && estado.running ? resultado.emAndamento : null;
   const listaConfiavel = !!resultado.verificado && !emAndamento && (aba === 'nao-seguem' || aba === 'mutuos');
   $('#placar-numero').textContent = atual.length.toLocaleString('pt-BR');
   $('#placar-texto').textContent =
@@ -857,11 +865,18 @@ function item(usuario) {
 
   // Deixar de seguir só aparece onde faz sentido: contas que você segue e que
   // não retribuem, e apenas quando a lista foi conferida conta a conta.
+  // Comparação por listas só libera a ação se a lista de seguidores veio
+  // inteira; 2% faltando já são dezenas de perfis acusados por omissão.
+  const baseConfiavel =
+    resultado &&
+    (resultado.fonte === 'individual' || resultado.fonte === 'lote' || resultado.seguidoresCompletos === true);
+
   const podeAgir =
     aba === 'nao-seguem' &&
     usuario.id &&
     resultado &&
     resultado.verificado &&
+    baseConfiavel &&
     resultado.souEu !== false &&
     !resultado.emAndamento;
 
@@ -892,6 +907,8 @@ function botaoDeixarDeSeguir(usuario) {
 
   let estadoBotao = 'normal'; // normal → armado → saiu
   let expira;
+  let armadoEm = 0;
+  const ESPERA_MINIMA = 400; // duplo clique não pode executar sem ver "Confirmar?"
 
   const pintarNormal = () => {
     estadoBotao = 'normal';
@@ -924,6 +941,7 @@ function botaoDeixarDeSeguir(usuario) {
 
     if (estadoBotao === 'normal') {
       estadoBotao = 'armado';
+      armadoEm = Date.now();
       botao.textContent = 'Confirmar?';
       botao.classList.add('confirmar');
       expira = setTimeout(pintarNormal, 4000);
@@ -931,6 +949,10 @@ function botaoDeixarDeSeguir(usuario) {
     }
 
     if (estadoBotao === 'armado') {
+      if (Date.now() - armadoEm < ESPERA_MINIMA) {
+        expira = setTimeout(pintarNormal, 4000);
+        return; // clique acidental logo após o primeiro
+      }
       const { unfollows: atual } = await chrome.storage.local.get('unfollows');
       if (atual && atual.data === hojeStr()) unfollows = atual;
       if (unfollows.total >= TETO_DIARIO) {
@@ -941,9 +963,11 @@ function botaoDeixarDeSeguir(usuario) {
 
       botao.disabled = true;
       botao.textContent = 'Saindo…';
+      acaoEmCurso = true;
       const r = await chrome.runtime
         .sendMessage({ type: 'DEIXAR_DE_SEGUIR', userId: usuario.id })
         .catch((e) => ({ ok: false, erro: (e && e.message) || String(e) }));
+      acaoEmCurso = false;
       botao.disabled = false;
 
       if (!r || !r.ok) {
@@ -965,12 +989,19 @@ function botaoDeixarDeSeguir(usuario) {
     // estadoBotao === 'saiu' → desfazer
     botao.disabled = true;
     botao.textContent = 'Voltando…';
+    acaoEmCurso = true;
     const v = await chrome.runtime
       .sendMessage({ type: 'SEGUIR_DE_NOVO', userId: usuario.id })
       .catch((e) => ({ ok: false, erro: (e && e.message) || String(e) }));
+    acaoEmCurso = false;
     botao.disabled = false;
 
-    if (v && v.ok) {
+    if (v && v.ok && v.solicitacaoPendente) {
+      // Conta privada: virou pedido, não seguimento. O crédito não volta.
+      botao.textContent = 'Pedido enviado';
+      botao.disabled = true;
+      toast('@' + usuario.username + ' é privado: enviei um pedido para seguir.');
+    } else if (v && v.ok) {
       await registrar(-1);
       pintarNormal();
       toast('Voltou a seguir @' + usuario.username);

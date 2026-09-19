@@ -480,6 +480,11 @@
     }
     try {
       const d = await igFetch('/api/v1/users/' + id + '/info/');
+      if (!d || !d.user || typeof d.user.following_count !== 'number') {
+        // Sem os totais oficiais não há como saber se a leitura veio completa:
+        // todas as guardas contra lista vazia dependem deles.
+        throw fail('SEM_TOTAIS', 'Não consegui ler os números do seu perfil.');
+      }
       const u = (d && d.user) || {};
       return {
         id,
@@ -489,8 +494,9 @@
         totalSeguidores: u.follower_count || 0,
         totalSeguindo: u.following_count || 0,
       };
-    } catch {
-      return { id, username: '', full_name: '', pic: '', totalSeguidores: 0, totalSeguindo: 0 };
+    } catch (e) {
+      if (e && e.code === 'SEM_TOTAIS') throw e;
+      throw fail('SEM_TOTAIS', 'Não consegui ler os números do seu perfil: ' + ((e && e.message) || e));
     }
   }
 
@@ -721,7 +727,13 @@
     }
     if (d && d.status !== 'ok') throw fail('IG_FAIL', d.message || 'O Instagram recusou a ação.');
 
-    return { ok: true, seguindo: !!(d && d.friendship_status && d.friendship_status.following) };
+    const st = (d && d.friendship_status) || {};
+    return {
+      ok: true,
+      seguindo: !!st.following,
+      // Conta privada não volta a ser seguida no clique: vira solicitação.
+      solicitacaoPendente: !!st.outgoing_request,
+    };
   }
 
   /**
@@ -781,9 +793,15 @@
    * usada quando a resposta em lote nao passa na prova. Quem ja aparece na
    * lista de seguidores lida nao precisa de requisicao.
    */
-  async function conferirUmAUm(following, seguidoresLidos, relacoesSalvas, onProgress, aoAvancar) {
+  async function conferirUmAUm(following, seguidoresLidos, relacoesSalvas, ritmoConferencia, onProgress, aoAvancar) {
     const jaConfirmados = new Set(seguidoresLidos.map((u) => String(u.username).toLowerCase()));
-    const agendaConferencia = criarAgendador({ min: 100, max: 200, count: 1 });
+    // Respeita o ritmo escolhido: no modo devagar, correr aqui é o caminho
+    // mais curto para o 429 que interrompe tudo.
+    const agendaConferencia = criarAgendador({
+      min: Math.max(100, Math.round((ritmoConferencia.min || 600) / 4)),
+      max: Math.max(200, Math.round((ritmoConferencia.max || 1200) / 4)),
+      count: 1,
+    });
 
     // Relações já conferidas em tentativas anteriores não se repetem: é isso
     // que faz a análise continuar de onde parou depois de uma pausa.
@@ -961,8 +979,10 @@
               estrategia: estrategia.nome,
             },
           });
-        } catch {
-          /* se o storage encher, seguimos sem ponto de retomada */
+        } catch (e) {
+          // Sem ponto de retomada, um recarregamento de aba vira recomeço.
+          // Melhor avisar do que descobrir depois.
+          report({ phase: 'coletando', counts: { ...contagens }, semRetomada: true });
         }
       };
       const salvarProgresso = () => gravarProgresso(false);
@@ -1072,7 +1092,10 @@
                 source: 'live',
                 target,
                 scannedAt: Date.now(),
-                followers,
+                // Sem a lista de seguidores no parcial: cruzá-la com um
+                // following pela metade inflaria "Não sigo" e "Saíram".
+                followers: [],
+                semSeguidores: true,
                 following: prontos,
                 parcial: true,
                 emAndamento: { feitos, total: following.length },
@@ -1087,6 +1110,7 @@
               following,
               followers,
               relacoesConhecidas,
+              pace,
               (n, total) => report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: total, umAUm: true }),
               async (feitos, relacoes) => {
                 relacoesConhecidas = relacoes;
@@ -1171,6 +1195,7 @@
         motivoSemConferencia,
         // guardados para a tela poder mostrar coletado x oficial
         oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
+        seguidoresCompletos: eSeguidores > 0 && followers.length >= eSeguidores,
         verificado,
         fonte,
         // Só a conta logada pode sofrer ação: analisar outro perfil é leitura.

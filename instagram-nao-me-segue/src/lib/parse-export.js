@@ -5,8 +5,10 @@
  */
 import { listarEntradas, lerEntradaComoTexto } from './unzip.js';
 
-const RE_FOLLOWERS = /followers(_\d+)?\.(json|html)$/i;
-const RE_FOLLOWING = /following\.(json|html)$/i;
+// Ancorados no início do nome: sem o ^, um "followers_and_following.json"
+// casaria com o padrão de "following" e a lista inteira iria para o lado errado.
+const RE_FOLLOWERS = /^followers(_\d+)?\.(json|html)$/i;
+const RE_FOLLOWING = /^following(_\d+)?\.(json|html)$/i;
 
 function normalizar(username, timestamp) {
   const limpo = String(username || '').trim().replace(/^@/, '');
@@ -105,6 +107,15 @@ export async function lerExport(arquivos) {
     } else {
       consumir(arquivo.name, await arquivo.text());
     }
+  }
+
+  // Só o following: sem a lista de seguidores, todo mundo pareceria não
+  // retribuir. Melhor recusar do que produzir uma lista inteira errada.
+  if (following.length && !followers.length) {
+    throw new Error(
+      'O arquivo tem a lista de quem você segue, mas não a de seguidores (followers_1.json). ' +
+      'Sem as duas não dá para saber quem retribui — selecione também os arquivos de seguidores.'
+    );
   }
 
   if (!followers.length && !following.length) {
