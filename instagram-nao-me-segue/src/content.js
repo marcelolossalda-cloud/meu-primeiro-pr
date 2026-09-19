@@ -79,6 +79,13 @@
       sendResponse({ ok: true });
       return;
     }
+    if (msg.type === 'DEIXAR_DE_SEGUIR' || msg.type === 'SEGUIR_DE_NOVO') {
+      acaoDeSeguir(msg.userId, msg.type === 'SEGUIR_DE_NOVO').then(
+        (r) => sendResponse(r),
+        (e) => sendResponse({ ok: false, erro: (e && e.message) || String(e) })
+      );
+      return true; // resposta assíncrona
+    }
     if (msg.type === 'DIAGNOSTICO') {
       diagnosticar().then((linhas) => sendResponse({ linhas }));
       return true; // resposta assíncrona
@@ -643,6 +650,53 @@
     }
 
     return mapa;
+  }
+
+  /**
+   * Deixa de seguir (ou volta a seguir) uma conta. E a unica funcao da extensao
+   * que altera algo: so roda a pedido explicito, um perfil por vez.
+   */
+  async function acaoDeSeguir(userId, voltarASeguir) {
+    const id = String(userId || '').trim();
+    if (!/^\d+$/.test(id)) throw fail('ID_INVALIDO', 'Não sei o identificador dessa conta. Analise de novo.');
+
+    const init = {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'content-type': 'application/x-www-form-urlencoded',
+        'x-ig-app-id': IG_APP_ID,
+        'x-asbd-id': IG_ASBD_ID,
+        'x-csrftoken': getCookie('csrftoken') || '',
+        'x-requested-with': 'XMLHttpRequest',
+      },
+      body: '',
+    };
+    const claim = lerClaim();
+    if (claim) init.headers['x-ig-www-claim'] = claim;
+    if (referrerPerfil) {
+      init.referrer = referrerPerfil;
+      init.referrerPolicy = 'strict-origin-when-cross-origin';
+    }
+
+    const caminho = '/api/v1/friendships/' + (voltarASeguir ? 'create' : 'destroy') + '/' + id + '/';
+    const res = await fetch('https://www.instagram.com' + caminho, init);
+    guardarClaim(res);
+
+    if (res.status === 429) throw fail('RATE_LIMIT', 'O Instagram pediu uma pausa. Espere um pouco antes de continuar.');
+    if (res.status === 401 || res.status === 403) throw fail('NAO_AUTENTICADO', 'Sessão recusada. Faça login no instagram.com.');
+    if (!res.ok) throw fail('HTTP_' + res.status, 'O Instagram respondeu ' + res.status + '.');
+
+    const texto = await res.text();
+    let d;
+    try {
+      d = JSON.parse(texto);
+    } catch {
+      throw fail('RESPOSTA_INVALIDA', 'O Instagram não confirmou a ação. Confira no site antes de repetir.');
+    }
+    if (d && d.status !== 'ok') throw fail('IG_FAIL', d.message || 'O Instagram recusou a ação.');
+
+    return { ok: true, seguindo: !!(d && d.friendship_status && d.friendship_status.following) };
   }
 
   /* ───────── progresso retomável ───────── */

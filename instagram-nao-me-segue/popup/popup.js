@@ -131,6 +131,14 @@ let aba = 'nao-seguem';
 let busca = '';
 let limite = PASSO;
 let cache = null;
+let unfollows = { data: '', total: 0 };
+
+// O Instagram limita ações de deixar de seguir. Estes números são
+// conservadores de propósito: passar deles é o caminho mais curto para a
+// conta ser restringida.
+const AVISO_DIARIO = 50;
+const TETO_DIARIO = 150;
+const hojeStr = () => new Date().toISOString().slice(0, 10);
 
 // Qualquer erro solto vira mensagem na tela, em vez de deixar a janela muda.
 window.addEventListener('error', (e) => mostrarErro('Erro na extensão', e.message || 'erro desconhecido'));
@@ -146,7 +154,8 @@ async function iniciar() {
   // Antes de qualquer await: se a leitura do storage falhar, os botões ainda respondem.
   ligarEventos();
 
-  const dados = await chrome.storage.local.get(['lastResult', 'previousResult', 'ignorados', 'prefs']);
+  const dados = await chrome.storage.local.get(['lastResult', 'previousResult', 'ignorados', 'prefs', 'unfollows']);
+  unfollows = dados.unfollows && dados.unfollows.data === hojeStr() ? dados.unfollows : { data: hojeStr(), total: 0 };
   resultado = dados.lastResult || null;
   previo = dados.previousResult || null;
   ignorados = new Set(dados.ignorados || []);
@@ -668,6 +677,17 @@ function pintarResultado() {
     $('#btn-saidas').classList.toggle('oculto', !grupos.saidas.length);
   }
 
+  // Aviso de ritmo na aba onde a ação existe.
+  const avisoAcao = $('#aviso-acao');
+  const podeAgir = aba === 'nao-seguem' && resultado.verificado;
+  avisoAcao.classList.toggle('oculto', !podeAgir);
+  if (podeAgir) {
+    avisoAcao.textContent =
+      unfollows.total > 0
+        ? `Você deixou de seguir ${unfollows.total} hoje. O Instagram restringe contas que passam de ~100–150 por dia, então vá aos poucos.`
+        : 'Deixar de seguir é feito um por vez, com confirmação. Evite passar de ~100 por dia para não ter a conta restringida.';
+  }
+
   const lista = listaVisivel();
   const ul = $('#lista');
   ul.textContent = '';
@@ -725,6 +745,12 @@ function item(usuario) {
   }
   li.appendChild(texto);
 
+  // Deixar de seguir só aparece onde faz sentido: contas que você segue e que
+  // não retribuem, e apenas quando a lista foi conferida conta a conta.
+  if (aba === 'nao-seguem' && usuario.id && resultado && resultado.verificado) {
+    li.appendChild(botaoDeixarDeSeguir(usuario));
+  }
+
   const botao = document.createElement('button');
   botao.className = 'icone';
   const oculto = ignorados.has(chave(usuario));
@@ -735,6 +761,104 @@ function item(usuario) {
 
   return li;
 }
+
+/**
+ * Botão de deixar de seguir. Um único tratador de clique com três estados,
+ * para o mesmo botão nunca disparar duas ações no mesmo toque.
+ */
+function botaoDeixarDeSeguir(usuario) {
+  const botao = document.createElement('button');
+  botao.className = 'secundario pequeno acao-seguir';
+  botao.textContent = 'Deixar de seguir';
+  botao.title = 'Deixar de seguir @' + usuario.username;
+
+  let estadoBotao = 'normal'; // normal → armado → saiu
+  let expira;
+
+  const pintarNormal = () => {
+    estadoBotao = 'normal';
+    botao.textContent = 'Deixar de seguir';
+    botao.className = 'secundario pequeno acao-seguir';
+    const item = botao.closest('li');
+    if (item) item.classList.remove('saiu');
+  };
+
+  const pintarSaiu = () => {
+    estadoBotao = 'saiu';
+    botao.textContent = 'Desfazer';
+    botao.title = 'Voltar a seguir @' + usuario.username;
+    botao.className = 'secundario pequeno acao-seguir desfazer';
+    const item = botao.closest('li');
+    if (item) item.classList.add('saiu');
+  };
+
+  async function registrar(delta) {
+    unfollows = { data: hojeStr(), total: Math.max(0, unfollows.total + delta) };
+    await chrome.storage.local.set({ unfollows });
+  }
+
+  botao.addEventListener('click', async () => {
+    clearTimeout(expira);
+
+    if (estadoBotao === 'normal') {
+      estadoBotao = 'armado';
+      botao.textContent = 'Confirmar?';
+      botao.classList.add('confirmar');
+      expira = setTimeout(pintarNormal, 4000);
+      return;
+    }
+
+    if (estadoBotao === 'armado') {
+      if (unfollows.total >= TETO_DIARIO) {
+        pintarNormal();
+        toast(`Limite do dia (${TETO_DIARIO}) atingido. Continue amanhã.`);
+        return;
+      }
+
+      botao.disabled = true;
+      botao.textContent = 'Saindo…';
+      const r = await chrome.runtime
+        .sendMessage({ type: 'DEIXAR_DE_SEGUIR', userId: usuario.id })
+        .catch((e) => ({ ok: false, erro: (e && e.message) || String(e) }));
+      botao.disabled = false;
+
+      if (!r || !r.ok) {
+        pintarNormal();
+        mostrarErro('Não consegui deixar de seguir', (r && r.erro) || 'Erro desconhecido.');
+        return;
+      }
+
+      await registrar(+1);
+      pintarSaiu();
+      toast(
+        unfollows.total === AVISO_DIARIO
+          ? `${AVISO_DIARIO} hoje. Vá com calma: o Instagram restringe quem exagera.`
+          : 'Deixou de seguir @' + usuario.username
+      );
+      return;
+    }
+
+    // estadoBotao === 'saiu' → desfazer
+    botao.disabled = true;
+    botao.textContent = 'Voltando…';
+    const v = await chrome.runtime
+      .sendMessage({ type: 'SEGUIR_DE_NOVO', userId: usuario.id })
+      .catch((e) => ({ ok: false, erro: (e && e.message) || String(e) }));
+    botao.disabled = false;
+
+    if (v && v.ok) {
+      await registrar(-1);
+      pintarNormal();
+      toast('Voltou a seguir @' + usuario.username);
+    } else {
+      pintarSaiu();
+      mostrarErro('Não consegui voltar a seguir', (v && v.erro) || 'Erro desconhecido.');
+    }
+  });
+
+  return botao;
+}
+
 
 function iniciais(username) {
   const span = document.createElement('span');

@@ -175,6 +175,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       cancelScan().then(sendResponse);
       return true;
 
+    case 'DEIXAR_DE_SEGUIR':
+    case 'SEGUIR_DE_NOVO':
+      (async () => {
+        const abas = await chrome.tabs.query({ url: 'https://www.instagram.com/*' });
+        const aba = abas.find((t) => t.status === 'complete') || abas[0];
+        if (!aba) return { ok: false, erro: 'Abra o instagram.com em uma aba e tente de novo.' };
+        await chrome.scripting.executeScript({ target: { tabId: aba.id }, files: ['src/content.js'] });
+        return await chrome.tabs.sendMessage(aba.id, { type: msg.type, userId: msg.userId });
+      })().then(sendResponse, (e) => sendResponse({ ok: false, erro: (e && e.message) || String(e) }));
+      return true;
+
     case 'DIAGNOSTICO':
       diagnosticar().then(
         (linhas) => sendResponse({ ok: true, linhas }),

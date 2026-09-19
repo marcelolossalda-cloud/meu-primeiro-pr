@@ -122,6 +122,21 @@ te segue — e um número errado é pior do que número nenhum.
 - Se for publicar na Chrome Web Store, revise o nome e os ícones: "Instagram" é marca
   registrada da Meta e a loja rejeita extensões que sugiram vínculo oficial.
 
+## Deixar de seguir
+
+Na aba **Não me seguem**, cada perfil tem o botão **Deixar de seguir**. Ele só aparece
+quando a lista foi conferida conta a conta — nunca sobre uma lista que possa estar errada.
+
+- **Dois toques**: o primeiro vira "Confirmar?", o segundo executa. A confirmação expira
+  sozinha em 4 segundos.
+- **Um por vez.** Não há "deixar de seguir todos": ação em massa é o caminho mais curto
+  para a conta ser restringida.
+- **Desfazer** logo depois, no mesmo botão, volta a seguir.
+- **Contador do dia** visível, com aviso aos 50 e recusa aos 150. O Instagram restringe
+  contas que passam de ~100–150 por dia.
+
+O ✕ ao lado continua sendo apenas "esconder da lista" — não mexe na sua conta.
+
 ## Precisão dos dados
 
 Uma lista truncada é pior que lista nenhuma: quem te segue mas não foi lido aparece

@@ -448,3 +448,24 @@ body.full .lista {
 .cartao.falha h2 { font-size: 15px; }
 .cartao.falha .passos { margin: 10px 0 14px; font-size: 12.5px; color: var(--texto); }
 .cartao.falha .passos li { margin-bottom: 6px; }
+
+/* ── Deixar de seguir ── */
+.acao-seguir { flex: 0 0 auto; font-size: 11.5px; white-space: nowrap; }
+.acao-seguir.confirmar {
+  border-color: var(--perigo);
+  color: var(--perigo);
+  font-weight: 600;
+}
+.acao-seguir.desfazer { border-color: var(--texto-2); color: var(--texto-2); }
+.item.saiu { opacity: .55; }
+.item.saiu .item-texto a { text-decoration: line-through; }
+
+.aviso-acao {
+  margin: 8px 12px 0;
+  padding: 8px 11px;
+  border: 1px solid var(--borda);
+  border-radius: 9px;
+  background: var(--bg-2);
+  font-size: 11.5px;
+  color: var(--texto-2);
+}
