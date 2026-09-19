@@ -793,7 +793,7 @@
 
       // Resultado parcial a cada 40 perfis: a lista vai aparecendo na tela
       // enquanto a conferência continua, em vez de uma barra por minutos.
-      if (aoAvancar && feitos % 40 === 0) await aoAvancar(feitos);
+      if (aoAvancar && (feitos === 15 || feitos % 25 === 0)) await aoAvancar(feitos);
     }
 
     return following.filter((u) => typeof u.me_segue === 'boolean').length;
