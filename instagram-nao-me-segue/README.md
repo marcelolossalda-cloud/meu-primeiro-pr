@@ -137,6 +137,32 @@ quando a lista foi conferida conta a conta — nunca sobre uma lista que possa e
 
 O ✕ ao lado continua sendo apenas "esconder da lista" — não mexe na sua conta.
 
+## A análise não desiste
+
+O Instagram fecha a porta por tempo determinado quando julga que houve leitura demais:
+responde 429, devolve a página HTML no lugar dos dados, ou simplesmente diz que ninguém
+retribui. Nada disso é erro permanente — é espera.
+
+- Respostas assim **pausam** a análise em vez de derrubá-la.
+- Tudo que já foi lido e conferido fica gravado: listas, cursores e cada relação
+  confirmada, válido por 6 horas.
+- A retomada é **automática e agendada** (3, 8, 15, 30, 30, 45, 60, 60 minutos), e
+  acontece mesmo com a janelinha fechada.
+- Ao voltar, a análise **continua do ponto exato** — nenhum perfil já conferido é
+  consultado de novo.
+- A tela mostra "Volto sozinho em X — do ponto onde parei", com um botão para tentar
+  antes da hora.
+
+E o mais importante: **sem conferência concluída, a análise não entrega resultado.**
+Antes, uma conferência interrompida no meio fazia os perfis não conferidos caírem na
+comparação sem lista de seguidores — e todos apareciam como "não te segue". Era a origem
+do resultado com 804 não seguidores e zero mútuos.
+
+Verificado em banco de ensaio (400 seguindo, 90 mútuos, Instagram fechando a porta na
+120ª conferência): a análise pausa, guarda 119 relações, e ao retomar conclui com
+310 não seguem e 90 mútuos — exatos, gastando 410 conferências em vez das 520 que
+custaria recomeçar.
+
 ## Leitura enxuta (padrão)
 
 A análise lê **só a lista de quem você segue** e pergunta ao Instagram, conta a conta,

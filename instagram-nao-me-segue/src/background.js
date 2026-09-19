@@ -26,6 +26,15 @@ const SEM_SINAL_MS = 45000;
 const TRAVADO_MS = 5 * 60 * 1000;
 const MAX_RETOMADAS = 3;
 
+// O Instagram fecha a porta por um tempo quando julga que houve leitura demais.
+// Não é erro: é espera. A análise pausa, guarda o que já tem e volta sozinha.
+const ERROS_DE_PAUSA = new Set([
+  'RATE_LIMIT', 'RESPOSTA_INVALIDA', 'LISTAS_VAZIAS', 'SEM_ESTRATEGIA', 'IG_FAIL',
+  'CONFERENCIA_FALHOU', 'SEM_RESPOSTA', 'FORMATO_INESPERADO',
+]);
+const ESPERAS_RETOMADA = [3, 8, 15, 30, 30, 45, 60, 60]; // minutos
+const MAX_PAUSAS = ESPERAS_RETOMADA.length;
+
 async function getState() {
   const { [STATE_KEY]: s } = await chrome.storage.local.get(STATE_KEY);
   return { ...ESTADO_INICIAL, ...(s || {}) };
@@ -97,6 +106,8 @@ async function startScan(options = {}) {
     ultimoProgresso: Date.now(),
     options,
     retomadas: 0,
+    pausas: 0,
+    retomaEm: null,
   });
 
   chrome.alarms.create('vigia', { periodInMinutes: 0.5 });
@@ -109,6 +120,7 @@ async function startScan(options = {}) {
 }
 
 async function cancelScan() {
+  await chrome.alarms.clear('retomar');
   const { tabId } = await getState();
   if (tabId != null) {
     await chrome.tabs.sendMessage(tabId, { type: 'CANCEL' }).catch(() => {});
@@ -175,6 +187,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       cancelScan().then(sendResponse);
       return true;
 
+    case 'RETOMAR_AGORA':
+      chrome.alarms.clear('retomar').then(() => retomarPausa()).then(
+        () => sendResponse({ ok: true }),
+        (e) => sendResponse({ ok: false, erro: (e && e.message) || String(e) })
+      );
+      return true;
+
     case 'DEIXAR_DE_SEGUIR':
     case 'SEGUIR_DE_NOVO':
       (async () => {
@@ -210,8 +229,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       return;
 
     case 'SCAN_ERROR':
-      chrome.alarms.clear('vigia');
-      setState({ running: false, phase: 'erro', esperandoAte: null, error: { code: msg.code, message: msg.message } });
+      tratarErro(msg);
       return;
 
     case 'IMPORT_DONE':
@@ -239,7 +257,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
  */
 async function vigiar() {
   const s = await getState();
-  if (!s.running) {
+  if (!s.running || s.phase === 'pausado') {
     await chrome.alarms.clear('vigia');
     return;
   }
@@ -295,6 +313,63 @@ async function vigiar() {
   );
 }
 
+/**
+ * Erro que na verdade é uma porta fechada por tempo determinado vira pausa com
+ * retomada agendada, em vez de jogar fora o que já foi lido.
+ */
+async function tratarErro(msg) {
+  const s = await getState();
+  const pausas = s.pausas || 0;
+
+  if (ERROS_DE_PAUSA.has(msg.code) && pausas < MAX_PAUSAS) {
+    const minutos = ESPERAS_RETOMADA[pausas];
+    const retomaEm = Date.now() + minutos * 60 * 1000;
+
+    await chrome.alarms.clear('vigia');
+    await chrome.alarms.create('retomar', { when: retomaEm });
+    await setState({
+      running: true,
+      phase: 'pausado',
+      esperandoAte: null,
+      retomaEm,
+      pausas: pausas + 1,
+      ultimoProgresso: Date.now(),
+      error: { code: msg.code, message: msg.message },
+    });
+    return;
+  }
+
+  await chrome.alarms.clear('vigia');
+  await chrome.alarms.clear('retomar');
+  await setState({
+    running: false,
+    phase: 'erro',
+    esperandoAte: null,
+    retomaEm: null,
+    error: { code: msg.code, message: msg.message },
+  });
+}
+
+/** Volta do ponto onde parou, usando o progresso guardado. */
+async function retomarPausa() {
+  const s = await getState();
+  if (!s.running || s.phase !== 'pausado') return;
+
+  try {
+    const aba = await ensureInstagramTab();
+    await chrome.scripting.executeScript({ target: { tabId: aba.id }, files: ['src/content.js'] });
+    await chrome.tabs.sendMessage(aba.id, {
+      type: 'RUN_SCAN',
+      options: { ...(s.options || {}), retomar: true },
+    });
+    await setState({ phase: 'resolvendo', retomaEm: null, tabId: aba.id, ultimoProgresso: Date.now() });
+    chrome.alarms.create('vigia', { periodInMinutes: 0.5 });
+  } catch (e) {
+    // Não conseguiu agora: tenta de novo no próximo intervalo.
+    await tratarErro({ code: 'RATE_LIMIT', message: (e && e.message) || String(e) });
+  }
+}
+
 async function encerrarComErro(code, message) {
   await chrome.alarms.clear('vigia');
   await setState({ running: false, phase: 'erro', esperandoAte: null, error: { code, message } });
@@ -302,6 +377,7 @@ async function encerrarComErro(code, message) {
 
 chrome.alarms.onAlarm.addListener((a) => {
   if (a.name === 'vigia') vigiar();
+  if (a.name === 'retomar') retomarPausa();
 });
 
 /**

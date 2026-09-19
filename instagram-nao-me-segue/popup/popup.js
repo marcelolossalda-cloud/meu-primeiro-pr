@@ -7,6 +7,7 @@ const PASSO = 50;
 const FASES = {
   resolvendo: 'Identificando a conta…',
   coletando: 'Lendo suas listas…',
+  pausado: 'Pausado pelo Instagram',
   conferindo: 'Conferindo quem retribui…',
   seguidores: 'Lendo seus seguidores…',
   seguindo: 'Lendo quem você segue…',
@@ -193,6 +194,15 @@ async function iniciar() {
 function ligarEventos() {
   $('#btn-analisar').addEventListener('click', analisar);
   $('#btn-reanalisar').addEventListener('click', analisar);
+
+  $('#btn-retomar-agora').addEventListener('click', async () => {
+    const botao = $('#btn-retomar-agora');
+    botao.disabled = true;
+    botao.textContent = 'Retomando…';
+    await chrome.runtime.sendMessage({ type: 'RETOMAR_AGORA' }).catch(() => {});
+    botao.disabled = false;
+    botao.textContent = 'Tentar agora';
+  });
 
   $('#btn-cancelar').addEventListener('click', async () => {
     $('#btn-cancelar').disabled = true;
@@ -555,6 +565,30 @@ function preencherDiagnostico(lista, linhas) {
 function pintarProgresso() {
   const contagens = estado.counts || { followers: 0, following: 0 };
   const alvo = estado.target || {};
+
+  const pausado = estado.phase === 'pausado';
+  $('#btn-retomar-agora').classList.toggle('oculto', !pausado);
+  document.querySelector('.spinner').style.opacity = pausado ? '0.25' : '';
+
+  if (pausado) {
+    const totalSeg = Math.ceil(Math.max(0, (estado.retomaEm || 0) - Date.now()) / 1000);
+    const min = Math.floor(totalSeg / 60);
+    const seg = totalSeg % 60;
+    const quando = min > 0 ? `${min} min ${String(seg).padStart(2, '0')}s` : `${seg}s`;
+
+    $('#progresso-fase').textContent = 'Pausado pelo Instagram';
+    $('#progresso-eta').textContent = `Volto sozinho em ${quando} — do ponto onde parei`;
+    $('#progresso-aviso').textContent =
+      'O Instagram limitou as leituras desta conta por um tempo. Nada do que já foi lido se perdeu: ' +
+      'a análise continua automaticamente, mesmo com esta janelinha fechada.';
+    $('#progresso-plano').textContent = '';
+    $('#progresso-conferindo').textContent = '';
+    $('.barra-progresso').classList.remove('indeterminada');
+
+    clearTimeout(tiquetaque);
+    tiquetaque = setTimeout(() => { if (estado && estado.running) pintarProgresso(); }, 1000);
+    return;
+  }
 
   $('#progresso-fase').textContent = FASES[estado.phase] || 'Coletando…';
   $('#p-seguidores').textContent = contagens.followers.toLocaleString('pt-BR');

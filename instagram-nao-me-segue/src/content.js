@@ -765,9 +765,17 @@
    * usada quando a resposta em lote nao passa na prova. Quem ja aparece na
    * lista de seguidores lida nao precisa de requisicao.
    */
-  async function conferirUmAUm(following, seguidoresLidos, onProgress, aoAvancar) {
+  async function conferirUmAUm(following, seguidoresLidos, relacoesSalvas, onProgress, aoAvancar) {
     const jaConfirmados = new Set(seguidoresLidos.map((u) => String(u.username).toLowerCase()));
     const agendaConferencia = criarAgendador({ min: 100, max: 200, count: 1 });
+
+    // Relações já conferidas em tentativas anteriores não se repetem: é isso
+    // que faz a análise continuar de onde parou depois de uma pausa.
+    const relacoes = relacoesSalvas || {};
+    for (const u of following) {
+      const v = relacoes[String(u.id)];
+      if (typeof v === 'boolean') u.me_segue = v;
+    }
 
     let feitos = 0;
     let falhasSeguidas = 0;
@@ -775,8 +783,14 @@
     for (const u of following) {
       if (cancelled) throw fail('CANCELADO', 'Cancelado.');
 
+      if (typeof u.me_segue === 'boolean') {
+        onProgress(++feitos, following.length);
+        continue;
+      }
+
       if (jaConfirmados.has(String(u.username).toLowerCase())) {
         u.me_segue = true;
+        relacoes[String(u.id)] = true;
         onProgress(++feitos, following.length);
         continue;
       }
@@ -786,14 +800,16 @@
         const r = await relacaoIndividual(u.id);
         if (r) {
           u.me_segue = r.meSegue;
+          relacoes[String(u.id)] = r.meSegue;
           falhasSeguidas = 0;
         } else {
           falhasSeguidas++;
         }
       } catch (e) {
+        // Antes de propagar, guarda o que já foi conferido.
+        if (aoAvancar) await aoAvancar(feitos, relacoes);
         if (e.code === 'RATE_LIMIT') throw e;
         falhasSeguidas++;
-        // Muitas falhas seguidas significam que esta via também fechou.
         if (falhasSeguidas >= 10) throw fail('CONFERENCIA_FALHOU', 'O Instagram parou de responder à conferência.');
       }
 
@@ -801,7 +817,7 @@
 
       // Resultado parcial a cada 40 perfis: a lista vai aparecendo na tela
       // enquanto a conferência continua, em vez de uma barra por minutos.
-      if (aoAvancar && (feitos === 15 || feitos % 25 === 0)) await aoAvancar(feitos);
+      if (aoAvancar && (feitos === 15 || feitos % 25 === 0)) await aoAvancar(feitos, relacoes);
     }
 
     return following.filter((u) => typeof u.me_segue === 'boolean').length;
@@ -810,7 +826,7 @@
   /* ───────── progresso retomável ───────── */
 
   const CHAVE_PROGRESSO = 'scanProgress';
-  const VALIDADE_PROGRESSO = 15 * 60 * 1000;
+  const VALIDADE_PROGRESSO = 6 * 60 * 60 * 1000; // pausas do Instagram podem durar horas
 
   async function lerProgresso(target) {
     try {
@@ -902,8 +918,10 @@
       };
 
       let ultimoSalvamento = 0;
-      const salvarProgresso = async () => {
-        if (Date.now() - ultimoSalvamento < 3000) return;
+      let relacoesConhecidas = (salvo && salvo.relacoes) || {};
+
+      const gravarProgresso = async (forcar) => {
+        if (!forcar && Date.now() - ultimoSalvamento < 3000) return;
         ultimoSalvamento = Date.now();
         try {
           await chrome.storage.local.set({
@@ -912,12 +930,14 @@
               atualizadoEm: Date.now(),
               followers: listas.followers,
               following: listas.following,
+              relacoes: relacoesConhecidas,
             },
           });
         } catch {
           /* se o storage encher, seguimos sem ponto de retomada */
         }
       };
+      const salvarProgresso = () => gravarProgresso(false);
 
       // O total exibido é o da leitura que está realmente acontecendo: somar a
       // lista de seguidores quando ela não está sendo lida faz 805 de 809
@@ -1035,8 +1055,13 @@
             const conferidos = await conferirUmAUm(
               following,
               followers,
+              relacoesConhecidas,
               (n, total) => report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: total, umAUm: true }),
-              publicarParcial
+              async (feitos, relacoes) => {
+                relacoesConhecidas = relacoes;
+                await gravarProgresso(true);
+                await publicarParcial(feitos);
+              }
             );
             if (conferidos >= following.length * 0.95) {
               verificado = true;
@@ -1045,6 +1070,14 @@
             }
           } catch (e) {
             if (!motivoSemConferencia) motivoSemConferencia = (e && e.message) || 'conferência interrompida';
+
+            // Sem conferência concluída e sem lista de seguidores completa, o
+            // resultado seria um chute: todo mundo apareceria como "não te
+            // segue". Melhor propagar e virar pausa, preservando o que já foi
+            // conferido, do que entregar número inventado.
+            const listaCompleta =
+              (target.totalSeguidores || 0) > 0 && followers.length >= (target.totalSeguidores || 0) * 0.98;
+            if (!listaCompleta) throw e;
           }
         }
       }
