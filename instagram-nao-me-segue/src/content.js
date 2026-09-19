@@ -180,18 +180,38 @@
    * aumenta a taxa de requisicoes — so aproveita o tempo que antes era gasto
    * esperando a resposta chegar para so entao comecar a dormir.
    */
-  function criarAgendador(pace) {
+  function criarAgendador(pace, prazo, paginasRestantes) {
     let proximoLivre = 0;
+
+    // Com prazo definido, o intervalo é recalculado a cada requisição: se a
+    // leitura precisar de uma segunda via para completar, o ritmo aperta
+    // sozinho para ainda caber no tempo — sempre acima do piso de segurança.
+    const intervaloAtual = () => {
+      if (!prazo || !paginasRestantes) return jitter(pace);
+      const sobra = prazo - Date.now();
+      const faltam = Math.max(1, paginasRestantes());
+      const piso = pace.piso || 200;
+      const teto = pace.teto || 1500;
+      if (sobra <= 0) return piso;
+      const ideal = Math.floor(sobra / faltam);
+      const base = Math.max(piso, Math.min(teto, ideal));
+      return Math.round(base * (0.85 + Math.random() * 0.3));
+    };
+
     return {
       async vez() {
         const agora = Date.now();
         const alvo = Math.max(agora, proximoLivre);
-        proximoLivre = alvo + jitter(pace);
+        proximoLivre = alvo + intervaloAtual();
         if (alvo > agora) await sleep(alvo - agora);
       },
       /** Segura todas as requisicoes por um tempo (usado no backoff de 429). */
       pausar(ms) {
         proximoLivre = Math.max(proximoLivre, Date.now() + ms);
+      },
+      /** Quanto ainda cabe no prazo, em ms (Infinity quando não há prazo). */
+      sobraTempo() {
+        return prazo ? prazo - Date.now() : Infinity;
       },
     };
   }
@@ -532,27 +552,97 @@
    * seguisse.
    */
   async function coletarCompleto(kind, userId, pace, agendador, esperado, estadoLista, estrategia, onProgress) {
-    let melhor = await fetchList(kind, userId, pace, agendador, esperado, estadoLista, estrategia, onProgress);
-    if (!esperado || melhor.length >= esperado * 0.95) return melhor;
+    const reunidos = new Map();
+    const juntar = (lista) => {
+      for (const u of lista) {
+        const k = String(u.username).toLowerCase();
+        if (!reunidos.has(k)) reunidos.set(k, u);
+      }
+      return reunidos.size;
+    };
 
+    juntar(await fetchList(kind, userId, pace, agendador, esperado, estadoLista, estrategia, onProgress));
+    if (!esperado || reunidos.size >= esperado * 0.98) return [...reunidos.values()];
+
+    // Faltou gente. Cada via corta em um ponto diferente, então o que elas
+    // trazem é UNIDO — nunca substituído — para não perder ninguém.
     for (const alt of ESTRATEGIAS) {
-      if (alt.nome === estrategia.nome) continue;
-      if (cancelled) break;
+      if (alt.nome === estrategia.nome || cancelled) continue;
+      // Sem folga no prazo, não adianta insistir: o corte é do Instagram e a
+      // conferência conta a conta já assegura a lista principal.
+      if (agendador.sobraTempo() < 20000) break;
 
       try {
-        const outroEstado = novaLista();
-        const r = await fetchList(kind, userId, pace, agendador, esperado, outroEstado, alt, (n, extra) =>
-          onProgress(Math.max(melhor.length, n), extra)
+        const parcial = await fetchList(kind, userId, pace, agendador, esperado, novaLista(), alt, (n, extra) =>
+          onProgress(reunidos.size + n, extra)
         );
-        if (r.length > melhor.length) melhor = r;
-        if (melhor.length >= esperado * 0.95) break;
+        onProgress(juntar(parcial), {});
+        if (reunidos.size >= esperado * 0.98) break;
       } catch {
-        /* estratégia alternativa falhou: segue para a próxima */
+        /* esta via não serviu: tenta a próxima */
       }
     }
 
-    onProgress(melhor.length, {});
-    return melhor;
+    return [...reunidos.values()];
+  }
+
+  /**
+   * Pergunta ao Instagram, para cada conta que voce segue, se ela te segue de
+   * volta. E a fonte precisa da lista principal: nao depende de paginar a lista
+   * inteira de seguidores, que o Instagram corta em contas grandes.
+   * Responde em lotes de 100, entao 800 perfis custam 8 requisicoes.
+   */
+  async function verificarRelacoes(ids, agendador, onProgress) {
+    const mapa = new Map();
+    const LOTE = 100;
+
+    for (let i = 0; i < ids.length; i += LOTE) {
+      if (cancelled) throw fail('CANCELADO', 'Cancelado.');
+      const lote = ids.slice(i, i + LOTE);
+
+      await agendador.vez();
+
+      const init = {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-ig-app-id': IG_APP_ID,
+          'x-asbd-id': IG_ASBD_ID,
+          'x-csrftoken': getCookie('csrftoken') || '',
+          'x-requested-with': 'XMLHttpRequest',
+        },
+        body: 'user_ids=' + lote.join(','),
+      };
+      const claim = lerClaim();
+      if (claim) init.headers['x-ig-www-claim'] = claim;
+      if (referrerPerfil) {
+        init.referrer = referrerPerfil;
+        init.referrerPolicy = 'strict-origin-when-cross-origin';
+      }
+
+      const res = await fetch('https://www.instagram.com/api/v1/friendships/show_many/', init);
+      guardarClaim(res);
+      if (!res.ok) throw fail('SHOW_MANY_HTTP_' + res.status, 'show_many respondeu ' + res.status);
+
+      const texto = await res.text();
+      let d;
+      try {
+        d = JSON.parse(texto);
+      } catch {
+        throw fail('SHOW_MANY_INVALIDO', 'show_many não respondeu em JSON');
+      }
+
+      const status = d && d.friendship_statuses;
+      if (!status || typeof status !== 'object') throw fail('SHOW_MANY_VAZIO', 'show_many não trouxe as relações');
+
+      for (const [idUsuario, info] of Object.entries(status)) {
+        if (info && typeof info.followed_by === 'boolean') mapa.set(String(idUsuario), info.followed_by);
+      }
+      if (onProgress) onProgress(mapa.size);
+    }
+
+    return mapa;
   }
 
   /* ───────── progresso retomável ───────── */
@@ -630,7 +720,14 @@
       // As duas listas são lidas ao mesmo tempo, dividindo o mesmo agendador:
       // a taxa de requisições continua a do ritmo escolhido, mas o tempo total
       // cai porque a latência de uma requisição cobre a espera da outra.
-      const agendador = criarAgendador(pace);
+      const prazo = base.alvoSegundos ? Date.now() + base.alvoSegundos * 1000 - MARGEM_MS : null;
+      const paginasRestantes = () => {
+        const fSeg = Math.max(0, (target.totalSeguidores || 0) - contagens.followers);
+        const fSig = Math.max(0, (target.totalSeguindo || 0) - contagens.following);
+        return Math.ceil(fSeg / pace.count) + Math.ceil(fSig / pace.count);
+      };
+
+      const agendador = criarAgendador({ ...pace, piso: base.piso || 200, teto: base.teto || 1500 }, prazo, paginasRestantes);
       const contagens = {
         followers: listas.followers.itens.length,
         following: listas.following.itens.length,
@@ -669,6 +766,28 @@
           avisar(extra);
         }),
       ]);
+
+      // Fonte precisa da lista principal: pergunta conta a conta quem retribui.
+      // Não depende da lista de seguidores, que vem cortada em perfis grandes.
+      let verificado = false;
+      try {
+        const ids = following.map((u) => String(u.id || '')).filter((x) => x && /^\d+$/.test(x));
+        if (ids.length && ids.length >= following.length * 0.9) {
+          report({ phase: 'conferindo', counts: { ...contagens } });
+          const relacoes = await verificarRelacoes(ids, agendador, (n) =>
+            report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: ids.length })
+          );
+          if (relacoes.size >= ids.length * 0.95) {
+            for (const u of following) {
+              const v = relacoes.get(String(u.id));
+              if (typeof v === 'boolean') u.me_segue = v;
+            }
+            verificado = true;
+          }
+        }
+      } catch {
+        /* sem show_many, a comparação por conjuntos continua valendo */
+      }
 
       // Conferência contra os números oficiais do perfil: se as listas vierem
       // trocadas (seguidores no lugar de seguindo), tudo apareceria invertido.
@@ -719,6 +838,7 @@
           (eSeguindo > 0 && following.length < eSeguindo * 0.95),
         // guardados para a tela poder mostrar coletado x oficial
         oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
+        verificado,
         trocadas,
         estrategia: estrategia.nome,
       };

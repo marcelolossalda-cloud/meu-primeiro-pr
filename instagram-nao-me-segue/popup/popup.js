@@ -7,6 +7,7 @@ const PASSO = 50;
 const FASES = {
   resolvendo: 'Identificando a conta…',
   coletando: 'Lendo suas listas…',
+  conferindo: 'Conferindo quem retribui…',
   seguidores: 'Lendo seus seguidores…',
   seguindo: 'Lendo quem você segue…',
   concluido: 'Pronto!',
@@ -392,9 +393,14 @@ function calcular() {
   const setSeguidores = new Set(seguidores.map(chave));
   const setSeguindo = new Set(seguindo.map(chave));
 
-  const naoSeguem = seguindo.filter((u) => !setSeguidores.has(chave(u)));
+  // me_segue vem da conferência conta a conta e vale mais que a comparação de
+  // listas, que erra quando o Instagram entrega os seguidores pela metade.
+  const retribui = (u) =>
+    typeof u.me_segue === 'boolean' ? u.me_segue : setSeguidores.has(chave(u));
+
+  const naoSeguem = seguindo.filter((u) => !retribui(u));
+  const mutuos = seguindo.filter((u) => retribui(u));
   const naoSigo = seguidores.filter((u) => !setSeguindo.has(chave(u)));
-  const mutuos = seguindo.filter((u) => setSeguidores.has(chave(u)));
 
   const escondidos = [...seguindo, ...seguidores].filter((u) => ignorados.has(chave(u)));
   const unicos = new Map();
@@ -558,6 +564,12 @@ function pintarProgresso() {
     campoPlano.textContent = '';
   }
 
+  const conf = $('#progresso-conferindo');
+  conf.textContent =
+    estado.phase === 'conferindo' && estado.aConferir
+      ? `Conferindo quem retribui: ${(estado.conferidos || 0).toLocaleString('pt-BR')} de ${estado.aConferir.toLocaleString('pt-BR')}`
+      : '';
+
   if (estado.esperandoAte && estado.esperandoAte > Date.now()) {
     const seg = Math.ceil((estado.esperandoAte - Date.now()) / 1000);
     $('#progresso-aviso').textContent = `O Instagram pediu uma pausa. Retomando em ~${seg}s.`;
@@ -617,10 +629,12 @@ function pintarResultado() {
 
   // O número que interessa vem primeiro: é ele que ancora a leitura da tela.
   const atual = grupos[aba] || [];
+  const listaConfiavel = !!resultado.verificado && (aba === 'nao-seguem' || aba === 'mutuos');
   $('#placar-numero').textContent = atual.length.toLocaleString('pt-BR');
-  $('#placar-texto').textContent = ABAS[aba].placar;
+  $('#placar-texto').textContent =
+    ABAS[aba].placar + (listaConfiavel ? ' · conferido conta a conta' : '');
 
-  $('#aviso-parcial').classList.toggle('oculto', !resultado.parcial);
+  $('#aviso-parcial').classList.toggle('oculto', !resultado.parcial || listaConfiavel);
   if (resultado.parcial) {
     const faltamSeg = Math.max(0, (oficial.seguidores || 0) - nSeg);
     const faltamSig = Math.max(0, (oficial.seguindo || 0) - nSig);
@@ -628,11 +642,19 @@ function pintarResultado() {
     if (faltamSeg) buraco.push(`${faltamSeg.toLocaleString('pt-BR')} seguidores`);
     if (faltamSig) buraco.push(`${faltamSig.toLocaleString('pt-BR')} de quem você segue`);
 
-    $('#aviso-parcial').textContent = buraco.length
-      ? `O Instagram não entregou tudo: faltaram ${buraco.join(' e ')}. ` +
-        'Enquanto faltar gente, esta lista acusa como "não te segue" quem na verdade te segue. ' +
-        'Clique em Atualizar para tentar completar.'
-      : 'Coleta incompleta: a lista pode acusar quem na verdade te segue. Analise de novo.';
+    if (resultado.verificado) {
+      // A lista principal não depende da lista de seguidores neste caso.
+      $('#aviso-parcial').textContent =
+        `"Não me seguem" e "Mútuos" foram conferidos conta a conta e estão corretos. ` +
+        `Só a aba "Não sigo" fica incompleta: o Instagram entregou ${nSeg.toLocaleString('pt-BR')} ` +
+        `dos ${(oficial.seguidores || 0).toLocaleString('pt-BR')} seguidores.`;
+    } else {
+      $('#aviso-parcial').textContent = buraco.length
+        ? `O Instagram não entregou tudo: faltaram ${buraco.join(' e ')}. ` +
+          'Enquanto faltar gente, esta lista acusa como "não te segue" quem na verdade te segue. ' +
+          'Clique em Atualizar para tentar completar.'
+        : 'Coleta incompleta: a lista pode acusar quem na verdade te segue. Analise de novo.';
+    }
   }
 
   const faixa = $('#novidades');
