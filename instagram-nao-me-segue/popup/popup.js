@@ -478,9 +478,20 @@ function pintar() {
   const rodando = !!(estado && estado.running);
   const falhou = !rodando && estado && estado.phase === 'erro' && estado.error;
 
-  if (rodando) {
+  // Durante a conferência uma a uma já existe resultado utilizável: melhor
+  // mostrar a lista crescendo do que uma barra por três minutos.
+  const aoVivo =
+    rodando && estado.phase === 'conferindo' && estado.umAUm && resultado && resultado.emAndamento;
+
+  if (rodando && !aoVivo) {
     mostrarTela('progresso');
     pintarProgresso();
+    return;
+  }
+
+  if (aoVivo) {
+    mostrarTela('resultado');
+    pintarResultado();
     return;
   }
 
@@ -648,13 +659,20 @@ function pintarResultado() {
 
   // O número que interessa vem primeiro: é ele que ancora a leitura da tela.
   const atual = grupos[aba] || [];
-  const listaConfiavel = !!resultado.verificado && (aba === 'nao-seguem' || aba === 'mutuos');
+  const emAndamento = resultado.emAndamento;
+  const listaConfiavel = !!resultado.verificado && !emAndamento && (aba === 'nao-seguem' || aba === 'mutuos');
   $('#placar-numero').textContent = atual.length.toLocaleString('pt-BR');
   $('#placar-texto').textContent =
     ABAS[aba].placar + (listaConfiavel ? ' · conferido conta a conta' : '');
 
-  $('#aviso-parcial').classList.toggle('oculto', !resultado.parcial || listaConfiavel);
-  if (resultado.parcial) {
+  $('#aviso-parcial').classList.toggle('oculto', (!resultado.parcial && !emAndamento) || listaConfiavel);
+
+  if (emAndamento) {
+    const pct = Math.round((emAndamento.feitos / emAndamento.total) * 100);
+    $('#aviso-parcial').textContent =
+      `Conferindo uma a uma: ${emAndamento.feitos.toLocaleString('pt-BR')} de ` +
+      `${emAndamento.total.toLocaleString('pt-BR')} (${pct}%). A lista abaixo já é confiável e vai crescer.`;
+  } else if (resultado.parcial) {
     const faltamSeg = Math.max(0, (oficial.seguidores || 0) - nSeg);
     const faltamSig = Math.max(0, (oficial.seguindo || 0) - nSig);
     const buraco = [];

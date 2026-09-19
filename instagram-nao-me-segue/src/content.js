@@ -757,9 +757,9 @@
    * usada quando a resposta em lote nao passa na prova. Quem ja aparece na
    * lista de seguidores lida nao precisa de requisicao.
    */
-  async function conferirUmAUm(following, seguidoresLidos, onProgress) {
+  async function conferirUmAUm(following, seguidoresLidos, onProgress, aoAvancar) {
     const jaConfirmados = new Set(seguidoresLidos.map((u) => String(u.username).toLowerCase()));
-    const agendaConferencia = criarAgendador({ min: 120, max: 240, count: 1 });
+    const agendaConferencia = criarAgendador({ min: 100, max: 200, count: 1 });
 
     let feitos = 0;
     let falhasSeguidas = 0;
@@ -790,6 +790,10 @@
       }
 
       onProgress(++feitos, following.length);
+
+      // Resultado parcial a cada 40 perfis: a lista vai aparecendo na tela
+      // enquanto a conferência continua, em vez de uma barra por minutos.
+      if (aoAvancar && feitos % 40 === 0) await aoAvancar(feitos);
     }
 
     return following.filter((u) => typeof u.me_segue === 'boolean').length;
@@ -932,6 +936,8 @@
 
       // Fonte precisa da lista principal: pergunta conta a conta quem retribui.
       // Não depende da lista de seguidores, que vem cortada em perfis grandes.
+      const eSeguidores = target.totalSeguidores || 0;
+      const eSeguindo = target.totalSeguindo || 0;
       let verificado = false;
       let motivoSemConferencia = null;
       try {
@@ -991,8 +997,29 @@
           motivoSemConferencia = null;
         } else {
           try {
-            const conferidos = await conferirUmAUm(following, followers, (n, total) =>
-              report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: total, umAUm: true })
+            const publicarParcial = async (feitos) => {
+              const prontos = following.filter((u) => typeof u.me_segue === 'boolean');
+              await salvar({
+                version: 1,
+                source: 'live',
+                target,
+                scannedAt: Date.now(),
+                followers,
+                following: prontos,
+                parcial: true,
+                emAndamento: { feitos, total: following.length },
+                oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
+                verificado: true,
+                fonte: 'individual',
+                estrategia: estrategia.nome,
+              });
+            };
+
+            const conferidos = await conferirUmAUm(
+              following,
+              followers,
+              (n, total) => report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: total, umAUm: true }),
+              publicarParcial
             );
             if (conferidos >= following.length * 0.95) {
               verificado = true;
@@ -1008,8 +1035,6 @@
       // Conferência contra os números oficiais do perfil: se as listas vierem
       // trocadas (seguidores no lugar de seguindo), tudo apareceria invertido.
       // Os totais do perfil permitem detectar e corrigir isso.
-      const eSeguidores = target.totalSeguidores || 0;
-      const eSeguindo = target.totalSeguindo || 0;
       let trocadas = false;
 
       const perto = (a, b) => b > 0 && Math.abs(a - b) <= Math.max(3, b * 0.1);
