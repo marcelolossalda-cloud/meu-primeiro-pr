@@ -759,7 +759,7 @@
    */
   async function conferirUmAUm(following, seguidoresLidos, onProgress) {
     const jaConfirmados = new Set(seguidoresLidos.map((u) => String(u.username).toLowerCase()));
-    const agendaConferencia = criarAgendador({ min: 160, max: 320, count: 1 });
+    const agendaConferencia = criarAgendador({ min: 120, max: 240, count: 1 });
 
     let feitos = 0;
     let falhasSeguidas = 0;
@@ -965,9 +965,12 @@
         /* sem show_many, a comparação por conjuntos continua valendo */
       }
 
-      // Lote reprovado: confere uma a uma, que é lento mas confiável. Antes
-      // disso, lê a lista de seguidores que der — cada perfil encontrado nela
-      // é um mútuo confirmado que dispensa requisição.
+      // Lote reprovado: primeiro lê a lista de seguidores. Se ela vier
+      // completa, a comparação entre as duas listas já é exata e não custa
+      // mais nenhuma requisição. Só o que sobrar precisa de conferência
+      // individual — que é confiável, porém cara.
+      let fonte = verificado ? 'lote' : null;
+
       if (!verificado) {
         if (!lerSeguidores) {
           report({ phase: 'coletando', counts: { ...contagens }, recuperando: true });
@@ -978,16 +981,27 @@
           );
         }
 
-        try {
-          const conferidos = await conferirUmAUm(following, followers, (n, total) =>
-            report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: total, umAUm: true })
-          );
-          if (conferidos >= following.length * 0.95) {
-            verificado = true;
-            motivoSemConferencia = null;
+        const seguidoresCompletos =
+          (target.totalSeguidores || 0) > 0 && followers.length >= (target.totalSeguidores || 0) * 0.98;
+
+        if (seguidoresCompletos) {
+          // Listas completas dos dois lados: a comparação direta é exata.
+          verificado = true;
+          fonte = 'listas';
+          motivoSemConferencia = null;
+        } else {
+          try {
+            const conferidos = await conferirUmAUm(following, followers, (n, total) =>
+              report({ phase: 'conferindo', counts: { ...contagens }, conferidos: n, aConferir: total, umAUm: true })
+            );
+            if (conferidos >= following.length * 0.95) {
+              verificado = true;
+              fonte = 'individual';
+              motivoSemConferencia = null;
+            }
+          } catch (e) {
+            if (!motivoSemConferencia) motivoSemConferencia = (e && e.message) || 'conferência interrompida';
           }
-        } catch (e) {
-          if (!motivoSemConferencia) motivoSemConferencia = (e && e.message) || 'conferência interrompida';
         }
       }
 
@@ -1047,6 +1061,7 @@
         // guardados para a tela poder mostrar coletado x oficial
         oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
         verificado,
+        fonte,
         trocadas,
         estrategia: estrategia.nome,
       };
