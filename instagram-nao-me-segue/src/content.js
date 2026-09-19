@@ -524,6 +524,37 @@
     return out;
   }
 
+  /**
+   * Le a lista inteira. Se a estrategia escolhida parar antes do total que o
+   * perfil informa — o Instagram corta a paginacao de listas grandes —, tenta
+   * as outras estrategias e fica com a leitura mais completa. Lista truncada e
+   * pior que lista nenhuma: quem te segue e nao foi lido aparece como se nao
+   * seguisse.
+   */
+  async function coletarCompleto(kind, userId, pace, agendador, esperado, estadoLista, estrategia, onProgress) {
+    let melhor = await fetchList(kind, userId, pace, agendador, esperado, estadoLista, estrategia, onProgress);
+    if (!esperado || melhor.length >= esperado * 0.95) return melhor;
+
+    for (const alt of ESTRATEGIAS) {
+      if (alt.nome === estrategia.nome) continue;
+      if (cancelled) break;
+
+      try {
+        const outroEstado = novaLista();
+        const r = await fetchList(kind, userId, pace, agendador, esperado, outroEstado, alt, (n, extra) =>
+          onProgress(Math.max(melhor.length, n), extra)
+        );
+        if (r.length > melhor.length) melhor = r;
+        if (melhor.length >= esperado * 0.95) break;
+      } catch {
+        /* estratégia alternativa falhou: segue para a próxima */
+      }
+    }
+
+    onProgress(melhor.length, {});
+    return melhor;
+  }
+
   /* ───────── progresso retomável ───────── */
 
   const CHAVE_PROGRESSO = 'scanProgress';
@@ -628,20 +659,42 @@
         salvarProgresso();
       };
 
-      const [followers, following] = await Promise.all([
-        fetchList('followers', target.id, pace, agendador, target.totalSeguidores, listas.followers, estrategia, (n, extra) => {
+      let [followers, following] = await Promise.all([
+        coletarCompleto('followers', target.id, pace, agendador, target.totalSeguidores, listas.followers, estrategia, (n, extra) => {
           contagens.followers = n;
           avisar(extra);
         }),
-        fetchList('following', target.id, pace, agendador, target.totalSeguindo, listas.following, estrategia, (n, extra) => {
+        coletarCompleto('following', target.id, pace, agendador, target.totalSeguindo, listas.following, estrategia, (n, extra) => {
           contagens.following = n;
           avisar(extra);
         }),
       ]);
 
+      // Conferência contra os números oficiais do perfil: se as listas vierem
+      // trocadas (seguidores no lugar de seguindo), tudo apareceria invertido.
+      // Os totais do perfil permitem detectar e corrigir isso.
+      const eSeguidores = target.totalSeguidores || 0;
+      const eSeguindo = target.totalSeguindo || 0;
+      let trocadas = false;
+
+      const perto = (a, b) => b > 0 && Math.abs(a - b) <= Math.max(3, b * 0.1);
+      const totaisDistintos = eSeguidores > 0 && eSeguindo > 0 &&
+        Math.abs(eSeguidores - eSeguindo) > Math.max(5, Math.max(eSeguidores, eSeguindo) * 0.1);
+
+      if (totaisDistintos) {
+        const naOrdem = perto(followers.length, eSeguidores) && perto(following.length, eSeguindo);
+        const aoContrario = perto(followers.length, eSeguindo) && perto(following.length, eSeguidores);
+        if (aoContrario && !naOrdem) {
+          const tmp = followers;
+          followers = following;
+          following = tmp;
+          trocadas = true;
+        }
+      }
+
       // Aviso de coleta incompleta: uma lista parcial acusaria como "não te
       // segue" gente que na verdade segue. Comparamos com o total do perfil.
-      const esperado = (target.totalSeguidores || 0) + (target.totalSeguindo || 0);
+      const esperado = eSeguidores + eSeguindo;
       const obtido = followers.length + following.length;
 
       // Zero perfis numa conta que tem conexões não é "resultado parcial": é
@@ -661,7 +714,13 @@
         scannedAt: Date.now(),
         followers,
         following,
-        parcial: esperado > 0 && obtido < esperado * 0.9,
+        parcial:
+          (eSeguidores > 0 && followers.length < eSeguidores * 0.95) ||
+          (eSeguindo > 0 && following.length < eSeguindo * 0.95),
+        // guardados para a tela poder mostrar coletado x oficial
+        oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
+        trocadas,
+        estrategia: estrategia.nome,
       };
       await salvar(resultado);
       await limparProgresso();

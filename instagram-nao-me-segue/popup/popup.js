@@ -100,11 +100,11 @@ const FALHA_PADRAO = {
 
 const ABAS = {
   'nao-seguem': {
-    placar: 'não te seguem de volta',
+    placar: 'você segue · eles não te seguem de volta',
     vazio: 'Todo mundo que você segue te segue de volta. 🎉',
   },
   'nao-sigo': {
-    placar: 'te seguem e você não segue',
+    placar: 'te seguem · você não segue de volta',
     vazio: 'Você segue todo mundo que te segue.',
   },
   mutuos: {
@@ -596,11 +596,18 @@ function pintarResultado() {
     avatar.hidden = true;
   }
   $('#r-conta').textContent = alvo.username ? '@' + alvo.username : 'Sua conta';
+  const nSeg = (resultado.followers || []).length;
+  const nSig = (resultado.following || []).length;
+  const oficial = resultado.oficial || {};
+  const parte = (lido, total, rotulo) =>
+    total > 0 && total !== lido
+      ? `${lido.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')} ${rotulo}`
+      : `${lido.toLocaleString('pt-BR')} ${rotulo}`;
+
   $('#r-quando').textContent =
     (resultado.source === 'import' ? 'Importado ' : 'Analisado ') +
     quando(resultado.scannedAt) +
-    ` · ${(resultado.followers || []).length.toLocaleString('pt-BR')} seguidores · ` +
-    `${(resultado.following || []).length.toLocaleString('pt-BR')} seguindo`;
+    ` · ${parte(nSeg, oficial.seguidores, 'seguidores')} · ${parte(nSig, oficial.seguindo, 'seguindo')}`;
 
   for (const botao of document.querySelectorAll('.aba')) {
     const nome = botao.dataset.aba;
@@ -614,6 +621,19 @@ function pintarResultado() {
   $('#placar-texto').textContent = ABAS[aba].placar;
 
   $('#aviso-parcial').classList.toggle('oculto', !resultado.parcial);
+  if (resultado.parcial) {
+    const faltamSeg = Math.max(0, (oficial.seguidores || 0) - nSeg);
+    const faltamSig = Math.max(0, (oficial.seguindo || 0) - nSig);
+    const buraco = [];
+    if (faltamSeg) buraco.push(`${faltamSeg.toLocaleString('pt-BR')} seguidores`);
+    if (faltamSig) buraco.push(`${faltamSig.toLocaleString('pt-BR')} de quem você segue`);
+
+    $('#aviso-parcial').textContent = buraco.length
+      ? `O Instagram não entregou tudo: faltaram ${buraco.join(' e ')}. ` +
+        'Enquanto faltar gente, esta lista acusa como "não te segue" quem na verdade te segue. ' +
+        'Clique em Atualizar para tentar completar.'
+      : 'Coleta incompleta: a lista pode acusar quem na verdade te segue. Analise de novo.';
+  }
 
   const faixa = $('#novidades');
   const temHistorico = !!previo && (grupos.saidas.length > 0 || grupos.novos > 0);

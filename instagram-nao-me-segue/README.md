@@ -122,6 +122,30 @@ te segue — e um número errado é pior do que número nenhum.
 - Se for publicar na Chrome Web Store, revise o nome e os ícones: "Instagram" é marca
   registrada da Meta e a loja rejeita extensões que sugiram vínculo oficial.
 
+## Precisão dos dados
+
+Uma lista truncada é pior que lista nenhuma: quem te segue mas não foi lido aparece
+como "não te segue", e você deixaria de seguir alguém sem motivo. Por isso:
+
+- **A leitura é conferida contra os números oficiais do perfil.** O Instagram informa
+  quantos seguidores e quantos seguindo a conta tem; a extensão compara com o que
+  conseguiu ler.
+- **Se uma lista vier truncada** (o Instagram corta a paginação em listas grandes), as
+  outras estratégias são acionadas para completá-la, e vale a leitura mais completa.
+- **Se as listas vierem trocadas**, os totais oficiais denunciam a inversão e ela é
+  corrigida antes de salvar.
+- **Se ainda faltar gente**, a tela diz exatamente quantos faltaram em cada lista,
+  em vez de um aviso genérico.
+
+Verificado em banco de ensaio com uma conta de 1.000 seguidores, 300 seguindo e 120
+mútuos (resultado correto: 180 não seguem, 880 não sigo):
+
+| Situação                        | Resultado                                    |
+| ------------------------------- | -------------------------------------------- |
+| API entrega tudo                | 180 / 880 / 120 — exato                       |
+| API corta a paginação em 60%    | completa pela outra via: 180 / 880 / 120      |
+| API devolve as listas trocadas  | detecta e corrige: 180 / 880 / 120            |
+
 ## Três formas de ler as listas
 
 O Instagram muda seus endpoints e nem toda conta responde aos mesmos. Antes de começar,
