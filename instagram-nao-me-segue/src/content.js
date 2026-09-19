@@ -1191,7 +1191,10 @@
           (!verificado && eSeguidores > 0 && followers.length < eSeguidores * 0.95) ||
           (lerSeguidores && eSeguidores > 0 && followers.length < eSeguidores * 0.95) ||
           (eSeguindo > 0 && following.length < eSeguindo * 0.95),
-        semSeguidores: !lerSeguidores && verificado,
+        // Reflete o que REALMENTE foi lido. Antes usava a opção inicial, então o
+        // caminho de recuperação — que lê a lista de seguidores — ainda marcava
+        // semSeguidores:true, e a tela descartava a lista inteira, zerando tudo.
+        semSeguidores: followers.length === 0,
         motivoSemConferencia,
         // guardados para a tela poder mostrar coletado x oficial
         oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
