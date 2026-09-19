@@ -137,6 +137,25 @@ quando a lista foi conferida conta a conta — nunca sobre uma lista que possa e
 
 O ✕ ao lado continua sendo apenas "esconder da lista" — não mexe na sua conta.
 
+## Leitura enxuta (padrão)
+
+A análise lê **só a lista de quem você segue** e pergunta ao Instagram, conta a conta,
+quem retribui. Isso basta para "Não me seguem" e "Mútuos", que são as listas que
+importam — e evita a lista de seguidores, que em contas grandes vem cortada, custa
+dezenas de requisições e é a primeira a ser restringida.
+
+| | Lendo tudo | Leitura enxuta |
+| --- | --- | --- |
+| Tempo | 54,1 s | **19,8 s** |
+| Requisições | 43 | **15** |
+| Com o endpoint de seguidores bloqueado | falha | **funciona** |
+
+A aba "Não sigo de volta" é a única que precisa da lista de seguidores. Ela traz um
+botão para lê-la sob demanda, quando você quiser.
+
+Menos requisições também significa menos chance de o Instagram restringir a conta —
+que é o que acontece depois de várias análises seguidas.
+
 ## Precisão dos dados
 
 Uma lista truncada é pior que lista nenhuma: quem te segue mas não foi lido aparece

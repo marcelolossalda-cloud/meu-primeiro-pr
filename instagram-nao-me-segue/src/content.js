@@ -413,18 +413,19 @@
    * Uma estrategia que responde 200 com lista VAZIA numa conta que tem
    * seguidores nao serve: seria aceita e devolveria zero perfis no fim.
    */
-  async function detectarEstrategia(userId, esperadoSeguidores) {
+  async function detectarEstrategia(userId, esperado, kind) {
     const falhas = [];
+    const alvo = kind || 'following';
     for (const est of ESTRATEGIAS) {
       try {
-        const d = await igFetch(est.url('followers', userId, 12, null));
-        const r = est.extrair(d, 'followers');
+        const d = await igFetch(est.url(alvo, userId, 12, null));
+        const r = est.extrair(d, alvo);
 
         if (!r || !Array.isArray(r.users)) {
           falhas.push(est.nome + ': resposta sem lista de perfis');
           continue;
         }
-        if (esperadoSeguidores > 0 && r.users.length === 0) {
+        if (esperado > 0 && r.users.length === 0) {
           falhas.push(est.nome + ': devolveu lista vazia');
           continue;
         }
@@ -437,7 +438,7 @@
     }
 
     throw fail(
-      esperadoSeguidores > 0 ? 'LISTAS_VAZIAS' : 'SEM_ESTRATEGIA',
+      esperado > 0 ? 'LISTAS_VAZIAS' : 'SEM_ESTRATEGIA',
       'Nenhuma das formas de leitura devolveu perfis (' + falhas.join(' · ') + ').'
     );
   }
@@ -753,7 +754,7 @@
       }
 
       // Descobre a forma de leitura que funciona nesta conta antes de começar.
-      const { estrategia } = await detectarEstrategia(target.id, target.totalSeguidores || 0);
+      const { estrategia } = await detectarEstrategia(target.id, target.totalSeguindo || 0, 'following');
 
       const salvo = options.retomar ? await lerProgresso(target) : null;
       const listas = {
@@ -810,16 +811,29 @@
         salvarProgresso();
       };
 
-      let [followers, following] = await Promise.all([
-        coletarCompleto('followers', target.id, pace, agendador, target.totalSeguidores, listas.followers, estrategia, (n, extra) => {
-          contagens.followers = n;
-          avisar(extra);
-        }),
+      // Por padrão lemos só "quem você segue": a lista de seguidores custa
+      // muitas requisições, vem cortada em contas grandes e não é necessária
+      // para a resposta principal, que sai da conferência conta a conta.
+      const lerSeguidores = options.completo === true;
+
+      const tarefas = [
         coletarCompleto('following', target.id, pace, agendador, target.totalSeguindo, listas.following, estrategia, (n, extra) => {
           contagens.following = n;
           avisar(extra);
         }),
-      ]);
+      ];
+      if (lerSeguidores) {
+        tarefas.push(
+          coletarCompleto('followers', target.id, pace, agendador, target.totalSeguidores, listas.followers, estrategia, (n, extra) => {
+            contagens.followers = n;
+            avisar(extra);
+          })
+        );
+      }
+
+      const resultados = await Promise.all(tarefas);
+      let following = resultados[0];
+      let followers = lerSeguidores ? resultados[1] : [];
 
       // Fonte precisa da lista principal: pergunta conta a conta quem retribui.
       // Não depende da lista de seguidores, que vem cortada em perfis grandes.
@@ -851,7 +865,7 @@
       let trocadas = false;
 
       const perto = (a, b) => b > 0 && Math.abs(a - b) <= Math.max(3, b * 0.1);
-      const totaisDistintos = eSeguidores > 0 && eSeguindo > 0 &&
+      const totaisDistintos = lerSeguidores && eSeguidores > 0 && eSeguindo > 0 &&
         Math.abs(eSeguidores - eSeguindo) > Math.max(5, Math.max(eSeguidores, eSeguindo) * 0.1);
 
       if (totaisDistintos) {
@@ -872,7 +886,10 @@
 
       // Zero perfis numa conta que tem conexões não é "resultado parcial": é
       // falha. Salvar isso mostraria uma tela de zeros como se fosse resposta.
-      if (esperado > 0 && obtido === 0) {
+      if (!lerSeguidores && following.length === 0 && eSeguindo > 0) {
+        throw fail('LISTAS_VAZIAS', 'O Instagram devolveu vazia a lista de quem você segue.');
+      }
+      if (lerSeguidores && esperado > 0 && obtido === 0) {
         throw fail(
           'LISTAS_VAZIAS',
           'O Instagram respondeu, mas devolveu as listas vazias, embora o perfil tenha ' +
@@ -888,8 +905,9 @@
         followers,
         following,
         parcial:
-          (eSeguidores > 0 && followers.length < eSeguidores * 0.95) ||
+          (lerSeguidores && eSeguidores > 0 && followers.length < eSeguidores * 0.95) ||
           (eSeguindo > 0 && following.length < eSeguindo * 0.95),
+        semSeguidores: !lerSeguidores,
         // guardados para a tela poder mostrar coletado x oficial
         oficial: { seguidores: eSeguidores, seguindo: eSeguindo },
         verificado,

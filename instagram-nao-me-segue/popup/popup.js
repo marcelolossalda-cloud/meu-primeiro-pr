@@ -107,6 +107,7 @@ const ABAS = {
   'nao-sigo': {
     placar: 'te seguem · você não segue de volta',
     vazio: 'Você segue todo mundo que te segue.',
+    vazioSemDados: 'Esta lista precisa da lista completa de seguidores, que não foi lida para a análise ser rápida.',
   },
   mutuos: {
     placar: 'seguem você e são seguidos por você',
@@ -339,7 +340,7 @@ async function salvarPrefs(patch) {
   await chrome.storage.local.set({ prefs });
 }
 
-async function analisar() {
+async function analisar(opcoes) {
   // detalhes técnicos são recalculados a cada tentativa
   const detalhes = $('#falha-detalhes');
   delete detalhes.dataset.carregado;
@@ -347,7 +348,11 @@ async function analisar() {
 
   $('#btn-analisar').disabled = true;
   $('#erro').classList.add('oculto');
-  const options = { pace: $('#pace').value, username: $('#username').value.trim() };
+  const options = {
+    pace: $('#pace').value,
+    username: $('#username').value.trim(),
+    completo: !!(opcoes && opcoes.completo),
+  };
   const r = await chrome.runtime.sendMessage({ type: 'START_SCAN', options }).catch((e) => ({ ok: false, error: String(e) }));
   $('#btn-analisar').disabled = false;
   if (r && r.ok === false) mostrarErro('Não consegui começar', r.error);
@@ -628,7 +633,9 @@ function pintarResultado() {
   $('#r-quando').textContent =
     (resultado.source === 'import' ? 'Importado ' : 'Analisado ') +
     quando(resultado.scannedAt) +
-    ` · ${parte(nSeg, oficial.seguidores, 'seguidores')} · ${parte(nSig, oficial.seguindo, 'seguindo')}`;
+    (resultado.semSeguidores
+      ? ` · ${parte(nSig, oficial.seguindo, 'seguindo')} · conferido conta a conta`
+      : ` · ${parte(nSeg, oficial.seguidores, 'seguidores')} · ${parte(nSig, oficial.seguindo, 'seguindo')}`);
 
   for (const botao of document.querySelectorAll('.aba')) {
     const nome = botao.dataset.aba;
@@ -651,7 +658,11 @@ function pintarResultado() {
     if (faltamSeg) buraco.push(`${faltamSeg.toLocaleString('pt-BR')} seguidores`);
     if (faltamSig) buraco.push(`${faltamSig.toLocaleString('pt-BR')} de quem você segue`);
 
-    if (resultado.verificado) {
+    if (resultado.semSeguidores) {
+      $('#aviso-parcial').textContent =
+        `O Instagram entregou ${nSig.toLocaleString('pt-BR')} de ${(oficial.seguindo || 0).toLocaleString('pt-BR')} ` +
+        'contas que você segue. Analise de novo para completar.';
+    } else if (resultado.verificado) {
       // A lista principal não depende da lista de seguidores neste caso.
       $('#aviso-parcial').textContent =
         `"Não me seguem" e "Mútuos" foram conferidos conta a conta e estão corretos. ` +
@@ -701,11 +712,27 @@ function pintarResultado() {
   if (sobra > 0) $('#btn-mais').textContent = `Mostrar mais ${Math.min(sobra, PASSO * 3)} (de ${sobra.toLocaleString('pt-BR')})`;
 
   const vazio = $('#vazio');
-  if (lista.length) {
+  const faltaLista = resultado.semSeguidores && (aba === 'nao-sigo' || aba === 'saidas');
+
+  if (lista.length && !faltaLista) {
     vazio.classList.add('oculto');
   } else {
     vazio.classList.remove('oculto');
-    vazio.textContent = busca ? 'Nenhum perfil com esse texto.' : ABAS[aba].vazio;
+    vazio.textContent = busca
+      ? 'Nenhum perfil com esse texto.'
+      : faltaLista
+      ? ABAS[aba].vazioSemDados || 'Esta lista precisa da lista completa de seguidores.'
+      : ABAS[aba].vazio;
+
+    if (faltaLista && !busca) {
+      const botao = document.createElement('button');
+      botao.className = 'secundario largo';
+      botao.style.marginTop = '10px';
+      botao.textContent = 'Ler também a lista de seguidores';
+      botao.addEventListener('click', () => analisar({ completo: true }));
+      vazio.appendChild(document.createElement('br'));
+      vazio.appendChild(botao);
+    }
   }
 }
 
