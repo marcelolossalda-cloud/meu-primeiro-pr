@@ -2,7 +2,7 @@
 
 > **O que é:** o "caderno" onde o agente guarda o que aprendeu com as perguntas, as respostas e os resultados do dia a dia.
 > **Como usar:** suba este arquivo junto com o `DistriWork-Agente-Completo.md`. Toda sexta-feira (comando `/revisar`), o Marcelo aprova ou descarta os aprendizados provisórios e atualiza este arquivo no app.
-> **Regra de ouro:** aqui entra **só a lição**, nunca dados pessoais da cliente (CPF, endereço, telefone, dívida de uma pessoa, assuntos de família ou saúde).
+> **Regra de ouro:** aqui entra **só a lição**, nunca dados pessoais da cliente nem do usuário (CPF, endereço, telefone, dívida de uma pessoa, assuntos de família, saúde, religião, política ou estado emocional).
 
 ---
 
@@ -15,7 +15,7 @@
 ## Modelo de ficha
 
 ```
-### APR-0000 · AAAA-MM-DD · [tipo: objeção | frase | produto | campanha | preferência do usuário | correção | FAQ]
+### APR-0000 · AAAA-MM-DD · [tipo: objeção | frase | produto | campanha | correção | FAQ | mentalidade | hábito | finanças | teste A/B]
 - Situação:
 - O que foi feito ou dito:
 - Resultado:
@@ -24,6 +24,31 @@
 - Status: PROVISÓRIO
 - Registrado por:
 ```
+
+---
+
+## 👤 PERFIS DOS USUÁRIOS (o jeito de responder a cada um)
+
+> O agente propõe; **o próprio usuário confirma** (comando `/perfil`). O perfil diz **como** responder, nunca **o que** a loja pode fazer. Nada de dado sensível.
+
+### PERFIL · [nome do usuário] · [função: dono | vendedor(a)]
+- Tamanho de resposta: curta (até 4 linhas) | média | detalhada
+- Tom: tu | você · emojis: sim | não
+- Prefere: mensagem pronta | passo a passo | explicação do porquê | números
+- Nível: iniciante | intermediário | experiente
+- Meta do mês: R$ ...
+- Hábito em construção: ... (desde ...) · dias seguidos: ...
+- Ponto a desenvolver (só se ele mesmo disser): ...
+- O que já funcionou com ele: ...
+- O que evitar: ...
+- Atualizado em: ...
+
+### PERFIL · EXEMPLO (apague depois) · Marcelo · dono
+- Tamanho de resposta: curta (até 4 linhas)
+- Tom: tu · emojis: poucos
+- Prefere: mensagem pronta, com o número em R$
+- Nível: experiente
+- Atualizado em: —
 
 ---
 
@@ -44,12 +69,21 @@
 - **Status:** PROVISÓRIO.
 - **Registrado por:** exemplo.
 
-### APR-0002 · EXEMPLO (apague depois) · preferência do usuário
-- **Situação:** o tamanho das respostas do agente.
-- **O que foi feito ou dito:** o usuário pediu respostas mais curtas.
-- **Resultado:** —
-- **Lição:** responder ao Marcelo em até 4 linhas, usando "tu".
-- **Fonte ou livro relacionado:** —
+### APR-0002 · EXEMPLO (apague depois) · hábito
+- **Situação:** fazer a equipe mandar mensagens de reativação todo dia.
+- **O que foi feito ou dito:** "Depois de abrir o caixa, mando 3 mensagens" (empilhamento), com um X no calendário.
+- **Resultado:** [preencher: quantos dias seguidos e quantas conversas reabertas].
+- **Lição:** [preencher depois de 21 dias].
+- **Fonte ou livro relacionado:** *Hábitos Atômicos* (empilhamento e rastreador).
+- **Status:** PROVISÓRIO.
+- **Registrado por:** exemplo.
+
+### APR-0003 · EXEMPLO (apague depois) · finanças
+- **Situação:** produtos com reajuste do fornecedor.
+- **O que foi feito ou dito:** recalcular a margem pelo custo de reposição, não pelo custo antigo.
+- **Resultado:** [preencher: diferença de margem em R$ no mês].
+- **Lição:** [preencher depois de medir].
+- **Fonte ou livro relacionado:** *O Que o Governo Fez com o Nosso Dinheiro?* (Rothbard: lucro ilusório).
 - **Status:** PROVISÓRIO.
 - **Registrado por:** exemplo.
 
@@ -68,11 +102,13 @@
 | Posso dar desconto no boleto? | Não. Desconto só no Pix à vista e só se a cliente pedir (Parte 1.4). | 08/10/2026 |
 | Quantos boletos posso fazer? | Acima de R$ 500, no máximo 3 (30, 60 e 90 dias). | 08/10/2026 |
 | Qual é o limite para uma cliente nova? | R$ 500, com entrada de 30% a 50%. | 08/10/2026 |
+| O agente pode dizer onde investir? | Não. Ele ensina princípios (pague-se primeiro, reserva, custo × despesa) e indica um profissional certificado (Parte 17.6). | 08/10/2026 |
+| E se alguém da equipe estiver muito mal? | Acolher, pausar as vendas e indicar ajuda: CVV 188 ou cvv.org.br; em perigo imediato, SAMU 192 (Parte 15.8). | 08/10/2026 |
 
 ---
 
 ## 📊 Placar do aprendizado (preencher todo mês)
 
-| Mês | Aprovados | Descartados | /funcionou | /naofuncionou | Observação |
-|---|---|---|---|---|---|
-| out/2026 | | | | | |
+| Mês | Aprovados | Descartados | /funcionou | /naofuncionou | Correções do usuário | Hábitos com 21+ dias | Termômetro do caixa | Observação |
+|---|---|---|---|---|---|---|---|---|
+| out/2026 | | | | | | | | |

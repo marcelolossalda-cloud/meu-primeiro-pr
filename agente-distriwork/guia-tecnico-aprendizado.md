@@ -34,7 +34,7 @@ Regras da casa (inegociáveis)
 
 O que construir
 A) Tabela AprendizadoAgente (proposta; ajuste ao padrão do projeto):
-   id, businessId, tipo (objecao|frase|produto|campanha|preferencia|correcao|faq),
+   id, businessId, tipo (objecao|frase|produto|campanha|correcao|faq|mentalidade|habito|financas|teste_ab),
    situacao, acao, resultado (opcional), licao, fonteLivro (opcional),
    status (PROVISORIO|APROVADO|DESCARTADO), criadoPorId, aprovadoPorId (opcional),
    aprovadoEm (opcional), createdAt, updatedAt.
@@ -44,8 +44,18 @@ A) Tabela AprendizadoAgente (proposta; ajuste ao padrão do projeto):
 B) Tabela FeedbackResposta: id, businessId, usuarioId, pergunta, resposta,
    nota (funcionou|nao_funcionou), comentario (opcional), createdAt.
 
+B2) Tabela PerfilUsuarioAgente (o jeito de responder a cada usuário):
+   id, businessId, usuarioId, tamanhoResposta (curta|media|detalhada), tom (tu|voce),
+   emojis (sim|nao), prefere (mensagem|passo_a_passo|porque|numeros), nivel,
+   habitoAtual (opcional), habitoDesde (opcional), observacoes (curto), atualizadoEm.
+   O agente PROPÕE a mudança; o próprio usuário confirma (comando /perfil).
+   NÃO guardar saúde, religião, política, família, dinheiro pessoal nem emoções.
+
 C) Como montar o contexto do agente em cada pergunta:
    1. Instruções + DistriWork-Agente-Completo.md (o conhecimento fixo).
+   1b. O perfil do usuário que está perguntando (bloco "Como responder a este usuário")
+       e as últimas mensagens da conversa, para o agente ler os sinais de cada resposta
+       (pediu mais curto, corrigiu, ignorou, está com pressa) e ajustar a próxima.
    2. Os aprendizados APROVADOS da empresa (os mais recentes e os ligados ao assunto da
       pergunta, por busca simples de palavras), num bloco "Regras aprendidas (aprovadas)".
    3. Os PROVISÓRIOS mais relevantes (no máximo 5), num bloco "Em teste".
@@ -56,7 +66,8 @@ C) Como montar o contexto do agente em cada pergunta:
 D) Na tela do agente:
    - Botões 👍 Funcionou / 👎 Não funcionou em cada resposta (grava FeedbackResposta).
    - Botão "Guardar como aprendizado" (abre a ficha já preenchida pela IA, para editar).
-   - Comandos /aprendi, /funcionou, /naofuncionou e /revisar funcionando.
+   - Comandos /aprendi, /funcionou, /naofuncionou, /revisar e /perfil funcionando
+     (/mente, /habito e /dinheiro são só texto e não precisam de código).
 
 E) Tela "Aprendizados do agente" (só para o dono):
    - Lista dos PROVISÓRIOS com Aprovar / Editar / Descartar.
@@ -69,6 +80,8 @@ F) Testes mínimos:
    - O vendedor não aprova; só o dono aprova.
    - O PROVISÓRIO não entra no bloco de regras aprovadas.
    - Um texto com CPF ou telefone é recusado.
+   - O perfil de um usuário nunca aparece para outro usuário.
+   - Só o próprio usuário confirma o perfil dele.
 
 Antes de mudanças grandes de tela, me mostre o antes e o depois em print e espere o meu ok.
 No fim, me entregue um relatório simples: o que foi feito, como testar e o que ficou pendente.
