@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="is-publicado">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -310,6 +310,13 @@
   .about-grid { display: grid; gap: clamp(1.75rem, 4vw, 3rem); align-items: center; }
   @media (min-width: 52rem) { .about-grid { grid-template-columns: 20rem 1fr; } }
 
+  /* ---------- ganhos ---------- */
+  .ganhos { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: clamp(2rem, 4vw, 3rem); }
+  @media (min-width: 52rem) { .ganhos { grid-template-columns: repeat(3, 1fr); } }
+  .ganho { background: var(--paper-2); padding: clamp(1.5rem, 3vw, 2rem); }
+  .ganho h3 { font-family: var(--body); font-size: 1rem; font-weight: 600; line-height: 1.4; }
+  .ganho p { margin-top: .6rem; font-size: .92rem; color: var(--muted); }
+
   /* ---------- para quem ---------- */
   .who-grid { display: grid; gap: clamp(2rem, 4vw, 3rem); margin-top: clamp(2rem, 4vw, 3rem); }
   @media (min-width: 52rem) { .who-grid { grid-template-columns: 1fr 1fr; } }
@@ -333,6 +340,7 @@
     font-family: var(--display); font-style: italic; font-size: 1.05rem;
     color: var(--ink-soft); line-height: 1.4; text-wrap: balance;
   }
+  .anchor span { display: block; margin-top: .5rem; font-family: var(--body); font-style: normal; font-size: .8125rem; color: var(--muted); }
 
   .offer-list { list-style: none; margin: 1.75rem 0; padding: 0; display: grid; gap: .75rem; text-align: left; font-size: .95rem; color: var(--ink-soft); }
   .offer-list li { display: grid; grid-template-columns: 1.3rem 1fr; gap: .55rem; }
@@ -389,6 +397,13 @@
   html.is-embed .nav { display: none; }
   html.is-embed .hero { padding-top: clamp(2rem, 5vw, 3.5rem); }
   html.is-embed body { background: var(--paper); }
+
+  /* ---------- modo publicado ----------
+     O preview mostra as pendências; o site gerado por build.py não. */
+  html.is-publicado .tbd,
+  html.is-publicado .tbd-box,
+  html.is-publicado .tbd-note,
+  html.is-publicado [data-rascunho] { display: none !important; }
 
   /* ---------- reveal ---------- */
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
@@ -639,7 +654,7 @@
   </figure>
 </section>
 
-<section class="section band">
+<section class="section band" data-rascunho>
   <div class="wrap">
     <div class="reveal prose">
       <p class="eyebrow is-muted">Quem já assistiu</p>
@@ -653,7 +668,7 @@
   </div>
 </section>
 
-<section class="section wrap">
+<section class="section wrap" data-rascunho>
   <div class="about-grid reveal">
     <div class="tbd-box" style="aspect-ratio:4/5;display:grid;place-items:center;text-align:center">Foto da Milene</div>
     <div>
@@ -667,7 +682,32 @@
   </div>
 </section>
 
-<section class="section band" id="para-quem">
+<section class="section band">
+  <div class="wrap">
+    <div class="reveal prose">
+      <p class="eyebrow is-muted">O que muda depois</p>
+      <h2 class="h2">No próximo atendimento difícil</h2>
+      <p class="section-intro">Não é sobre decorar o que foi feito neste caso. É sobre sair da aula com critério próprio.</p>
+    </div>
+
+    <div class="ganhos reveal">
+      <article class="ganho">
+        <h3>Você olha o cabelo e sabe o que ele precisa</h3>
+        <p>Em vez de adivinhar, você lê o fundo de clareamento de cada região e decide a partir dele.</p>
+      </article>
+      <article class="ganho">
+        <h3>Você escolhe cor e OX com critério</h3>
+        <p>Sem copiar fórmula da internet: a escolha sai do diagnóstico daquele cabelo, não do que funcionou em outro.</p>
+      </article>
+      <article class="ganho">
+        <h3>Você aceita o atendimento que antes recusaria</h3>
+        <p>Correção de processo caseiro deixa de ser risco e passa a ser serviço que você cobra com segurança.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="para-quem">
   <div class="wrap">
     <div class="reveal prose">
       <p class="eyebrow is-muted">Para quem é</p>
@@ -703,7 +743,7 @@
     <p class="eyebrow">Loiro de Tinta na Prática</p>
     <p class="price"><small>Acesso à aula completa</small>R$ 97<span style="font-size:.45em;vertical-align:.55em">,00</span></p>
     <p class="cta-note">à vista · ou parcelado no cartão <span class="tbd">confirmar parcelamento no checkout</span></p>
-    <p class="anchor">Menos do que você cobra por um único atendimento de correção.</p>
+    <p class="anchor">Menos do que você cobra por um único atendimento de correção.<span>R$ 97 por 12 meses de acesso — R$ 0,27 por dia.</span></p>
 
     <ul class="offer-list">
       <li><strong>Aula completa com o caso real</strong> — do diagnóstico ao resultado final, sem cortes na parte técnica</li>
@@ -766,6 +806,14 @@
       <p>Assim que o pagamento é confirmado, a Hotmart envia o acesso para o e-mail cadastrado na compra. <span class="tbd">confirmar o fluxo: área de membros, prazo de liberação no boleto/Pix</span></p>
     </details>
     <details>
+      <summary>É só uma aula. Vale R$ 97?</summary>
+      <p>Uma correção malfeita custa produto, uma sessão inteira de cadeira e, muitas vezes, a cliente. A aula custa menos do que você cobra por um único atendimento — e o que ela ensina não é o resultado deste caso, é o critério para decidir em todos os próximos.</p>
+    </details>
+    <details>
+      <summary>Não tenho tempo de assistir agora.</summary>
+      <p>Você tem 12 meses de acesso. Compre agora e assista quando aparecer a cliente que pede esse tipo de correção — é assim que a maioria usa, com o celular ao lado durante o atendimento.</p>
+    </details>
+    <details>
       <summary>O que é o bônus do app?</summary>
       <p>Junto com a aula você recebe 30 dias de acesso ao <strong>USalon</strong>, app de gestão de salão.</p>
     </details>
@@ -789,7 +837,7 @@
 <footer>
   <div class="wrap">
     <p><strong style="color:var(--ink);font-family:var(--display);font-size:1rem">Loiro de Tinta na Prática</strong></p>
-    <p><a href="https://marceloemilene.com" style="color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--line)">marceloemilene.com</a> · Milene Kucera · CNPJ 29.128.373/0001-24 · <span class="tbd">contato@marceloemilene.com</span></p>
+    <p><a href="https://marceloemilene.com" style="color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--line)">marceloemilene.com</a> · Milene Kucera · CNPJ 29.128.373/0001-24<span class="tbd"> · contato@marceloemilene.com</span></p>
     <p>Resultados dependem da análise correta de cada cabelo e da execução do profissional. Esta aula é material educativo destinado a profissionais da beleza.</p>
   </div>
 </footer>

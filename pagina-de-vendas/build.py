@@ -38,6 +38,11 @@ FAVICON = (
     "%3C/g%3E%3C/svg%3E"
 )
 
+# "publicado" esconde as pendências ainda marcadas na página (depoimentos,
+# foto e bio da Milene, campos a confirmar). Use "rascunho" para gerar um
+# site que ainda mostre essas marcações.
+MODO = "publicado"
+
 RESET = """    html { -webkit-text-size-adjust: 100%; }
     body { margin: 0; }
     img, video { max-width: 100%; height: auto; }
@@ -48,8 +53,10 @@ def montar(fragmento: str) -> str:
     corte = fragmento.index("</style>") + len("</style>")
     cabeca, corpo = fragmento[:corte].strip(), fragmento[corte:].strip()
 
+    classe = ' class="is-publicado"' if MODO == "publicado" else ""
+
     return f"""<!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR"{classe}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -85,7 +92,7 @@ def main() -> None:
     DESTINO.parent.mkdir(parents=True, exist_ok=True)
     html = montar(ORIGEM.read_text(encoding="utf-8"))
     DESTINO.write_text(html, encoding="utf-8")
-    print(f"{DESTINO.relative_to(RAIZ)} gerado — {len(html):,} bytes".replace(",", "."))
+    print(f"{DESTINO.relative_to(RAIZ)} gerado ({MODO}) — {len(html):,} bytes".replace(",", "."))
 
 
 if __name__ == "__main__":
