@@ -50,11 +50,11 @@ def overlay(n, cab, rod):
     kids, corpo = [], []; num = 4
     for i in range(n):
         pag, cont = num, num+1; num += 2; kids.append("%d 0 R" % pag)
-        xc = W - 36.9 - larg(cab, 7.4)
-        st = "BT 0.12 0.35 0.27 rg /F1 7.4 Tf %.2f %.2f Td (%s) Tj ET\n" % (xc, H - 40, cab)
-        d = "%d / %d" % (i+1, n); xd = W-39.7-larg(d, 7)
-        st += ("BT 0.56 0.60 0.59 rg /F1 7 Tf 39.7 22 Td (%s) Tj ET\n"
-               "BT 0.71 0.54 0.16 rg /F1 7 Tf %.2f 22 Td (%s) Tj ET\n") % (rod, xd, d)
+        xc = W - 31.2 - larg(cab, 7.4)
+        st = "BT 0.12 0.35 0.27 rg /F1 7.4 Tf %.2f %.2f Td (%s) Tj ET\n" % (xc, H - 34, cab)
+        d = "%d / %d" % (i+1, n); xd = W-31.2-larg(d, 7)
+        st += ("BT 0.56 0.60 0.59 rg /F1 7 Tf 31.2 20 Td (%s) Tj ET\n"
+               "BT 0.71 0.54 0.16 rg /F1 7 Tf %.2f 20 Td (%s) Tj ET\n") % (rod, xd, d)
         b = st.encode("latin-1")
         corpo.append((pag, "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %.2f %.2f] /Resources << /Font << /F1 3 0 R >> >> /Contents %d 0 R >>" % (W, H, cont)))
         corpo.append((cont, "<< /Length %d >>\nstream\n%sendstream" % (len(b), st)))

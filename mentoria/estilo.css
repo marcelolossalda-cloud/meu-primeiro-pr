@@ -1,4 +1,4 @@
-@page{ size:A4; margin:19mm 13mm 14mm; }
+@page{ size:A4; margin:14mm 11mm 10mm; }
 *{box-sizing:border-box}
 html,body{background:#fff}
 body{font-family:"Lato",Calibri,Arial,sans-serif;font-size:9.1pt;line-height:1.38;color:#2B2B2B;margin:0}
@@ -7,9 +7,9 @@ p{margin:0}
 h1{font-family:"Lato";font-weight:900;font-size:25pt;line-height:1;color:#1F5A45;margin:0 0 1.5mm;
    text-transform:uppercase;letter-spacing:-.005em}
 .subt{font-style:italic;color:#6B7280;font-size:10pt;letter-spacing:.02em;
-      padding-bottom:2.5mm;border-bottom:.9pt solid #1F5A45;margin-bottom:4mm}
-h2{font-family:"Lato";font-weight:700;font-size:12pt;color:#1F5A45;margin:5.5mm 0 1.8mm;break-after:avoid;line-height:1.2}
-h3{font-family:"Lato";font-weight:700;font-size:8.6pt;color:#B58A2A;margin:4mm 0 1mm;break-after:avoid}
+      padding-bottom:2.2mm;border-bottom:.9pt solid #1F5A45;margin-bottom:3.4mm}
+h2{font-family:"Lato";font-weight:700;font-size:12pt;color:#1F5A45;margin:4.4mm 0 1.6mm;break-after:avoid;line-height:1.2}
+h3{font-family:"Lato";font-weight:700;font-size:8.6pt;color:#B58A2A;margin:3.2mm 0 .9mm;break-after:avoid}
 .peq{font-size:8.2pt;color:#555;line-height:1.45}
 .campos{display:grid;grid-template-columns:repeat(3,1fr);background:#EAF3EF;border:.5pt solid #CFE0D8;margin-bottom:1mm}
 .campos > div{padding:2.4mm 3.5mm;border-right:.5pt solid #CFE0D8}
@@ -55,4 +55,23 @@ ul.check li::before{content:"";position:absolute;left:.4mm;top:1.3mm;width:2.6mm
 .duas .trava li::before{border-color:#B58A2A}
 .duas .trava h4{color:#B58A2A}
 .nota{font-size:8.2pt;color:#555;margin-top:2mm;line-height:1.45}
-.rodape-doc{margin-top:5mm;padding-top:2mm;border-top:.5pt solid #D8DEDB;font-size:7.6pt;color:#8A8F8D}
+.rodape-doc{margin-top:4mm;padding-top:2mm;border-top:.5pt solid #D8DEDB;font-size:7.6pt;color:#8A8F8D}
+
+/* --- faixa de compromissos (4 colunas) --- */
+.campos.q4{grid-template-columns:repeat(4,1fr)}
+.campos.q4 .val{font-size:9pt}
+.campos + .campos{margin-top:1.4mm}
+
+/* --- agrupamento do plano por fase --- */
+tr.fase td{background:#EAF3EF;border-bottom:.5pt solid #CFE0D8;border-top:.5pt solid #CFE0D8;
+  font-size:7pt;font-weight:700;color:#1F5A45;text-transform:uppercase;letter-spacing:.09em;
+  padding:1.6mm 2.5mm}
+tr.fase td span{color:#B58A2A;letter-spacing:.04em;text-transform:none;font-weight:700}
+
+/* --- prioridade nas cores primarias --- */
+td.pr-a{color:#1F5A45;font-weight:700;font-size:7.6pt;text-align:center}
+td.pr-m{color:#B58A2A;font-weight:700;font-size:7.6pt;text-align:center}
+
+/* --- listas curtas em duas colunas, para nao sobrar folha em branco --- */
+ul.col2{columns:2;column-gap:8mm}
+ul.col2 li{break-inside:avoid}
