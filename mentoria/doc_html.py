@@ -80,6 +80,7 @@ s = s.replace('<ul class="caixa col2">', '<ul style="margin:4px 0 0;padding-left
 s = s.replace('<ul class="check">', '<ul style="margin:4px 0 0;padding-left:20px">')
 s = re.sub(r'<li>', '<li style="font-size:9.5pt;color:#222;margin-bottom:3px">', s)
 
+cabecalho = sys.argv[4] if len(sys.argv) > 4 else u"MENTORIA DE DISTRIBUIÇÃO | PLANO DE EXECUÇÃO"
 doc = (u'<!doctype html><html><head><meta charset="utf-8"><title>%s</title><style>'
        u'table{border-collapse:collapse;width:100%%}'
        u'td{border:1px solid #D8DEDB;padding:5px 7px;font-size:8.5pt;vertical-align:top}'
@@ -87,7 +88,7 @@ doc = (u'<!doctype html><html><head><meta charset="utf-8"><title>%s</title><styl
        u'</style></head>'
        u'<body style="font-family:Lato,Calibri,Arial,sans-serif;font-size:9.5pt;color:#2B2B2B">'
        u'<p style="font-size:7.5pt;font-weight:bold;color:%s;letter-spacing:1px;margin:0 0 8px">'
-       u'MENTORIA DE DISTRIBUIÇÃO | PLANO DE EXECUÇÃO</p>%s</body></html>'
-       % (sys.argv[3], VERDE, s))
+       u'%s</p>%s</body></html>'
+       % (sys.argv[3], VERDE, cabecalho, s))
 io.open(sys.argv[2], "w", encoding="utf-8").write(doc)
 print("doc html:", len(doc), "bytes")
