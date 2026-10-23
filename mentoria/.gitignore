@@ -1,0 +1,5 @@
+mentoria/fontes/
+*.pyc
+__pycache__/
+_trab.html
+_trab.pdf
