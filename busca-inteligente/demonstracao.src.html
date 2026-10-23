@@ -1,0 +1,443 @@
+<title>Busca Inteligente DistriWork</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: uma coluna estreita, como o campo de busca do caixa; a lista de sugestões é a estrela. */
+  :root {
+    --bg: #f5f3f6;
+    --surface: #ffffff;
+    --fg: #241c27;
+    --muted: #6a5f6e;
+    --line: #e2dbe5;
+    --accent: #9a2c68;
+    --accent-soft: #f6e4ee;
+    --warn: #7d5300;
+    --warn-soft: #fbefd6;
+    --ok: #1f6b45;
+    --ok-soft: #e1f2e8;
+    --shadow: 0 12px 32px rgba(52, 22, 46, 0.12);
+    --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161117; --surface: #211a23; --fg: #f2ecf3; --muted: #a99dad; --line: #3a303d;
+      --accent: #e486b8; --accent-soft: #3c2333; --warn: #f1c46a; --warn-soft: #3a2d13;
+      --ok: #7fd3a6; --ok-soft: #173326; --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161117; --surface: #211a23; --fg: #f2ecf3; --muted: #a99dad; --line: #3a303d;
+    --accent: #e486b8; --accent-soft: #3c2333; --warn: #f1c46a; --warn-soft: #3a2d13;
+    --ok: #7fd3a6; --ok-soft: #173326; --shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .pagina {
+    max-width: 640px;
+    margin: 0 auto;
+    padding-block: 32px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    display: grid;
+    gap: 28px;
+  }
+  .rotulo {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 7vw, 40px);
+    line-height: 1.1;
+    margin: 6px 0 10px;
+    text-wrap: balance;
+  }
+  .intro p { margin: 0; color: var(--muted); max-width: 60ch; }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0 0 12px;
+  }
+
+  .abas {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    justify-self: start;
+  }
+  .abas button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 15px;
+    border: 0;
+    border-radius: 999px;
+    padding: 8px 18px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  .abas button[aria-pressed="true"] { background: var(--accent); color: var(--surface); }
+  button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .busca { display: grid; gap: 10px; }
+  .caixa { position: relative; }
+  .caixa input {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 18px;
+    padding: 14px 16px 14px 46px;
+    border-radius: 14px;
+    border: 2px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+  }
+  .caixa input:focus { border-color: var(--accent); outline: none; }
+  .lupa {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .sugestoes {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    z-index: 5;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+  .sugestoes li {
+    display: grid;
+    gap: 2px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .sugestoes li[aria-selected="true"] { background: var(--accent-soft); }
+  .sugestoes .nome { font-weight: 500; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+  .sugestoes strong { color: var(--accent); font-weight: 700; }
+  .sugestoes .detalhe { font-size: 13px; color: var(--muted); }
+  .sugestoes .vazio { color: var(--muted); cursor: default; }
+  .selo {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--warn-soft);
+    color: var(--warn);
+  }
+  .leitura {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 1.5em;
+    overflow-wrap: anywhere;
+  }
+  .leitura b { color: var(--fg); font-weight: 500; }
+  .escolhido {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--ok-soft);
+    color: var(--ok);
+    font-weight: 500;
+  }
+
+  .experimente { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .experimente span { font-size: 14px; color: var(--muted); }
+  .experimente button {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+    cursor: pointer;
+  }
+  .experimente button:hover { border-color: var(--accent); }
+
+  .regras { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  td code { font-family: var(--font-mono); font-size: 13px; background: var(--accent-soft); color: var(--fg); padding: 1px 6px; border-radius: 6px; }
+  .nota { font-size: 14px; color: var(--muted); margin: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .sugestoes { animation: surgir 120ms ease-out; }
+    @keyframes surgir { from { opacity: 0.6; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<main class="pagina">
+  <header class="intro">
+    <div class="rotulo">DistriWork · demonstração</div>
+    <h1>Busca que entende o que você digitou</h1>
+    <p>Digite o nome de uma cliente ou de um produto do jeito que vier: com ou sem acento, em maiúscula ou minúscula, e até com erro de digitação. As sugestões aparecem embaixo do campo.</p>
+  </header>
+
+  <section class="busca" aria-label="Busca">
+    <div class="abas" role="group" aria-label="Onde procurar">
+      <button type="button" id="aba-clientes" aria-pressed="true">Clientes</button>
+      <button type="button" id="aba-produtos" aria-pressed="false">Produtos</button>
+    </div>
+
+    <div class="experimente" id="experimente"></div>
+
+    <div class="leitura" id="leitura" aria-live="polite"></div>
+    <div class="caixa">
+      <svg class="lupa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+      <input id="campo" type="search" role="combobox" aria-expanded="false" aria-controls="lista" aria-autocomplete="list" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="Digite um nome de cliente...">
+      <ul id="lista" class="sugestoes" role="listbox" hidden></ul>
+    </div>
+    <div class="escolhido" id="escolhido" hidden></div>
+  </section>
+
+  <section>
+    <h2>O que a busca entende</h2>
+    <div class="regras">
+      <table>
+        <thead><tr><th>Se você digitar</th><th>Ela acha</th><th>Por quê</th></tr></thead>
+        <tbody>
+          <tr><td><code>joao</code></td><td>João Pedro Martins</td><td>Acento e cedilha não fazem diferença</td></tr>
+          <tr><td><code>MARIA</code></td><td>Maria da Conceição</td><td>Maiúscula e minúscula são iguais</td></tr>
+          <tr><td><code>progresiva</code></td><td>Progressiva Sem Formol SouthLiss</td><td>Aceita até 2 letras erradas, faltando ou trocadas</td></tr>
+          <tr><td><code>desco</code></td><td>Descolorante Aella DX</td><td>Sugere antes de terminar a palavra</td></tr>
+          <tr><td><code>silva jose</code></td><td>José da Silva</td><td>As palavras podem vir em qualquer ordem</td></tr>
+          <tr><td><code>bela vista</code></td><td>Carla Brandão</td><td>Também procura no nome do salão</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="nota">O que bate certinho aparece primeiro. O que foi achado por aproximação vem depois, com o aviso “você quis dizer?”. Se nada bater com todas as palavras, ela mostra o que bate com parte delas. Palavras de até 3 letras precisam estar certas, para a busca não sugerir qualquer coisa.</p>
+  </section>
+
+  <p class="nota">Nomes de clientes e lista de produtos de exemplo. No DistriWork, a busca usa as clientes e o estoque de verdade.</p>
+</main>
+
+<script>/*BUSCA_JS*/</script>
+<script>
+(function () {
+  var B = window.BuscaInteligente;
+
+  var clientes = [
+    ["José da Silva", "Studio Zé", "São Borja"],
+    ["João Pedro Martins", "Barbearia JP", "Itaqui"],
+    ["Mônica Souza", "Espaço Mônica", "Santiago"],
+    ["Maria da Conceição", "Salão Conceição", "São Borja"],
+    ["Ana Paula Ribeiro", "Ana Hair", "São Luiz Gonzaga"],
+    ["Mariana Lopes", "Studio Mari", "São Borja"],
+    ["Juliana Ávila", "Ávila Beauty", "Santo Antônio das Missões"],
+    ["Luís Fernando", "Barbearia do Luís", "Itaqui"],
+    ["Thaís Gonçalves", "Thaís Cabelos", "São Borja"],
+    ["Carla Brandão", "Salão Bela Vista", "Santiago"],
+    ["Rosângela Fagundes", "Rô Cabeleireira", "São Borja"],
+    ["Patrícia Müller", "Studio Pati", "São Luiz Gonzaga"],
+    ["Fabiana Araújo", "Fabi Hair", "São Borja"],
+    ["Cléo Nascimento", "Espaço Cléo", "Itaqui"],
+    ["Márcia Prestes", "Márcia Penteados", "Santiago"],
+    ["Gisele Zanini", "Gi Beauty", "São Borja"],
+    ["Débora Sá", "Studio Debs", "Santo Antônio das Missões"],
+    ["Simone Peixoto", "Simone Estética", "São Borja"],
+    ["Inês Carvalho", "Inês Cabeleireira", "São Luiz Gonzaga"],
+    ["Heloísa Brum", "Helô Studio", "São Borja"]
+  ].map(function (c, i) { return { id: i, nome: c[0], salao: c[1], cidade: c[2] }; });
+
+  var produtos = [
+    ["Progressiva Sem Formol SouthLiss", "SouthLiss", "Alisamento"],
+    ["SouthLiss Keraplus Reconstrutor", "SouthLiss", "Reconstrução"],
+    ["Máscara Nutri Premium SouthLiss", "SouthLiss", "Reconstrução"],
+    ["SouthLiss Hair Fusion", "SouthLiss", "Reconstrução"],
+    ["SouthLiss Perfect Shampoo", "SouthLiss", "Lavatório"],
+    ["Blond Supremo SouthLiss", "SouthLiss", "Loiro"],
+    ["Óleo Finalizador SouthLiss", "SouthLiss", "Finalização"],
+    ["Descolorante Aella DX", "Aella", "Descoloração"],
+    ["Aella OX 20 Volumes", "Aella", "Emulsão"],
+    ["Aella OX 30 Volumes", "Aella", "Emulsão"],
+    ["Aella OX 40 Volumes", "Aella", "Emulsão"],
+    ["Coloração Aella CX", "Aella", "Coloração"],
+    ["Matizador Aella VX Vegan", "Aella", "Matização"],
+    ["Alinhamento Aella VX Vegan", "Aella", "Alinhamento"],
+    ["Shampoo Aella HC Home Care", "Aella", "Home care"],
+    ["Ghoodess Alinhamento Líquido", "Ghoodess", "Alinhamento"],
+    ["Ghoodess Creme Roxo", "Ghoodess", "Matização"],
+    ["Ghoodess Reparagy", "Ghoodess", "Reconstrução"],
+    ["Ghoodess Blond Repair Home Care", "Ghoodess", "Loiro"],
+    ["Máscara Ghoodess Linha Morango", "Ghoodess", "Hidratação"],
+    ["Ghoodess Collors Coloração", "Ghoodess", "Coloração"]
+  ].map(function (p, i) { return { id: i, nome: p[0], marca: p[1], linha: p[2] }; });
+
+  var modos = {
+    clientes: {
+      indice: B.criarIndice(clientes, { texto: function (c) { return c.nome; }, extras: function (c) { return [c.salao, c.cidade]; } }),
+      detalhe: function (c) { return c.salao + " · " + c.cidade; },
+      placeholder: "Digite um nome de cliente...",
+      exemplos: ["jose", "MÔNICA", "conceicao", "luiz", "silva jose", "julinaa", "maria conseissao", "bela vista"]
+    },
+    produtos: {
+      indice: B.criarIndice(produtos, { texto: function (p) { return p.nome; }, extras: function (p) { return [p.marca, p.linha]; } }),
+      detalhe: function (p) { return p.marca + " · " + p.linha; },
+      placeholder: "Digite um produto ou uma marca...",
+      exemplos: ["progresiva", "Ghodess", "MASCARA", "ox 30", "southlis", "desco", "matisa", "oleo"]
+    }
+  };
+
+  var modo = "clientes";
+  var sugestoes = [];
+  var ativa = 0;
+  var campo = document.getElementById("campo");
+  var lista = document.getElementById("lista");
+  var leitura = document.getElementById("leitura");
+  var escolhido = document.getElementById("escolhido");
+  var experimente = document.getElementById("experimente");
+  var abas = { clientes: document.getElementById("aba-clientes"), produtos: document.getElementById("aba-produtos") };
+
+  function abrir(sim) {
+    lista.hidden = !sim;
+    campo.setAttribute("aria-expanded", sim ? "true" : "false");
+  }
+
+  function desenhar() {
+    var digitado = campo.value;
+    var lido = B.normalizar(digitado);
+    leitura.innerHTML = "";
+    leitura.appendChild(document.createTextNode(lido ? "" : "O app lê o que você digitar sem acento e em minúsculas."));
+    if (lido) {
+      leitura.appendChild(document.createTextNode("O app lê: "));
+      var b = document.createElement("b");
+      b.textContent = lido;
+      leitura.appendChild(b);
+    }
+    sugestoes = B.buscar(modos[modo].indice, digitado, { limite: 8 });
+    if (ativa >= sugestoes.length) ativa = 0;
+    lista.innerHTML = "";
+    if (!lido) { abrir(false); return; }
+    if (!sugestoes.length) {
+      var vazio = document.createElement("li");
+      vazio.className = "vazio";
+      vazio.textContent = "Nada encontrado. Confira o que foi digitado.";
+      lista.appendChild(vazio);
+    }
+    sugestoes.forEach(function (s, posicao) {
+      var li = document.createElement("li");
+      li.id = "opcao-" + posicao;
+      li.setAttribute("role", "option");
+      li.setAttribute("aria-selected", posicao === ativa ? "true" : "false");
+      var nome = document.createElement("span");
+      nome.className = "nome";
+      var texto = document.createElement("span");
+      B.dividirParaDestaque(s.texto, s.trechos).forEach(function (parte) {
+        var el = document.createElement(parte.destaque ? "strong" : "span");
+        el.textContent = parte.texto;
+        texto.appendChild(el);
+      });
+      nome.appendChild(texto);
+      if (s.aproximado) {
+        var selo = document.createElement("span");
+        selo.className = "selo";
+        selo.textContent = "você quis dizer?";
+        nome.appendChild(selo);
+      }
+      var detalhe = document.createElement("span");
+      detalhe.className = "detalhe";
+      detalhe.textContent = modos[modo].detalhe(s.item);
+      li.appendChild(nome);
+      li.appendChild(detalhe);
+      li.addEventListener("mousedown", function (e) { e.preventDefault(); });
+      li.addEventListener("mouseenter", function () { marcar(posicao); });
+      li.addEventListener("click", function () { escolher(s); });
+      lista.appendChild(li);
+    });
+    campo.setAttribute("aria-activedescendant", sugestoes.length ? "opcao-" + ativa : "");
+    abrir(true);
+  }
+
+  function marcar(posicao) {
+    ativa = posicao;
+    Array.prototype.forEach.call(lista.querySelectorAll('[role="option"]'), function (li, i) {
+      li.setAttribute("aria-selected", i === ativa ? "true" : "false");
+    });
+    campo.setAttribute("aria-activedescendant", "opcao-" + ativa);
+  }
+
+  function escolher(s) {
+    campo.value = s.texto;
+    escolhido.textContent = "Escolhido: " + s.texto + " · " + modos[modo].detalhe(s.item);
+    escolhido.hidden = false;
+    abrir(false);
+  }
+
+  function trocarModo(novo) {
+    modo = novo;
+    abas.clientes.setAttribute("aria-pressed", novo === "clientes" ? "true" : "false");
+    abas.produtos.setAttribute("aria-pressed", novo === "produtos" ? "true" : "false");
+    campo.placeholder = modos[novo].placeholder;
+    escolhido.hidden = true;
+    experimente.innerHTML = "";
+    var rotulo = document.createElement("span");
+    rotulo.textContent = "Experimente:";
+    experimente.appendChild(rotulo);
+    modos[novo].exemplos.forEach(function (exemplo) {
+      var botao = document.createElement("button");
+      botao.type = "button";
+      botao.textContent = exemplo;
+      botao.addEventListener("click", function () {
+        campo.value = exemplo;
+        ativa = 0;
+        escolhido.hidden = true;
+        desenhar();
+        campo.focus();
+      });
+      experimente.appendChild(botao);
+    });
+  }
+
+  campo.addEventListener("input", function () { ativa = 0; escolhido.hidden = true; desenhar(); });
+  campo.addEventListener("focus", function () { if (campo.value.trim()) desenhar(); });
+  campo.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowDown") { e.preventDefault(); if (lista.hidden) desenhar(); else marcar(Math.min(ativa + 1, sugestoes.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); marcar(Math.max(ativa - 1, 0)); }
+    else if (e.key === "Enter" && !lista.hidden && sugestoes[ativa]) { e.preventDefault(); escolher(sugestoes[ativa]); }
+    else if (e.key === "Escape") { abrir(false); }
+  });
+  document.addEventListener("mousedown", function (e) {
+    if (!campo.parentNode.contains(e.target)) abrir(false);
+  });
+  abas.clientes.addEventListener("click", function () { trocarModo("clientes"); campo.value = ""; desenhar(); campo.focus(); });
+  abas.produtos.addEventListener("click", function () { trocarModo("produtos"); campo.value = ""; desenhar(); campo.focus(); });
+
+  // Abre já mostrando um exemplo, para ver na hora como funciona.
+  trocarModo("clientes");
+  campo.value = "conceicao";
+  desenhar();
+})();
+</script>
