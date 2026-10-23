@@ -24,6 +24,7 @@ O DistriWork publicado em **loja.marceloemilene.com** é feito a partir da pasta
 | Arquivo | O que é |
 |---|---|
 | `PROMPT-busca-inteligente.md` | **O prompt pronto para o Claude Code**, com o código embutido. É gerado pelo `montar-prompt.py`. |
+| `PROMPT-verificar-no-navegador.md` | Prompt para o **Claude no navegador** testar a busca no site publicado, sem salvar nem finalizar nada. |
 | `buscaInteligente.ts` | O motor da busca: `normalizar`, `criarIndice`, `buscar`, `sugerir`, `dividirParaDestaque`. Não depende de nenhuma biblioteca e funciona sem internet. |
 | `CampoBusca.tsx` | A caixa de busca em React com a lista de sugestões, setas, Enter, Esc e destaque do que bateu. |
 | `buscaInteligente.test.ts` | 17 testes do motor da busca. |
