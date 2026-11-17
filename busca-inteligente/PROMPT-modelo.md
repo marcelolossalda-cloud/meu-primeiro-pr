@@ -42,6 +42,18 @@ O que eu quero
 - Tem que funcionar nas 3 versões: site, celular (inclusive sem internet) e programa do
   computador.
 
+O que o teste no site publicado mostrou (05/11/2026)
+- 🟢 Acento, cedilha e maiúscula JÁ são ignorados em todas as buscas testadas: Vender
+  (produto e cliente), Estoque, Rotas, Clientes e Produtos. Também já acham por pedaço
+  do nome, palavras fora de ordem, código do produto e cidade da cliente. Descubra no
+  código qual função faz isso hoje e não quebre esse comportamento.
+- 🔴 Clientes (/contatos) e Produtos (/produtos/catalogo) só procuram depois de apertar
+  Enter (a busca vai para o endereço, ?q=). Não sugerem enquanto digita.
+- 🔴 Nenhuma tela aceita erro de digitação: "monika", "progresiva" e "ghodess" não acham
+  nada. Também não existe o aviso "você quis dizer?".
+- Então o trabalho principal é: sugestões enquanto digita em Clientes e Produtos, e
+  tolerância a erro de digitação em todas as buscas.
+
 Onde aplicar (confira no código quais telas têm busca de cliente ou de produto)
 - Vender (caixa / PosScreen): busca de produto e escolha da cliente. No caixa, depois de
   escolher o produto, o campo limpa para lançar o próximo (limparAoEscolher).
